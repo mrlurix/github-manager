@@ -1,4 +1,4 @@
-# GitHub Manager
+![Docs](https://img.shields.io/badge/docs-Persian%20site-8b7cff) # GitHub Manager
 
 A portable, AI assisted desktop client for GitHub. Built with **Python + PySide6**,
 it writes READMEs, manages repositories, handles issues and pull requests, and
@@ -341,6 +341,23 @@ follows links. These are handled explicitly:
 Remote `http(s)` images *are* rendered, so badges work. That is a deliberate
 trade — GitHub renders them too (through its camo proxy) — and the residual
 exposure is limited to "a third party sees which repository page was opened".
+
+
+---
+
+## Documentation
+
+A Persian documentation site with full-text search lives at
+**<https://mrlurix.github.io/github-manager/>**.
+
+It is a static site generated from docs_src/ by python tools/build_docs.py
+and served straight from the docs/ folder by GitHub Pages - no Node, no build
+service. Search is normalised for Persian (Arabic yeh/kaf, ZWNJ and diacritics),
+so a query typed on an Arabic keyboard still finds the right page. Verify it with:
+
+`ash
+node tools/verify_search.js
+`
 
 ---
 

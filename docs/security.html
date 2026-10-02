@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>امنیت · GitHub Manager</title>
+<meta name="description" content="ذخیره‌سازی توکن، اعتبارسنجی مسیر، پاک‌سازی HTML و محدود کردن دسترسی شبکه.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="امنیت · GitHub Manager">
+<meta property="og:description" content="ذخیره‌سازی توکن، اعتبارسنجی مسیر، پاک‌سازی HTML و محدود کردن دسترسی شبکه.">
+</head>
+<body>
+<a class="skip" href="#main">پرش به محتوا</a>
+
+<header class="site-header">
+  <div class="bar">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
+        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+      </svg>
+      <span>GitHub Manager</span>
+    </a>
+
+    <div class="search" role="search">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+      </svg>
+      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
+             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <kbd class="hint" id="searchHint">Ctrl K</kbd>
+      <div class="results" id="searchResults" hidden></div>
+    </div>
+
+    <div class="actions">
+      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5"/>
+          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
+        </svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
+        </svg>
+      </button>
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link is-active" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <div class="sidebar-foot">
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/v1.0.0/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
+      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+    </div>
+  </aside>
+
+  <main id="main" class="content">
+<p>امنیت در این برنامه روی یک واقعیت بنا شده است: بخش زیادی از متنی که نمایش داده می‌شود، <strong>متنی است که کاربر کنترل نمی‌کند</strong> — خروجی یک مدل، README یک ریپازیتوری دیگر، یا متن یک ایشوی غریبه. این صفحه توضیح می‌دهد با آن چه می‌شود.</p>
+<h2 id="توکن-گیتهاب">توکن گیت‌هاب</h2>
+<h3 id="ذخیرهسازی">ذخیره‌سازی</h3>
+<ul>
+<li>با <strong>DPAPI ویندوز</strong> (<code>CryptProtectData</code>) رمزنگاری می‌شود</li>
+<li>به حساب کاربری ویندوز شما گره خورده است — کاربر دیگری روی همین دستگاه نمی‌تواند بازش کند</li>
+<li>یک لایه entropy اختصاصی دارد تا فقط همین برنامه بتواند بخواند</li>
+<li>روی سیستم‌های غیر ویندوز به‌صورت obfuscated ذخیره می‌شود و روی POSIX با دسترسی <code>0600</code> نوشته می‌شود</li>
+</ul>
+<h3 id="نمایش">نمایش</h3>
+<ul>
+<li>هیچ‌جا در رابط کاربری به‌صورت خام نمایش داده نمی‌شود</li>
+<li>پیش از ورود، کاراکتر آخر پنهان است</li>
+<li>هر پیام خطا، toast و پنجره‌ی گفت‌وگو <strong>پیش از نمایش</strong> از فیلتر عبور می‌کند</li>
+</ul>
+<h3 id="پاک-کردن">پاک کردن</h3>
+<ul>
+<li><strong>Settings → Clear API key</strong> کلید مدل را پاک می‌کند</li>
+<li><strong>Settings → Erase everything</strong> توکن، کلید، کش ریپازیتوری و تنظیمات را حذف می‌کند</li>
+<li>برای حذف دستی، کافی است پوشه‌ی <code>data</code> را کنار برنامه پاک کنید</li>
+</ul>
+<h2 id="توکن-هرگز-به-جای-دیگری-نمیرود">توکن هرگز به جای دیگری نمی‌رود</h2>
+<p>سربرگ <code>Authorization</code> به نشانی‌ای می‌رود که خود برنامه تعیین کرده است. هر آدرس مطلق دیگری رد می‌شود:</p>
+<table>
+<thead>
+<tr>
+<th>آدرس</th>
+<th>نتیجه</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://api.github.com/...</code></td>
+<td>مجاز</td>
+</tr>
+<tr>
+<td><code>https://uploads.github.com/...</code></td>
+<td>مجاز (بارگذاری دارایی ریلیز)</td>
+</tr>
+<tr>
+<td><code>https://evil.example.com/...</code></td>
+<td>رد می‌شود</td>
+</tr>
+<tr>
+<td><code>https://api.github.com.evil.com/...</code></td>
+<td>رد می‌شود</td>
+</tr>
+<tr>
+<td><code>https://user:pass@api.github.com@evil.com/...</code></td>
+<td>رد می‌شود</td>
+</tr>
+</tbody>
+</table>
+<p>اعتبارسنجی روی میزبان (<code>hostname</code>) انجام می‌شود، نه روی متن آدرس — بنابراین ترفندهایی مثل یکسان جلوه دادن میزبان با پسوند، کار نمی‌کنند.</p>
+<h2 id="اعتبارسنجی-ورودی">اعتبارسنجی ورودی</h2>
+<p>نام ریپازیتوری از جعبه‌ی متن هم قابل ورود است، پس فرض نمی‌کنیم قابل اعتماد است.</p>
+<table>
+<thead>
+<tr>
+<th>ورودی</th>
+<th>قاعده</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>نام ریپازیتوری</td>
+<td>دقیقاً <code>owner/repo</code> با کاراکترهای مجاز گیت‌هاب</td>
+</tr>
+<tr>
+<td>مسیر فایل</td>
+<td>بدون <code>..</code>، بدون جداکننده‌ی مسیر در هر بخش</td>
+</tr>
+<tr>
+<td>نام شاخه</td>
+<td>بدون فاصله و کاراکترهای <code>~ ^ : ? * [ \</code> و بدون <code>/</code> در انتها</td>
+</tr>
+</tbody>
+</table>
+<p>هر چیزی مثل <code>owner/../../user</code> <strong>پیش از ساخته شدن URL</strong> رد می‌شود، نه اینکه به سرور فرستاده شود و ۴۰۴ بگیرد.</p>
+<h2 id="پاکسازی-html">پاک‌سازی HTML</h2>
+<p>پیش‌نمایش روی <code>QTextBrowser</code> رندر می‌شود — و این یک موتور HTML واقعی است که تصویر می‌خواند و دنبال لینک می‌رود. برای همین خروجی markdown از یک پاک‌سازنده‌ی <strong>فهرست‌مجاز</strong> رد می‌شود.</p>
+<table>
+<thead>
+<tr>
+<th>تهدید</th>
+<th>مقابله</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>تزریق <code>&lt;script&gt;</code>، <code>&lt;iframe&gt;</code>، <code>&lt;object&gt;</code></td>
+<td>حذف کامل تگ و محتوای آن</td>
+</tr>
+<tr>
+<td>رویدادهای <code>onclick</code> و هم‌نوع</td>
+<td>حذف هر صفتی که با <code>on</code> شروع شود</td>
+</tr>
+<tr>
+<td>تصویر با مسیر <code>file://</code></td>
+<td>محدود به <code>http</code> و <code>https</code></td>
+</tr>
+<tr>
+<td>تصویر با <code>data:</code> یا مسیر نسبی بدون میزبان</td>
+<td>رد می‌شود</td>
+</tr>
+<tr>
+<td>لینک <code>javascript:</code> یا <code>file:</code></td>
+<td>محدود به <code>http</code>، <code>https</code> و <code>mailto</code></td>
+</tr>
+<tr>
+<td>CSS با <code>url()</code> یا <code>@import</code></td>
+<td>حذف کامل آن declaration</td>
+</tr>
+<tr>
+<td>دور زدن با کامنت CSS (<code>ur/**/l(</code>)</td>
+<td>هر declaration دارای کامنت حذف می‌شود</td>
+</tr>
+<tr>
+<td><code>&lt;a href=&quot;...&quot;&gt;</code> به یک قاب نام‌دار</td>
+<td><code>target</code> فقط <code>_blank</code> یا <code>_self</code> مجاز است</td>
+</tr>
+</tbody>
+</table>
+<p>علاوه بر پاک‌سازی، <strong>هر کلیک روی لینک یک بار دیگر بررسی می‌شود</strong> پیش از آنکه مرورگر باز شود. اگر پاک‌سازنده در آینده با نسخه‌ی جدیدی از markdown-it دور زده شود، این لایه هنوز جلوی باز شدن آدرس خطرناک را می‌گیرد.</p>
+<blockquote>
+<p>تصاویر <code>http(s)</code> از راه دور <strong>بارگذاری می‌شوند</strong> تا بج‌ها کار کنند. این یک انتخاب آگاهانه است؛ گیت‌هاب هم همین کار را می‌کند. آنچه باقی می‌ماند این است که یک شخص ثالث می‌تواند ببیند کدام صفحه‌ی ریپازیتوری باز شده.</p>
+</blockquote>
+<h2 id="محدودیت-نرخ-و-رفتار-با-خطا">محدودیت نرخ و رفتار با خطا</h2>
+<p>گیت‌هاب برای هر توکن یک سهمیه‌ی ساعتی دارد. وقتی تمام شود، API یک خطای ۴۰۳ برمی‌گرداند با متنی شبیه به <code>API rate limit exceeded</code>.</p>
+<blockquote>
+<p>پیام‌های خطای برنامه انگلیسی هستند، چون متن خطا از خود گیت‌هاب می‌آید. اگر همین متن را در جستجوی همین سایت وارد کنید، به همین صفحه می‌رسید.</p>
+</blockquote>
+<p>برنامه <strong>عمداً این خطا را دوباره تلاش نمی‌کند</strong>. تلاش مجدد بعد از دو ثانیه هیچ فایده‌ای ندارد، چون سهمیه ساعتی بعد از چند دقیقه برمی‌گردد، نه چند ثانیه؛ تنها نتیجه‌اش قفل شدن چند ثانیه‌ای رابط کاربری است. به‌جای آن:</p>
+<ul>
+<li>خطا بلافاصله نشان داده می‌شود</li>
+<li>زمان تقریبی ریست از روی هدر <code>X-RateLimit-Reset</code> حساب و در پیام نوشته می‌شود</li>
+</ul>
+<p>خطاهای ۴۰۱ و ۴۲۲ هم به همان شکل رفتار می‌کنند: یک بار درخواست، یک پیام روشن، بدون تلاش مجدد. تنها خطاهای ۵xx هستند که دوباره تلاش می‌شوند، چون آن‌ها موقتی‌اند.</p>
+<p>هر پیام خطا پیش از نمایش از فیلتر عبور می‌کند، بنابراین اگر بدنه‌ی پاسخ یک سرویس، کلید API شما را بازتاب دهد، روی صفحه ظاهر نمی‌شود.</p>
+<h2 id="چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</h2>
+<p>فهرست دقیق در صفحه‌ی <a href="ai.html">هوش مصنوعی</a> آمده است. خلاصه: محتوای ریپازیتوری، آن هم فقط وقتی که خودتان درخواست بدهید.</p>
+<p><strong>هرگز</strong> فرستاده نمی‌شود: توکن گیت‌هاب، کلید API، مسیر فایل‌های محلی، محتوای پوشه‌ی <code>data</code>.</p>
+<h2 id="اعتبارسنجی-مسیر">اعتبارسنجی مسیر</h2>
+<p>هنگام باز کردن فایل یا پوشه از درون برنامه، آدرس به‌صورت آرگومان به سیستم داده می‌شود، نه به‌صورت رشته‌ای به shell. بنابراین مسیری که شامل کاراکترهای خاص shell باشد، هرگز به‌عنوان دستور تفسیر نمی‌شود.</p>
+<h2 id="عملیات-نوشتنی">عملیات نوشتنی</h2>
+<p>هیچ کاری در گیت‌هاب بدون تأیید انجام نمی‌شود:</p>
+<ul>
+<li><strong>حذف ریپازیتوری</strong> — باید نام کامل ریپازیتوری را دستی تایپ کنید</li>
+<li><strong>انتشار ریلیز</strong> — پنجره‌ی تأیید با ذکر تگ و ریپازیتوری</li>
+<li><strong>commit فایل</strong> — پنجره‌ی تأیید با نام فایل، شاخه و پیام</li>
+<li><strong>بستن ایشو یا ساخت ایشو</strong> — پنجره‌ی تأیید</li>
+</ul>
+<p>دستیار هوش مصنوعی هیچ‌وقت بدون یکی از این تأییدها چیزی نمی‌نویسد.</p>
+<h2 id="کاهش-سطح-دسترسی">کاهش سطح دسترسی</h2>
+<p>کمترین دسترسی ممکن را به توکن بدهید:</p>
+<ul>
+<li>فقط ریپازیتوری‌هایی که واقعاً کار می‌کنید</li>
+<li>اگر ریپازیتوری حذف نمی‌کنید، scope حذف را ندهید</li>
+<li>برای فقط خواندن، <code>Contents: Read-only</code> کافی است</li>
+</ul>
+<h2 id="گزارش-مشکل-امنیتی">گزارش مشکل امنیتی</h2>
+<p>اگر مشکلی پیدا کردید، به‌صورت خصوصی در مخزن گزارش دهید تا قبل از انتشار عمومی بررسی و رفع شود.</p>
+
+<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#توکن-گیتهاب">توکن گیت‌هاب</a></li><li class="toc-item toc-level-3"><a href="#ذخیرهسازی">ذخیره‌سازی</a></li><li class="toc-item toc-level-3"><a href="#نمایش">نمایش</a></li><li class="toc-item toc-level-3"><a href="#پاک-کردن">پاک کردن</a></li><li class="toc-item toc-level-2"><a href="#توکن-هرگز-به-جای-دیگری-نمیرود">توکن هرگز به جای دیگری نمی‌رود</a></li><li class="toc-item toc-level-2"><a href="#اعتبارسنجی-ورودی">اعتبارسنجی ورودی</a></li><li class="toc-item toc-level-2"><a href="#پاکسازی-html">پاک‌سازی HTML</a></li><li class="toc-item toc-level-2"><a href="#محدودیت-نرخ-و-رفتار-با-خطا">محدودیت نرخ و رفتار با خطا</a></li><li class="toc-item toc-level-2"><a href="#چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</a></li><li class="toc-item toc-level-2"><a href="#اعتبارسنجی-مسیر">اعتبارسنجی مسیر</a></li><li class="toc-item toc-level-2"><a href="#عملیات-نوشتنی">عملیات نوشتنی</a></li><li class="toc-item toc-level-2"><a href="#کاهش-سطح-دسترسی">کاهش سطح دسترسی</a></li><li class="toc-item toc-level-2"><a href="#گزارش-مشکل-امنیتی">گزارش مشکل امنیتی</a></li></ul></nav>
+    <footer class="page-foot">
+      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+    </footer>
+  </main>
+</div>
+
+<script src="assets/search.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

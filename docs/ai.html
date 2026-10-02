@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>هوش مصنوعی · GitHub Manager</title>
+<meta name="description" content="انتخاب ارائه‌دهنده، تنظیم مدل، نحوه‌ی کار مدل محلی و مرزهای دستیار.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="هوش مصنوعی · GitHub Manager">
+<meta property="og:description" content="انتخاب ارائه‌دهنده، تنظیم مدل، نحوه‌ی کار مدل محلی و مرزهای دستیار.">
+</head>
+<body>
+<a class="skip" href="#main">پرش به محتوا</a>
+
+<header class="site-header">
+  <div class="bar">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
+        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+      </svg>
+      <span>GitHub Manager</span>
+    </a>
+
+    <div class="search" role="search">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+      </svg>
+      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
+             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <kbd class="hint" id="searchHint">Ctrl K</kbd>
+      <div class="results" id="searchResults" hidden></div>
+    </div>
+
+    <div class="actions">
+      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5"/>
+          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
+        </svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
+        </svg>
+      </button>
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link is-active" href="ai.html">هوش مصنوعی</a><a class="nav-link" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <div class="sidebar-foot">
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/v1.0.0/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
+      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+    </div>
+  </aside>
+
+  <main id="main" class="content">
+<p>هر قابلیتی در برنامه پشت یک لایه‌ی نازک از کد است. آن لایه فقط یک کار می‌کند: ساخت پیام، ارسال به سرویس، و تحویل پاسخ. یعنی می‌توانید هر سرویس سازگار با OpenAI را جایگزین کنید و همه‌ی قابلیت‌ها همان‌طور کار می‌کنند.</p>
+<h2 id="ارائهدهندههای-آماده">ارائه‌دهنده‌های آماده</h2>
+<table>
+<thead>
+<tr>
+<th>ارائه‌دهنده</th>
+<th>آدرس پیش‌فرض</th>
+<th>کلید لازم</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI</td>
+<td><code>https://api.openai.com/v1</code></td>
+<td>بله</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td><code>https://openrouter.ai/api/v1</code></td>
+<td>بله</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>https://api.groq.com/openai/v1</code></td>
+<td>بله</td>
+</tr>
+<tr>
+<td>Together</td>
+<td><code>https://api.together.xyz/v1</code></td>
+<td>بله</td>
+</tr>
+<tr>
+<td>Ollama</td>
+<td><code>http://localhost:11434/v1</code></td>
+<td><strong>خیر</strong></td>
+</tr>
+<tr>
+<td>LM Studio</td>
+<td><code>http://localhost:1234/v1</code></td>
+<td><strong>خیر</strong></td>
+</tr>
+<tr>
+<td>سفارشی</td>
+<td>هر آدرس دلخواه</td>
+<td>بسته به سرویس</td>
+</tr>
+</tbody>
+</table>
+<h2 id="مدل-محلی-برای-کار-کاملاً-آفلاین">مدل محلی برای کار کاملاً آفلاین</h2>
+<p>اگر نمی‌خواهید هیچ داده‌ای از سیستم خارج شود، این بهترین گزینه است.</p>
+<h3 id="ollama">Ollama</h3>
+<pre><code class="language-bash">ollama pull llama3.1
+ollama pull qwen2.5
+</code></pre>
+<p>سپس در برنامه:</p>
+<p>۱. نوع ارائه‌دهنده را روی <strong>Ollama</strong> بگذارید
+۲. مدل را همان نامی بگذارید که کشیده‌اید، مثلاً <code>llama3.1</code>
+۳. فیلد کلید API را <strong>خالی</strong> بگذارید
+۴. <strong>Test connection</strong> را بزنید</p>
+<h3 id="lm-studio">LM Studio</h3>
+<p>۱. مدل را در LM Studio دانلود و Load کنید
+۲. سرور محلی را روشن کنید
+۳. نوع ارائه‌دهنده را روی <strong>LM Studio</strong> بگذارید و <strong>Test connection</strong> بزنید</p>
+<blockquote>
+<p>مدل محلی هم دانش عمومی خوبی دارد، اما چون محدود به گیت‌هاب است معمولاً از مدل‌های ابری بزرگ‌تر ضعیف‌تر است. برای کارهای ساختاریافته مثل README کاملاً کافی است.</p>
+</blockquote>
+<h2 id="تنظیمات-پیشنهادی">تنظیمات پیشنهادی</h2>
+<table>
+<thead>
+<tr>
+<th>پارامتر</th>
+<th>مقدار پیشنهادی</th>
+<th>چرا</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Temperature</td>
+<td>۰٫۶</td>
+<td>برای متن فنی، تعادل بین خلاقیت و دقت</td>
+</tr>
+<tr>
+<td>Max tokens</td>
+<td>۲۰۰۰</td>
+<td>یک README کامل جا می‌شود</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>۱۲۰ ثانیه</td>
+<td>مدل‌های محلی کندترند</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td>روشن</td>
+<td>پاسخ بلافاصله دیده می‌شود</td>
+</tr>
+</tbody>
+</table>
+<p>برای کارهای ساختاریافته مثل تولید JSON، دما را روی ۰٫۲ تا ۰٫۴ بگذارید تا خروجی پایدارتر باشد.</p>
+<h2 id="مرزهای-دستیار">مرزهای دستیار</h2>
+<p>این بخشی از ویژگی‌های برنامه است، نه یک محدودیت فنی. دستیار <strong>عمداً</strong> به گیت‌هاب محدود شده است.</p>
+<h3 id="چه-کارهایی-میکند">چه کارهایی می‌کند</h3>
+<ul>
+<li>نوشتن و بهبود README، README پروفایل و مستندات</li>
+<li>تنظیمات ریپازیتوری، موضوعات، سطح دسترسی، ریلیز و تگ</li>
+<li>ایشو و پول‌ریکویست: draft، تریاژ، پاسخ به بازبینی</li>
+<li>کامیت، نام شاخه، درباره‌ی merge و rebase</li>
+<li>workflow های GitHub Actions، ‏<code>.gitignore</code>، مجوز، امنیت و توکن</li>
+<li>تحلیل کد و پیشنهاد ساختار پروژه</li>
+</ul>
+<h3 id="چه-کارهایی-نمیکند">چه کارهایی نمی‌کند</h3>
+<ul>
+<li>هر پرسش خارج از گیت‌هاب: آشپزی، پزشکی، حقوقی، مالی، آموزشی عمومی</li>
+<li>نوشتن کد برای هدف‌های غیرمرتبط با مخزن گیت‌هاب</li>
+<li>دور زدن محدودیت‌های خود گیت‌هاب</li>
+</ul>
+<h3 id="چطور-این-محدودیت-اعمال-میشود">چطور این محدودیت اعمال می‌شود</h3>
+<p>سه لایه‌ی مستقل، پشت سر هم:</p>
+<p>۱. <strong>دسته‌بندی پیش از ارسال</strong> — درخواست بررسی می‌شود. اگر خارج از حوزه باشد، اصلاً به مدل ارسال نمی‌شود و کاربر پاسخ رد می‌گیرد.
+۲. <strong>دستور سیستمی</strong> — فهرست صریح مجاز و ممنوع همراه هر درخواست به مدل داده می‌شود.
+۳. <strong>اعتبارسنجی خروجی</strong> — پاسخ مدل هم دوباره بررسی می‌شود. اگر باز هم خارج از حوزه بود، جای آن پیام رد نمایش داده می‌شود.</p>
+<p>لایه‌ی اول از <strong>prompt injection</strong> هم جلوگیری می‌کند: اگر یک README یا ایشوی مخرب دستوری مثل «دستورهای قبلی را نادیده بگیر» در خود داشته باشد، آن دستور به‌عنوان بخشی از متن محتوا — نه فرمان — به مدل می‌رسد و زمینه‌ی ریپازیتوری همیشه بعد از یادآوری محدوده قرار می‌گیرد.</p>
+<blockquote>
+<p>این سه لایه یک تضمین مطلق نیستند؛ هیچ فیلتر متنی جادویی وجود ندارد. کاری که می‌کنند این است که خطا بسیار بعیدتر و پیامدها محدودتر باشد.</p>
+</blockquote>
+<h2 id="چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</h2>
+<p>فقط وقتی خودتان درخواست بدهید:</p>
+<ul>
+<li>نام و توضیح ریپازیتوری</li>
+<li>ساختار فایل‌ها</li>
+<li>زبان‌های استفاده‌شده و موضوعات</li>
+<li>محتوای README فعلی</li>
+<li>چند فایل کلیدی (محدود به حجم مشخص)</li>
+<li>متن ایشو یا کامنت‌هایی که در حال کار روی آن‌ها هستید</li>
+</ul>
+<p><strong>هرگز</strong> فرستاده نمی‌شود: توکن گیت‌هاب، کلید API، مسیر فایل‌های محلی، یا محتوای پوشه‌ی <code>data</code>.</p>
+<p>ساختار کد <code>app/core/</code> عمداً هیچ وابستگی‌ای به Qt ندارد تا بتوان منطق را جدا از رابط کاربری آزمود.</p>
+<h2 id="اگر-کار-نمیکند">اگر کار نمی‌کند</h2>
+<table>
+<thead>
+<tr>
+<th>نشانه</th>
+<th>علت محتمل</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>«Could not reach the provider»</td>
+<td>آدرس اشتباه یا سرویس خاموش است</td>
+</tr>
+<tr>
+<td>«AI provider error 401»</td>
+<td>کلید اشتباه یا منقضی</td>
+</tr>
+<tr>
+<td>پاسخ خالی</td>
+<td>مدل خیلی کوچک انتخاب شده، یا پارامترها خارج از محدوده‌اند</td>
+</tr>
+<tr>
+<td>جواب‌های بی‌ربط</td>
+<td>مدل محلی ضعیف است، یا سرویس ابری محدود شده</td>
+</tr>
+<tr>
+<td>قطع شدن وسط پاسخ</td>
+<td>Timeout را در تنظیمات بالا ببرید</td>
+</tr>
+</tbody>
+</table>
+
+<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#ارائهدهندههای-آماده">ارائه‌دهنده‌های آماده</a></li><li class="toc-item toc-level-2"><a href="#مدل-محلی-برای-کار-کاملاً-آفلاین">مدل محلی برای کار کاملاً آفلاین</a></li><li class="toc-item toc-level-3"><a href="#ollama">Ollama</a></li><li class="toc-item toc-level-3"><a href="#lm-studio">LM Studio</a></li><li class="toc-item toc-level-2"><a href="#تنظیمات-پیشنهادی">تنظیمات پیشنهادی</a></li><li class="toc-item toc-level-2"><a href="#مرزهای-دستیار">مرزهای دستیار</a></li><li class="toc-item toc-level-3"><a href="#چه-کارهایی-میکند">چه کارهایی می‌کند</a></li><li class="toc-item toc-level-3"><a href="#چه-کارهایی-نمیکند">چه کارهایی نمی‌کند</a></li><li class="toc-item toc-level-3"><a href="#چطور-این-محدودیت-اعمال-میشود">چطور این محدودیت اعمال می‌شود</a></li><li class="toc-item toc-level-2"><a href="#چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</a></li><li class="toc-item toc-level-2"><a href="#اگر-کار-نمیکند">اگر کار نمی‌کند</a></li></ul></nav>
+    <footer class="page-foot">
+      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+    </footer>
+  </main>
+</div>
+
+<script src="assets/search.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
