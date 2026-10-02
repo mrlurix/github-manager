@@ -30,7 +30,9 @@ OUT = ROOT / "docs"
 
 REPO_URL = "https://github.com/mrlurix/github-manager"
 RELEASES_URL = f"{REPO_URL}/releases/latest"
-EXE_URL = f"{RELEASES_URL}/download/v1.0.0/GitHubManager.exe"
+# "/releases/latest/download/<name>" follows whatever the newest tag is, so the
+# link keeps working after the next release. Hardcoding a tag here would 404.
+EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
 NAV = [
@@ -42,6 +44,10 @@ NAV = [
     ("build", "ساخت از سورس"),
     ("faq", "سوالات متداول"),
 ]
+
+#: Heading anchors per page, filled in during the build so the link checker
+#: knows which ``page.html#anchor`` targets actually exist.
+ANCHORS: dict[str, list[str]] = {}
 
 
 # --------------------------------------------------------------- normalising
@@ -270,6 +276,36 @@ def front_matter(text: str) -> tuple[str, str, str]:
     return title, description, body
 
 
+def check_internal_links() -> int:
+    """Fail if a page links to a page that does not exist.
+
+    Cheap, and it catches the failure that actually happens: adding a nav entry
+    or renaming a slug and leaving the old hrefs behind.
+    """
+    broken: list[str] = []
+    pages = {slug for slug, _ in NAV}
+    known_targets = {f"{slug}.html" for slug in pages} | {
+        f"{slug}.html#{anchor}" for slug in pages for anchor in ANCHORS.get(slug, ())
+    }
+
+    for path in sorted(OUT.glob("*.html")):
+        text = path.read_text(encoding="utf-8")
+        for href in re.findall(r'href="([^"]+)"', text):
+            if href.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            if href in known_targets or href in {"assets/style.css", "assets/favicon.svg"}:
+                continue
+            broken.append(f"{path.name} -> {href}")
+
+    if broken:
+        print("  BROKEN internal links:")
+        for item in broken:
+            print("    " + item)
+        return 1
+    print("  internal links OK")
+    return 0
+
+
 # --------------------------------------------------------------------- build
 def build() -> int:
     pages_dir = SRC / "pages"
@@ -291,6 +327,7 @@ def build() -> int:
         )
         title = title or nav_title
         body_html, headings = render(body_md)
+        ANCHORS[slug] = [anchor for _, _, anchor in headings]
 
         # Index every heading as its own searchable entry.
         page_text = to_text(body_html)
@@ -329,7 +366,7 @@ def build() -> int:
         encoding="utf-8",
     )
     print(f"  built search-index.json  ({len(index)} entries)")
-    return 0
+    return check_internal_links()
 
 
 def _section_html(body_html: str, anchor: str) -> str:
