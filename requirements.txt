@@ -1,0 +1,15 @@
+# Runtime dependencies for GitHub Manager.
+# Install with:  pip install -r requirements.txt
+
+PySide6>=6.6
+requests>=2.31
+markdown-it-py>=3.0
+Pygments>=2.17
+
+# Optional but recommended. The app talks to the GitHub REST API directly and
+# only uses PyGithub for a couple of convenience helpers, so it works without
+# this package too.
+PyGithub>=2.1
+
+# Optional: enables automatic linkification in rendered markdown.
+linkify-it-py>=2.0
