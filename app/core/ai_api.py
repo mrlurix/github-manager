@@ -11,10 +11,11 @@ import json
 from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
-from .redact import redact_secrets
+from .redact import redact_secrets, remember_secret
 
 DEFAULT_TIMEOUT = 120
 
@@ -92,6 +93,10 @@ class AIClient:
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
+        if api_key:
+            # Same reason as the GitHub token: scrub the value we actually hold
+            # from error text, not just values shaped like a key.
+            remember_secret(api_key)
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -100,13 +105,40 @@ class AIClient:
     # ------------------------------------------------------------- helpers
     @property
     def needs_key(self) -> bool:
-        return "localhost" not in self.base_url and "127.0.0.1" not in self.base_url
+        return not self._is_loopback(self.base_url)
+
+    @staticmethod
+    def _is_loopback(url: str) -> bool:
+        """True when the host is the machine itself.
+
+        Parsed rather than substring-matched: ``http://localhost.example.com/``
+        and ``http://evil.test/?next=localhost`` both contain the word but are
+        not the loopback interface.
+        """
+        try:
+            host = (urlparse(str(url or "")).hostname or "").lower()
+        except ValueError:
+            return False
+        if host in {"localhost", "::1", "[::1]"}:
+            return True
+        return host.startswith("127.")
 
     def _headers(self) -> dict[str, str]:
+        """Headers for a request to the configured provider.
+
+        The key is withheld rather than sent when the endpoint is plaintext
+        http to a host that is not this machine. Sending it would put a live
+        credential on the wire in clear text, and the address is user-editable,
+        so a mistyped ``http://`` would leak it silently.
+        """
         headers = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
-            headers["api-key"] = self.api_key
+        if not self.api_key:
+            return headers
+        scheme = (urlparse(self.base_url).scheme or "").lower()
+        if scheme == "http" and not self._is_loopback(self.base_url):
+            return headers
+        headers["Authorization"] = f"Bearer {self.api_key}"
+        headers["api-key"] = self.api_key
         return headers
 
     def _endpoint(self, suffix: str) -> str:

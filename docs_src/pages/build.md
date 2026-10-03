@@ -60,7 +60,7 @@ Installing [UPX](https://github.com/upx/upx) shrinks it further.
 python tests/run_all_tests.py
 ```
 
-Nine suites, around 780 checks. None of them reach the GitHub API or need a token:
+Ten suites, around 950 checks. None of them reach the GitHub API or need a token:
 the only network traffic is to `tests/mock_github_server.py`, a real HTTP server
 running on your own machine.
 
@@ -76,6 +76,16 @@ running on your own machine.
 | `ai_flow_test.py` | Streaming, refinement, the commit path and the scope lock |
 | `layout_test.py` | Every page at several window sizes |
 | `responsive_test.py` | No overlapping or clipped controls from 900×560 to 2560×1440 |
+
+```bash
+node tools/verify_site_security.js     # check the generated site and its script
+```
+
+`tests/security_test.py` covers the HTML sanitiser, URL allow-listing, path and
+ref validation, secret redaction, plaintext transport and the AI prompt fence.
+The site check covers the generated pages: each one must carry a
+Content-Security-Policy, load no remote asset, keep outbound links on
+`noopener`, and contain no inline script or event handler.
 
 ### The mock GitHub server
 

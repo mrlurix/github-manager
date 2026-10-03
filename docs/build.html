@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     'unsafe-inline' is needed for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Building from source · GitHub Manager</title>
 <meta name="description" content="Run the app from source, run the tests, build the exe and build this documentation site.">
 <link rel="stylesheet" href="assets/style.css">
@@ -60,7 +68,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.2.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -135,11 +143,11 @@ file, or the size is implausible, the build is reported as failed</li>
 </ul>
 <p>That last check exists because getting it wrong produces an exe that fails at
 launch with <code>Failed to load Python DLL</code> and no clue at build time.</p>
-<p>Installing <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">>UPX</a> shrinks it further.</p>
+<p>Installing <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">&gt;UPX</a> shrinks it further.</p>
 <h2 id="running-the-tests">Running the tests</h2>
 <pre><code class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>Nine suites, around 780 checks. None of them reach the GitHub API or need a token:
+<p>Ten suites, around 950 checks. None of them reach the GitHub API or need a token:
 the only network traffic is to <code>tests/mock_github_server.py</code>, a real HTTP server
 running on your own machine.</p>
 <table>
@@ -192,11 +200,18 @@ running on your own machine.</p>
 </tr>
 </tbody>
 </table>
+<pre><code class="language-bash">node tools/verify_site_security.js     # check the generated site and its script
+</code></pre>
+<p><code>tests/security_test.py</code> covers the HTML sanitiser, URL allow-listing, path and
+ref validation, secret redaction, plaintext transport and the AI prompt fence.
+The site check covers the generated pages: each one must carry a
+Content-Security-Policy, load no remote asset, keep outbound links on
+<code>noopener</code>, and contain no inline script or event handler.</p>
 <h3 id="the-mock-github-server">The mock GitHub server</h3>
 <p><code>tests/mock_github_server.py</code> is a real HTTP server that speaks the GitHub REST
 API:</p>
 <ul>
-<li>paginates with a genuine <code>Link: rel=&quot;next&quot;</code> header</li>
+<li>paginates with a genuine <code>Link: rel="next"</code> header</li>
 <li>returns base64 file content</li>
 <li>enforces authentication</li>
 <li>answers with real 401, 403, 404, 422 and 500 bodies</li>

@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
 )
 
 from .markdown import render_markdown, set_palette, word_count
-from .sanitize import is_safe_link
+from .sanitize import safe_url
 
 
 class _Highlighter(QSyntaxHighlighter):
@@ -122,6 +122,10 @@ class SafeLinksMixin:
     ``setOpenExternalLinks(True)`` will hand Qt any scheme it finds in the
     document, including ``javascript:`` and ``file:``. Managing link handling
     manually means every click is checked before it reaches the browser.
+
+    The URL that gets opened is the one that was checked, not the one Qt
+    supplied: re-parsing a differently spelled equivalent is how a check gets
+    bypassed.
     """
 
     def _init_safe_links(self) -> None:
@@ -130,9 +134,15 @@ class SafeLinksMixin:
         self.anchorClicked.connect(self._open_anchor)
 
     def _open_anchor(self, url: QUrl) -> None:
-        if not is_safe_link(url.toString()):
+        target = safe_url(url.toString())
+        if target is None:
             return
-        QDesktopServices.openUrl(url)
+        # Check the re-parsed form too: QUrl has its own normalisation, and it
+        # is the QUrl that would actually be handed to the OS.
+        resolved = QUrl(target)
+        if not resolved.isValid() or safe_url(resolved.toString()) is None:
+            return
+        QDesktopServices.openUrl(resolved)
 
 
 class MarkdownStreamView(SafeLinksMixin, QTextBrowser):

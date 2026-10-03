@@ -114,9 +114,30 @@ _UNSAFE_CSS = re.compile(
 _CONTROL_CHARS = re.compile(r"[\x00-\x20\x7f]")
 
 
+def _canonical_url(url: str) -> str:
+    """A URL reduced to the form a consumer will actually act on.
+
+    Percent-encoding is peeled more than once on purpose. One pass leaves
+    ``%256a%2561vascript:`` as ``%6a%61vascript:``, which carries no scheme and
+    would be read as a harmless relative path - until the thing that opens it
+    decodes a second time. Peeling to a fixed point means the check and the
+    consumer see the same string.
+
+    Control characters go too: ``java\\tscript:`` is a valid scheme to a parser
+    that ignores whitespace, and stripping it first closes that route.
+    """
+    text = str(url or "").strip()
+    for _ in range(3):
+        decoded = unquote(text)
+        if decoded == text:
+            break
+        text = decoded
+    return _CONTROL_CHARS.sub("", text)
+
+
 def is_safe_link(url: str) -> bool:
     """True when a link may be handed to the system browser."""
-    text = _CONTROL_CHARS.sub("", unquote(str(url or "").strip()))
+    text = _canonical_url(url)
     if not text:
         return False
     # A fragment or a relative path never carries a scheme.
@@ -128,11 +149,34 @@ def is_safe_link(url: str) -> bool:
 
 def is_safe_image(url: str) -> bool:
     """True when an image may be fetched by the preview."""
-    text = _CONTROL_CHARS.sub("", unquote(str(url or "").strip()))
+    text = _canonical_url(url)
     match = _SCHEME_RE.match(text)
     if not match:
+        # No scheme at all: a relative path or a protocol-relative "//host" both
+        # land here, and neither is a remote web image we intended to load.
         return False
     return match.group(1).lower() in IMAGE_SCHEMES
+
+
+def safe_url(url: str) -> str | None:
+    """The canonical form of a URL that may be handed to the OS, else ``None``.
+
+    Separate from :func:`is_safe_link` on purpose. A relative path is fine to
+    leave sitting inert in a rendered document, but it must never be *opened*:
+    the shell would resolve it against the working directory, which turns a link
+    in somebody else's README into a way to open a local file. Only an explicit
+    allowed scheme is openable.
+
+    Returning the canonical string also means the caller opens exactly the text
+    that was checked, instead of re-parsing a different spelling of it.
+    """
+    text = _canonical_url(url)
+    if not text:
+        return None
+    match = _SCHEME_RE.match(text)
+    if not match or match.group(1).lower() not in LINK_SCHEMES:
+        return None
+    return text
 
 
 def _clean_style(value: str) -> str:
@@ -240,9 +284,29 @@ class _Sanitiser(HTMLParser):
 
     # ------------------------------------------------------------------ text
     def handle_data(self, data: str) -> None:
+        """Emit character data as *text*, never as markup.
+
+        ``convert_charrefs=True`` means entities have already been decoded by the
+        time this runs, so ``&lt;img src=x onerror=...&gt;`` arrives here as the
+        literal text ``<img src=x onerror=...>``. Emitting that verbatim rebuilt
+        the tag as real markup, which bypassed the allow-list completely: no
+        attribute was ever inspected, so a ``file:`` image or an ``onerror``
+        handler survived where the same payload written plainly was stripped.
+
+        Escaping restores the contract - what reaches the output is text, and
+        only the allow-list can introduce a tag.
+        """
         if self._skip_depth:
             return
-        self.out.append(data)
+        self.out.append(escape(data, quote=False))
+
+    def handle_entityref(self, name: str) -> None:  # noqa: N802
+        # Unreachable while convert_charrefs is True, but the raw form is safer
+        # than a silently unescaped one if that ever changes.
+        self.handle_data(f"&{name};")
+
+    def handle_charref(self, name: str) -> None:  # noqa: N802
+        self.handle_data(f"&#{name};")
 
     def result(self) -> str:
         while self._open:

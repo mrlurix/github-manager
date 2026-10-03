@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable
 from urllib.parse import urlparse
 
-from .redact import redact_secrets
+from .redact import redact_secrets, remember_secret
 
 try:  # optional, only used for a couple of convenience helpers
     from github import Auth, Github  # type: ignore
@@ -39,9 +39,13 @@ OWNER_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$")
 # Repository names: alphanumerics, dots, hyphens and underscores.
 REPO_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 # A single path segment inside a repository (no traversal, no separators).
-PATH_SEGMENT_RE = re.compile(r"^[^/\\]{1,255}$")
+#: A path segment may not contain a separator or a control character. Control
+#: characters matter as much as the separators: NUL truncates a path in some
+#: stacks, and CR or LF inside a URL is what turns a path into a header.
+PATH_SEGMENT_RE = re.compile(r"^[^/\\\x00-\x1f\x7f]{1,255}$")
 # git check-ref-format: no spaces, no ~ ^ : ? * [ \ , no leading/trailing slash.
-BRANCH_RE = re.compile(r"^[^~^:?*\[\\ ]{1,255}$")
+# Control characters are excluded for the same reason they are in a path.
+BRANCH_RE = re.compile(r"^[^~^:?*\[\\ \x00-\x1f\x7f]{1,255}$")
 
 
 class GitHubError(RuntimeError):
@@ -86,10 +90,26 @@ def validate_repo_path(path: str) -> str:
 
 
 def validate_branch_name(name: str) -> str:
-    """Validate a branch name before it is used to build a git ref path."""
+    """Validate a branch name before it is used to build a git ref path.
+
+    A branch name reaches a URL, so ``..`` has to be refused even though git
+    would allow it in a name: ``refs/heads/../evil`` collapses to a different
+    endpoint than the one the caller meant, and the request still carries the
+    token. A leading ``refs/heads/`` is refused for the same reason - it would be
+    prefixed a second time.
+    """
     text = str(name or "").strip()
     if not text or not BRANCH_RE.match(text) or text.endswith("/"):
         raise GitHubError(f"'{text}' is not a valid branch name.", status=400)
+    if text.startswith("/") or "//" in text:
+        raise GitHubError(f"'{text}' is not a valid branch name.", status=400)
+    if any(segment in {".", ".."} for segment in text.split("/")):
+        raise GitHubError(f"'{text}' is not a valid branch name.", status=400)
+    if text.startswith("refs/"):
+        raise GitHubError(
+            f"'{text}' looks like a full ref. Give the branch name on its own.",
+            status=400,
+        )
     return text
 
 
@@ -297,6 +317,9 @@ class GitHubClient:
         )
         if self.token:
             self._session.headers["Authorization"] = f"Bearer {self.token}"
+            # Redact this exact value from anything the user might read, rather
+            # than depending on its shape being one we recognise.
+            remember_secret(self.token)
         self._py_client = None
         if PY_GITHUB and self.token:
             try:
@@ -320,12 +343,18 @@ class GitHubClient:
             except Exception:
                 self._py_client = None
 
+    @staticmethod
+    def _is_loopback(host: str) -> bool:
+        return host in {"localhost", "127.0.0.1", "::1"} or host.startswith("127.")
+
     def _build_url(self, path: str) -> str:
         """Resolve an API path to an absolute URL, refusing other hosts.
 
         The session carries the ``Authorization`` header, so an absolute URL
         pointing somewhere else would hand the token to that host. Only the
-        configured API (and GitHub's upload endpoint) is allowed.
+        configured API (and GitHub's upload endpoint) is allowed, and only over
+        TLS: plaintext would put the token on the wire in a form anyone on the
+        path could read.
         """
         text = str(path or "").strip()
         if text.startswith(("https://", "http://")):
@@ -337,6 +366,10 @@ class GitHubClient:
             if host not in allowed:
                 raise GitHubError(
                     f"Refusing to send the GitHub token to '{host or text}'.", status=400
+                )
+            if urlparse(text).scheme.lower() != "https" and not self._is_loopback(host):
+                raise GitHubError(
+                    "Refusing to send the GitHub token over plain HTTP.", status=400
                 )
             return text
         if not text.startswith("/"):
@@ -624,8 +657,10 @@ class GitHubClient:
             return []
 
     def get_repo_tree(self, full_name: str, branch: str = "", recursive: bool = True) -> list[str]:
-        repo = self.get_repo(full_name)
-        ref = branch or repo.default_branch
+        # Validated before anything is requested, and the ref can come from the
+        # edit dialog, which is a free-text field: it is not a value we can
+        # assume was ever a real branch name.
+        ref = validate_branch_name(branch) if branch else self.get_repo(full_name).default_branch
         raw = self.request(
             "GET",
             f"/repos/{full_name}/git/trees/{ref}",
@@ -687,11 +722,13 @@ class GitHubClient:
         each file's sha, and a repository of a few hundred files would otherwise
         cost a few hundred round trips before the dialog could even open.
         """
-        repo = self.get_repo(full_name)
-        ref = branch or repo.default_branch
+        repo = validate_repo(full_name)
+        # See get_repo_tree: validated before the request, because a caller-
+        # supplied ref is user input, not a ref git vouched for.
+        ref = validate_branch_name(branch) if branch else self.get_repo(full_name).default_branch
         raw = self.request(
             "GET",
-            f"/repos/{validate_repo(full_name)}/git/trees/{ref}",
+            f"/repos/{repo}/git/trees/{ref}",
             params={"recursive": "1"},
         )
         out: list[dict[str, Any]] = []

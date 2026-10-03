@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     'unsafe-inline' is needed for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Security · GitHub Manager</title>
 <meta name="description" content="Token storage, path validation, HTML sanitising, rate limit handling and how far the token can travel.">
 <link rel="stylesheet" href="assets/style.css">
@@ -60,7 +68,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link is-active" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.2.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -192,7 +200,7 @@ fetches images and follows links. Rendered markdown therefore passes through an
 <td>any declaration containing a comment is dropped</td>
 </tr>
 <tr>
-<td><code>&lt;a target=&quot;…&quot;&gt;</code> pointing at a named frame</td>
+<td><code>&lt;a target="…"&gt;</code> pointing at a named frame</td>
 <td>only <code>_blank</code> and <code>_self</code> are allowed</td>
 </tr>
 </tbody>
@@ -219,7 +227,7 @@ the UI for several seconds before explaining why. Instead:</p>
 <p>Every error message passes through the redaction filter, so a service that echoes
 your API key back in an error body never shows it on screen.</p>
 <h2 id="what-is-sent-to-the-model">What is sent to the model</h2>
-<p>The exact list is on the <a href="ai.html">AI</a> page. In short: repository content, and
+<p>The exact list is on the <a href="ai.html" target="_blank" rel="noopener noreferrer">AI</a> page. In short: repository content, and
 only when you ask for it.</p>
 <p><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or the
 contents of the <code>data</code> folder.</p>

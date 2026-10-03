@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 APP_NAME = "GitHub Manager"
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 ORG_NAME = "GitHubManager"
 
 _ENV_PORTABLE = "GHM_PORTABLE"

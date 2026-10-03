@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     'unsafe-inline' is needed for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Getting started · GitHub Manager</title>
 <meta name="description" content="Download GitHub Manager, create a token, connect, and be writing READMEs in three minutes.">
 <link rel="stylesheet" href="assets/style.css">
@@ -60,7 +68,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link is-active" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.2.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -68,7 +76,7 @@
   <main id="main" class="content">
 <h2 id="download">Download</h2>
 <p>Grab <code>GitHubManager.exe</code> from the
-<a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">>releases page</a>.</p>
+<a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">&gt;releases page</a>.</p>
 <ul>
 <li>About 63 MB</li>
 <li>A single file, no installer</li>
@@ -84,7 +92,7 @@ gets this.</p>
 <h2 id="create-a-token">Create a token</h2>
 <p>The app needs a <strong>Personal Access Token</strong>.</p>
 <ol>
-<li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">>github.com/settings/tokens</a></li>
+<li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">&gt;github.com/settings/tokens</a></li>
 <li>Choose <strong>Generate new token → Fine-grained</strong></li>
 <li>Grant only what the app actually uses:
 <ul>
@@ -162,22 +170,22 @@ folder is left alone, so your token and settings survive.</p>
 </thead>
 <tbody>
 <tr>
-<td>&quot;Invalid or expired token&quot;</td>
+<td>"Invalid or expired token"</td>
 <td>Token expired or missing scopes</td>
 <td>Create a new one and check the scopes</td>
 </tr>
 <tr>
-<td>&quot;Not found, or the token lacks access&quot;</td>
+<td>"Not found, or the token lacks access"</td>
 <td>No access to that repository</td>
 <td>Make sure the repository is selected when creating the token</td>
 </tr>
 <tr>
-<td>&quot;API rate limit exceeded&quot;</td>
+<td>"API rate limit exceeded"</td>
 <td>Hourly quota spent</td>
 <td>The error names roughly when it resets; wait</td>
 </tr>
 <tr>
-<td>&quot;Access denied&quot;</td>
+<td>"Access denied"</td>
 <td>Writing to a protected repository</td>
 <td>That is GitHub's own rule</td>
 </tr>
@@ -194,7 +202,7 @@ folder is left alone, so your token and settings survive.</p>
 </tbody>
 </table>
 <h2 id="running-from-source">Running from source</h2>
-<p>To run or modify it yourself, see <a href="build.html">Building from source</a>.</p>
+<p>To run or modify it yourself, see <a href="build.html" target="_blank" rel="noopener noreferrer">Building from source</a>.</p>
 <pre><code class="language-bash">git clone https://github.com/mrlurix/github-manager.git
 cd github-manager
 pip install -r requirements.txt

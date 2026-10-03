@@ -22,6 +22,7 @@ import re
 import shutil
 import unicodedata
 from html import escape
+from html.parser import HTMLParser
 from pathlib import Path
 
 from markdown_it import MarkdownIt
@@ -38,7 +39,7 @@ EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
 #: Kept in step with app/config.py. Only used for the visible download label, so
 #: a mismatch is cosmetic, but it is still wrong to show a stale version.
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
 NAV = [
@@ -138,8 +139,17 @@ def slugify(text: str) -> str:
 
 
 # ------------------------------------------------------------------ markdown
-# Raw HTML is allowed here on purpose. The input is the repository's own
-# markdown, which is trusted and reviewed in the same pull request as the code.
+# Raw HTML is allowed here on purpose: the landing page needs a hero block and a
+# card grid, which markdown has no syntax for. The input is the repository's own
+# markdown, reviewed in the same pull request as the code.
+#
+# That is a weaker guarantee than it looks, though. A typo, a bad merge, or a
+# compromised account can put a <script> into one of these files, and the output
+# is served from GitHub Pages with no review step in front of it. So the rendered
+# body is put through an allow-list on the way out (:func:`sanitize_body`) and the
+# pages carry a Content-Security-Policy that refuses inline script even if
+# something got past it.
+#
 # This is a different trust boundary from the application, where markdown can
 # come from a model or another user's repository and must go through
 # app/ui/sanitize.py instead.
@@ -147,6 +157,127 @@ _md = MarkdownIt("commonmark", {"html": True, "linkify": True})
 _md.enable(["table", "strikethrough"])
 
 _slug_counts: dict[str, int] = {}
+
+#: Tags the documentation is allowed to use. The hero and card grid need div,
+#: span and their class attributes; everything else is ordinary prose markup.
+_ALLOWED_TAGS = frozenset(
+    """a abbr b blockquote br caption cite code dd del div dl dt em figcaption figure h1
+    h2 h3 h4 h5 h6 hr i img ins kbd li mark ol p pre q s samp small span strong sub sup
+    summary details table tbody td tfoot th thead tr u ul var""".split()
+)
+_ALLOWED_ATTRS = frozenset(
+    """href src alt title id class colspan rowspan scope align width height target rel
+    lang dir start type open""".split()
+)
+#: ``style`` is deliberately absent. CSS can fetch a URL and report where the
+#: reader is, and nothing in these pages needs an inline declaration - present it
+#: with an extra class in assets/style.css instead.
+#: Tags whose content goes with them.
+_DROP_CONTENT = frozenset(
+    "script style iframe object embed applet form svg math frame frameset template noscript".split()
+)
+_SCHEME_RE = re.compile(r"^([a-zA-Z][a-zA-Z0-9+.-]*):")
+_LINK_SCHEMES = frozenset({"http", "https", "mailto"})
+_CONTROL_CHARS = re.compile(r"[\x00-\x20\x7f]")
+
+
+def _safe_href(value: str) -> bool:
+    """True for a link this site is willing to emit."""
+    text = _CONTROL_CHARS.sub("", str(value or ""))
+    match = _SCHEME_RE.match(text)
+    if not match:
+        return not text.startswith("//")
+    return match.group(1).lower() in _LINK_SCHEMES
+
+
+def _safe_src(value: str) -> bool:
+    """True for an image source. Local paths only: nothing is loaded remotely."""
+    text = _CONTROL_CHARS.sub("", str(value or ""))
+    match = _SCHEME_RE.match(text)
+    if not match:
+        return not text.startswith("//") and ".." not in text
+    return match.group(1).lower() in {"http", "https"}
+
+
+class _BodySanitiser(HTMLParser):
+    """Allow-list filter for the rendered page body."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.out: list[str] = []
+        self.open: list[str] = []
+        self.skip = 0
+
+    def _attrs(self, tag: str, attrs: list[tuple[str, str | None]]) -> str:
+        parts: list[str] = []
+        for raw_name, raw_value in attrs:
+            name = (raw_name or "").lower()
+            value = raw_value or ""
+            if name.startswith("on") or name not in _ALLOWED_ATTRS:
+                continue
+            if name == "href" and not _safe_href(value):
+                continue
+            if name == "src" and not _safe_src(value):
+                continue
+            if name == "target" and value.strip().lower() not in {"_blank", "_self"}:
+                continue
+            parts.append(f' {name}="{escape(value, quote=True)}"')
+        if tag == "a" and any(p.startswith(" href=") for p in parts):
+            parts = [p for p in parts if not p.startswith((" target=", " rel="))]
+            parts.append(' target="_blank"')
+            parts.append(' rel="noopener noreferrer"')
+        return "".join(parts)
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in _DROP_CONTENT:
+            self.skip += 1
+            return
+        if self.skip or tag not in _ALLOWED_TAGS:
+            return
+        self.out.append(f"<{tag}{self._attrs(tag, attrs)}>")
+        if tag not in {"br", "hr", "img"}:
+            self.open.append(tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if not self.skip and tag in {"br", "hr", "img"}:
+            self.out.append(f"<{tag}{self._attrs(tag, attrs)}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in _DROP_CONTENT:
+            self.skip = max(0, self.skip - 1)
+            return
+        if self.skip or tag not in _ALLOWED_TAGS or tag not in self.open:
+            return
+        while self.open:
+            current = self.open.pop()
+            self.out.append(f"</{current}>")
+            if current == tag:
+                break
+
+    def handle_data(self, data: str) -> None:
+        # Decoded entities are re-emitted as text, never as markup. Without the
+        # escape, `&lt;script&gt;` in a markdown file would become a real tag.
+        if not self.skip:
+            self.out.append(escape(data, quote=False))
+
+    def result(self) -> str:
+        while self.open:
+            self.out.append(f"</{self.open.pop()}>")
+        return "".join(self.out)
+
+
+def sanitize_body(html: str) -> str:
+    """Filter the rendered markdown down to the tags this site uses."""
+    if not html:
+        return ""
+    parser = _BodySanitiser()
+    try:
+        parser.feed(html)
+        parser.close()
+    except Exception:
+        # A parse failure must never fall back to emitting the raw document.
+        return f"<pre>{escape(html)}</pre>"
+    return parser.result()
 
 
 def render(markdown_text: str) -> tuple[str, list[str]]:
@@ -176,7 +307,7 @@ def render(markdown_text: str) -> tuple[str, list[str]]:
         r'<a href="\1" target="_blank" rel="noopener noreferrer">',
         html,
     )
-    return html, headings
+    return sanitize_body(html), headings
 
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -221,6 +352,14 @@ def layout(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     'unsafe-inline' is needed for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>{escape(title)} · GitHub Manager</title>
 <meta name="description" content="{escape(description)}">
 <link rel="stylesheet" href="assets/style.css">
@@ -278,7 +417,7 @@ def layout(
   <aside class="sidebar" id="sidebar">
     <nav class="nav">{nav_html}</nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="{EXE_URL}">Download {APP_VERSION}</a>
+      <a class="btn btn-primary" href="{EXE_URL}" target="_blank" rel="noopener noreferrer">Download {APP_VERSION}</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>

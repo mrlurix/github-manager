@@ -148,8 +148,11 @@
     locate: locate,
     snippet: snippet,
     highlight: function (text, words) {
-      var safe = String(text).replace(/[&<>"]/g, function (c) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      var safe = String(text).replace(/[&<>"']/g, function (c) {
+        return {
+          "&": "&amp;", "<": "&lt;", ">": "&gt;",
+          '"': "&quot;", "'": "&#39;"
+        }[c];
       });
       if (!words.length) return safe;
       var alt = words.map(function (w) {

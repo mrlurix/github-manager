@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     'unsafe-inline' is needed for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Home · GitHub Manager</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="assets/style.css">
@@ -60,7 +68,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link is-active" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.2.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -78,9 +86,9 @@ description: GitHub Manager â€” a portable GitHub desktop client with an AI
     the model.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.2.0</a>
-    <a class="btn" href="features.html">Features</a>
-    <a class="btn" href="install.html">Getting started</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
+    <a class="btn" href="features.html" target="_blank" rel="noopener noreferrer">Features</a>
+    <a class="btn" href="install.html" target="_blank" rel="noopener noreferrer">Getting started</a>
   </div>
 </div>
 <div class="cards">
@@ -154,11 +162,11 @@ out-of-scope reply instead.</p>
 </table>
 <h2 id="next">Next</h2>
 <ul>
-<li><a href="features.html">Features</a> â€” every page of the app in detail</li>
-<li><a href="install.html">Getting started</a> â€” download and first run</li>
-<li><a href="ai.html">AI</a> â€” choosing a model and how the scope limit works</li>
-<li><a href="security.html">Security</a> â€” tokens, path validation and HTML sanitising</li>
-<li><a href="faq.html">FAQ</a> â€” the questions that come up most</li>
+<li><a href="features.html" target="_blank" rel="noopener noreferrer">Features</a> â€” every page of the app in detail</li>
+<li><a href="install.html" target="_blank" rel="noopener noreferrer">Getting started</a> â€” download and first run</li>
+<li><a href="ai.html" target="_blank" rel="noopener noreferrer">AI</a> â€” choosing a model and how the scope limit works</li>
+<li><a href="security.html" target="_blank" rel="noopener noreferrer">Security</a> â€” tokens, path validation and HTML sanitising</li>
+<li><a href="faq.html" target="_blank" rel="noopener noreferrer">FAQ</a> â€” the questions that come up most</li>
 </ul>
 
 <nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#title-home-description-github-manager-â-a-portable-github-desktop-client-with-an-ai-assistant-that-only-ever-works-on-github">﻿---
