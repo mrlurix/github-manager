@@ -3,11 +3,13 @@
 The site is deliberately dependency-free: plain HTML, CSS and JavaScript, so
 there is no toolchain to break and Pages serves exactly what this writes.
 
-Why a hand-written search rather than a library: the content is Persian, and a
-generic index breaks on the things Persian text actually contains - Arabic yeh
-and kaf that look identical to Persian ones, the ZWNJ in words like
-``می‌رود``, and Arabic diacritics. :func:`normalise` handles those, so typing
-``مي رود`` still finds ``می‌رود``.
+Why a hand-written search rather than a library: the content mixes scripts and
+typography in the ways technical prose always does - Latin accents, curly
+apostrophes and en dashes, ``Ctrl+N`` rather than ``ctrl+n``, plus Arabic text
+wherever a Persian README is discussed. A generic index breaks on exactly that,
+so :func:`normalise` folds case, accents, typographic punctuation and Arabic
+letter variants into one canonical form. ``do not``, ``Do not`` and ``Do
+n’t`` all reach the same entry.
 
 Usage:
     python tools/build_docs.py
@@ -36,13 +38,13 @@ EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
 NAV = [
-    ("index", "خانه"),
-    ("features", "قابلیت‌ها"),
-    ("install", "نصب و راه‌اندازی"),
-    ("ai", "هوش مصنوعی"),
-    ("security", "امنیت"),
-    ("build", "ساخت از سورس"),
-    ("faq", "سوالات متداول"),
+    ("index", "Home"),
+    ("features", "Features"),
+    ("install", "Getting started"),
+    ("ai", "AI"),
+    ("security", "Security"),
+    ("build", "Building from source"),
+    ("faq", "FAQ"),
 ]
 
 #: Heading anchors per page, filled in during the build so the link checker
@@ -51,44 +53,84 @@ ANCHORS: dict[str, list[str]] = {}
 
 
 # --------------------------------------------------------------- normalising
-_ZWNJ = "‌"
-_DIACRITICS = re.compile(r"[ً-ٰٟۖ-ۭ]")
-_TATWEEL = re.compile(r"ـ+")
-_DIGIT_MAP = {ord(c): str(i) for i, c in enumerate("٠١٢٣٤٥٦٧٨٩")}
-_DIGIT_MAP.update({ord(c): str(i) for i, c in enumerate("۰۱۲۳۴۵۶۷۸۹")})
+# The browser applies the same folding (see docs_src/assets/search.js). The two
+# implementations have to agree step for step, or a query silently stops matching
+# text that is visibly right in front of the reader.
+_ZWNJ = "\u200c"
+_TATWEEL = re.compile("\u0640+")
+# A non-letter, non-digit, non-space becomes a space. Unicode-aware on purpose:
+# an ASCII \w class would cut an accented letter out of the middle of a word,
+# so "caf\u00e9" would index as "caf" followed by nothing useful.
+_PUNCT = re.compile(r"[^\w\s\u0600-\u06ff]+", re.UNICODE)
+_DIGIT_MAP = {
+    ord(c): str(i) for i, c in enumerate("\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669")
+}
+_DIGIT_MAP.update(
+    {ord(c): str(i) for i, c in enumerate("\u06f0\u06f1\u06f2\u06f3\u06f4\u06f5\u06f6\u06f7\u06f8\u06f9")}
+)
+# Characters that read as ASCII but are stored as something else, so a query typed
+# with a straight apostrophe still matches text written with a curly one.
+_TYPOGRAPHIC = str.maketrans(
+    {
+        "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'",
+        "\u201c": '"', "\u201d": '"', "\u201e": '"',
+        "\u2013": "-", "\u2014": "-", "\u2012": "-", "\u2212": "-",
+        "\u2011": "-", "\u2010": "-", "\u2043": "-",
+    }
+)
+_LETTER_VARIANTS = {
+    ord("\u064a"): "\u06cc",  # ARABIC YEH       -> FARSI YEH
+    ord("\u0649"): "\u06cc",  # ALEF MAKSURA     -> FARSI YEH
+    ord("\u0643"): "\u06a9",  # ARABIC KAF       -> KEHEH
+    ord("\ufb50"): "\u06a9",  # ARABIC SWASH KAF -> KEHEH
+    ord("\ufb90"): "\u06a9",  # ARABIC KAF WITH ATTACHED FATHA
+    ord("\ufb91"): "\u06a9",  # ARABIC KAF WITH ATTACHED TOP RIGHT FATHA
+    ord("\u0629"): "\u0647",  # TEH MARBUTA      -> HEH
+    ord("\u0624"): "\u0648",  # WAW WITH HAMZA   -> WAW
+    ord("\u0625"): "\u0627",  # ALEF WITH HAMZA BELOW -> ALEF
+    ord("\u0623"): "\u0627",  # ALEF WITH HAMZA ABOVE -> ALEF
+    ord("\u0622"): "\u0627",  # ALEF WITH MADDA  -> ALEF
+    ord(_ZWNJ): " ",  # ZERO WIDTH NON-JOINER
+    "\u200c": " ",  # ZWNJ, if it survived as a literal
+}
+
+
+def _strip_marks(value: str) -> str:
+    r"""Drop every combining mark, whatever script it belongs to.
+
+    The standard library's ``re`` has no ``\p{...}`` character classes, so the
+    Unicode category is tested directly instead. Category ``M`` covers the Latin
+    accents and the Arabic vowel marks alike.
+    """
+    return "".join(ch for ch in value if not unicodedata.category(ch).startswith("M"))
 
 
 def normalise(text: str) -> str:
-    """Fold Persian text so a loosely typed query still matches."""
+    """Fold text so a loosely typed query still matches.
+
+    Case, Latin accents, typographic punctuation, Arabic letter variants and
+    non-ASCII digits all collapse to one canonical form.
+    """
     value = unicodedata.normalize("NFKC", text or "")
-    value = value.translate(
-        {
-            ord("ي"): "ی",  # ARABIC YEH -> FARSI YEH
-            ord("ى"): "ی",  # ALEF MAKSURA -> FARSI YEH
-            ord("ك"): "ک",  # ARABIC KAF -> KEHEH
-            ord("ﭐ"): "ک",  # ARABIC SWASH KAF -> KEHEH
-            ord("ة"): "ه",  # TEH MARBUTA -> HEH
-            ord("ؤ"): "و",  # WAW WITH HAMZA -> WAW
-            ord("إ"): "ا",  # ALEF WITH HAMZA BELOW -> ALEF
-            ord("أ"): "ا",  # ALEF WITH HAMZA ABOVE -> ALEF
-            ord("آ"): "ا",  # ALEF WITH MADDA -> ALEF
-            ord(_ZWNJ): " ",  # ZERO WIDTH NON-JOINER
-            "‌": " ",  # ZWNJ, if it survived as a literal
-        }
-    )
+    # Split into combining marks, drop them, recompose.
+    value = unicodedata.normalize("NFD", value)
+    value = _strip_marks(value)
+    value = unicodedata.normalize("NFC", value)
+    value = value.translate(_LETTER_VARIANTS)
     value = value.translate(_DIGIT_MAP)
-    value = _DIACRITICS.sub("", value)
+    value = value.translate(_TYPOGRAPHIC)
     value = _TATWEEL.sub("", value)
-    value = re.sub(r"[^\w\s؀-ۿ]", " ", value, flags=re.UNICODE)
+    value = _PUNCT.sub(" ", value)
     return re.sub(r"\s+", " ", value).strip().lower()
 
 
+
 def slugify(text: str) -> str:
-    """URL fragment for a heading; keeps Persian letters readable."""
+    """URL fragment for a heading; keeps non-ASCII letters readable."""
     value = unicodedata.normalize("NFKC", text).strip().lower()
     value = re.sub(r"[^\w\s؀-ۿ-]", "", value, flags=re.UNICODE)
     value = re.sub(r"[\s_]+", "-", value.strip())
-    return value.strip("-") or "بخش"
+    return value.strip("-") or "section"
 
 
 # ------------------------------------------------------------------ markdown
@@ -168,10 +210,10 @@ def layout(
             f'<a href="#{anchor}">{escape(text)}</a></li>'
             for level, text, anchor in toc
         )
-        toc_html = f'<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul>{items}</ul></nav>'
+        toc_html = f'<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul>{items}</ul></nav>'
 
     return f"""<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -183,11 +225,11 @@ def layout(
 <meta property="og:description" content="{escape(description)}">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -203,14 +245,14 @@ def layout(
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -219,7 +261,7 @@ def layout(
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="{REPO_URL}" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="{REPO_URL}" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -232,8 +274,8 @@ def layout(
   <aside class="sidebar" id="sidebar">
     <nav class="nav">{nav_html}</nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="{EXE_URL}">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="{EXE_URL}">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
@@ -241,8 +283,8 @@ def layout(
 {body}
 {toc_html}
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="{REPO_URL}" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="{RELEASES_URL}" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="{REPO_URL}" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="{RELEASES_URL}" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>
@@ -370,13 +412,29 @@ def build() -> int:
 
 
 def _section_html(body_html: str, anchor: str) -> str:
-    """Slice out the text of one heading section for the search index."""
-    match = re.search(
-        rf'<h[23] id="{re.escape(anchor)}".*?</h[23]>(.*?)(?=<h[23] id=|$)',
+    """Slice out the text of one heading section for the search index.
+
+    The section includes everything nested under it, and only ends at a heading
+    of the same level or shallower. Stopping at the next heading of any level
+    would leave every parent section empty whenever it is immediately followed
+    by a subheading - which is most of the FAQ page - and a search hit would
+    then show a title with a blank excerpt.
+    """
+    opening = re.search(
+        rf'<h([23]) id="{re.escape(anchor)}"[^>]*>.*?</h\1>',
         body_html,
         re.DOTALL,
     )
-    return match.group(1) if match else ""
+    if opening is None:
+        return ""
+    level = int(opening.group(1))
+    rest = body_html[opening.end() :]
+    end = len(rest)
+    for tag in re.finditer(r'<h([23]) id="[^"]*"', rest):
+        if int(tag.group(1)) <= level:
+            end = tag.start()
+            break
+    return rest[:end]
 
 
 if __name__ == "__main__":

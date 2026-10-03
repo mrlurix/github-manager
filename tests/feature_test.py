@@ -900,6 +900,49 @@ def test_tag_suggestion(app: QApplication) -> None:
     window.close()
 
 
+def test_sidebar_navigation_is_aligned(app: QApplication) -> None:
+    """Clicking a sidebar item must open that item's page.
+
+    The welcome screen is page 0 and has no sidebar entry, so the nav list is
+    offset by one. Getting that offset wrong sends every item to the wrong page
+    while goto()-based tests keep passing, which is exactly what happened once.
+    """
+    from PySide6.QtGui import QKeySequence, QShortcut
+
+    from app.ui.main_window import NAV_ITEMS
+
+    ctx, window, _ = setup(app)
+    labels = [title for title, _icon in NAV_ITEMS]
+    check("welcome is not in the nav list", "Welcome" not in labels, str(labels))
+    check(
+        "nav has one entry per page after welcome",
+        len(window.sidebar.buttons) == len(window.pages) - 1,
+        f"{len(window.sidebar.buttons)} buttons vs {len(window.pages)} pages",
+    )
+
+    for index, label in enumerate(labels):
+        window.sidebar.buttons[index].click()
+        pump(app, 25)
+        opened = window.pages[window.stack.currentIndex()].title
+        check(f"clicking '{label}' opens '{label}'", opened == label, f"opened '{opened}'")
+        checked = [j for j, b in enumerate(window.sidebar.buttons) if b.isChecked()]
+        check(f"'{label}' highlights itself", checked == [index], str(checked))
+
+    # The keyboard shortcuts must reach the same pages as the sidebar.
+    for index, label in enumerate(labels[:7]):
+        window.goto(0)
+        pump(app, 10)
+        for shortcut in window.findChildren(QShortcut):
+            if shortcut.key() == QKeySequence(f"Ctrl+{index + 1}"):
+                shortcut.activated.emit()
+                break
+        pump(app, 25)
+        opened = window.pages[window.stack.currentIndex()].title
+        check(f"Ctrl+{index + 1} opens '{label}'", opened == label, f"opened '{opened}'")
+
+    window.close()
+
+
 def main() -> int:
     app = QApplication.instance() or QApplication(sys.argv)
     test_repository_lifecycle(app)
@@ -913,6 +956,7 @@ def main() -> int:
     test_signout_and_gating(app)
     test_navigation_and_shortcuts(app)
     test_repo_picker_validation(app)
+    test_sidebar_navigation_is_aligned(app)
     test_invalid_repo_name_is_rejected_cleanly(app)
     test_tag_suggestion(app)
     print(f"\n{len(PASSED)} passed, {len(FAILED)} failed")

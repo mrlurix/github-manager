@@ -175,7 +175,9 @@ class AssistantPage(Page):
         # A fixed maximum height keeps the chip area from growing downwards and
         # pushing the composer off-screen on short windows.
         self.suggestions = FlowWidget(spacing=6)
-        self.suggestions.setMaximumHeight(74)
+        # No fixed maximum height: the row wraps onto more lines as the window
+        # narrows, and a cap would quietly cut the last row off. The chat area
+        # above it is a scroll area, so a taller composer is the right trade.
         for prompt in ai_tasks.SUGGESTION_PROMPTS[:6]:
             self.suggestions.add(
                 _suggestion(prompt, lambda text=prompt: self._send_text(text))
@@ -250,14 +252,41 @@ class AssistantPage(Page):
         # Stretch 1 with no alignment flag: the bubble fills the chat width and
         # stays flush left.
         row_layout.addWidget(bubble, 1)
+        # A bubble's height is decided by its rendered text, so the row must not
+        # be squeezed below it or the last line is cut off. Minimum means the
+        # layout keeps the row at its own minimum even when space is tight.
+        row.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         self.column.insertWidget(self.column.count() - 1, row)
         self._scroll_bottom()
         return bubble
 
+    def _refresh_chat_minimum(self) -> None:
+        """Tell the scroll host how tall the conversation actually is.
+
+        With setWidgetResizable the host is normally squeezed to the viewport,
+        which clips the newest bubble when the conversation is taller than the
+        window. A stale minimum would do the same, so the height is re-measured
+        after the layout has settled as well as immediately.
+
+        The write is guarded on purpose. This minimum feeds straight back into
+        the page layout, and the page's resizeEvent re-measures the bubbles, so
+        setting it unconditionally makes the two ping-pong against each other
+        and the event loop never drains.
+        """
+        needed = self.column.totalMinimumSize().height()
+        if self.host.minimumHeight() != needed:
+            self.host.setMinimumHeight(needed)
+
     def _scroll_bottom(self) -> None:
-        """Pin the view to the newest message once the layout has settled."""
+        """Re-measure now and again once the layout has settled."""
+        self._refresh_chat_minimum()
+        QTimer.singleShot(0, self._settle)
+
+    def _settle(self) -> None:
+        """Re-measure once rendered markdown has its real height, then pin down."""
+        self._refresh_chat_minimum()
         bar = self.scroll.verticalScrollBar()
-        QTimer.singleShot(0, lambda: bar.setValue(bar.maximum()))
+        bar.setValue(bar.maximum())
 
     def _bubbles(self) -> list["Bubble"]:
         return self.host.findChildren(Bubble)

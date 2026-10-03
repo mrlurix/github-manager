@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ساخت از سورس · GitHub Manager</title>
-<meta name="description" content="اجرای برنامه از سورس، تست‌ها، ساخت exe و ساخت همین سایت مستندات.">
+<title>Building from source · GitHub Manager</title>
+<meta name="description" content="Run the app from source, run the tests, build the exe and build this documentation site.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="ساخت از سورس · GitHub Manager">
-<meta property="og:description" content="اجرای برنامه از سورس، تست‌ها، ساخت exe و ساخت همین سایت مستندات.">
+<meta property="og:title" content="Building from source · GitHub Manager">
+<meta property="og:description" content="Run the app from source, run the tests, build the exe and build this documentation site.">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -31,14 +31,14 @@
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -47,7 +47,7 @@
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -58,214 +58,239 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link" href="security.html">امنیت</a><a class="nav-link is-active" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
-<h2 id="اجرا-از-سورس">اجرا از سورس</h2>
+<h2 id="running-from-source">Running from source</h2>
 <pre><code class="language-bash">git clone https://github.com/mrlurix/github-manager.git
 cd github-manager
 pip install -r requirements.txt
 python main.py
 </code></pre>
-<p>روی ویندوز می‌توانید <code>run.bat</code> را دوبار کلیک کنید.</p>
-<h3 id="پیشنیازها">پیش‌نیازها</h3>
+<p>On Windows you can double-click <code>run.bat</code>.</p>
+<h3 id="requirements">Requirements</h3>
 <table>
 <thead>
 <tr>
-<th>مورد</th>
-<th>نسخه</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>پایتون</td>
-<td>۳.۱۱ یا بالاتر</td>
+<td>Python</td>
+<td>3.11 or newer</td>
 </tr>
 <tr>
 <td>PySide6</td>
-<td>۶.x</td>
+<td>6.x</td>
 </tr>
 <tr>
-<td>ویندوز</td>
-<td>۱۰ یا ۱۱ (روی لینوکس و macOS هم اجرا می‌شود)</td>
+<td>OS</td>
+<td>Windows 10 or 11 (it also runs on Linux and macOS)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="ساخت-exe-پرتابل">ساخت exe پرتابل</h2>
+<h2 id="building-the-portable-exe">Building the portable exe</h2>
 <pre><code class="language-bash">python build.py --clean
 </code></pre>
-<p>یا روی ویندوز:</p>
-<pre><code class="language-bat">build.bat
-</code></pre>
-<p>خروجی یک فایل در <code>dist/GitHubManager.exe</code> است — حدود ۶۳ مگابایت، مستقل از پایتون. فایل را هرجا خواستید بگذارید.</p>
-<h3 id="گزینهها">گزینه‌ها</h3>
+<p>Or on Windows, run <code>build.bat</code>.</p>
+<p>The result is a single file at <code>dist/GitHubManager.exe</code>, about 63 MB, with no
+dependency on Python. Copy it anywhere.</p>
+<h3 id="options">Options</h3>
 <table>
 <thead>
 <tr>
-<th>فرمان</th>
-<th>نتیجه</th>
+<th>Command</th>
+<th>Result</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>python build.py</code></td>
-<td>ساخت معمولی</td>
+<td>normal build</td>
 </tr>
 <tr>
 <td><code>python build.py --clean</code></td>
-<td>پاک کردنArtefactهای قبلی و ساخت</td>
+<td>wipe previous artefacts first</td>
 </tr>
 <tr>
 <td><code>python build.py --onedir</code></td>
-<td>خروجی پوشه‌ای — سریع‌تر بالا می‌آید</td>
+<td>folder build; starts faster</td>
 </tr>
 </tbody>
 </table>
-<h3 id="خودکارارسازی-ساخت">خودکارارسازی ساخت</h3>
-<p>اسکریپت ساخت:</p>
+<h3 id="what-the-build-script-does">What the build script does</h3>
 <ul>
-<li>آیکون <code>.ico</code> را در زمان ساخت تولید می‌کند</li>
-<li>فایل version resource ویندوز را می‌سازد</li>
-<li>spec پایتون‌اینستالر را خودش تولید می‌کند</li>
-<li><strong>خروجی خودش را بررسی می‌کند</strong> — اگر به‌جای یک فایل، خروجی پوشه‌ای تولید شده باشد یا حجم غیرمنطقی باشد، ساخت را ناموفق اعلام می‌کند</li>
+<li>Renders the <code>.ico</code> at build time</li>
+<li>Writes the Windows version resource</li>
+<li>Generates the PyInstaller spec itself</li>
+<li><strong>Checks its own output</strong> — if a folder build slips through instead of a single
+file, or the size is implausible, the build is reported as failed</li>
 </ul>
-<p>نصب اختیاری <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">>UPX</a> حجم را کمتر می‌کند.</p>
-<h2 id="اجرای-تستها">اجرای تست‌ها</h2>
+<p>That last check exists because getting it wrong produces an exe that fails at
+launch with <code>Failed to load Python DLL</code> and no clue at build time.</p>
+<p>Installing <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">>UPX</a> shrinks it further.</p>
+<h2 id="running-the-tests">Running the tests</h2>
 <pre><code class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>هشت سوت، بیش از ۵۰۰ بررسی. هیچ‌کدام به اینترنت وصل نمی‌شوند و به توکن نیاز ندارند.</p>
+<p>Nine suites, over 600 checks. None of them reach the internet or need a token.</p>
 <table>
 <thead>
 <tr>
-<th>سوت</th>
-<th>چه چیزی را می‌سنجد</th>
+<th>Suite</th>
+<th>What it covers</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>ai_guard_test.py</code></td>
-<td>قفل محدوده‌ی هوش مصنوعی</td>
+<td>The GitHub-only scope lock</td>
 </tr>
 <tr>
 <td><code>ai_tasks_test.py</code></td>
-<td>همه‌ی توابع هوش مصنوعی و تجزیه‌ی JSON</td>
+<td>Every AI task function and JSON parsing</td>
 </tr>
 <tr>
 <td><code>security_test.py</code></td>
-<td>پاک‌سازی توکن، فهرست میزبان‌ها، اعتبارسنجی مسیر، پاک‌سازی HTML</td>
+<td>Token redaction, host allow-listing, path validation, HTML sanitising</td>
 </tr>
 <tr>
 <td><code>integration_test.py</code></td>
-<td>کلاینت واقعی روی HTTP واقعی در برابر سرور شبیه‌سازی‌شده</td>
+<td>The real client over real HTTP against <code>mock_github_server.py</code></td>
 </tr>
 <tr>
 <td><code>smoke_test.py</code></td>
-<td>ساخت و رندر همه‌ی صفحه‌ها</td>
+<td>Every page builds and renders</td>
 </tr>
 <tr>
 <td><code>feature_test.py</code></td>
-<td>جریان‌های کامل کاربر روی ویکجت‌های واقعی</td>
+<td>Full user flows through the real widgets</td>
 </tr>
 <tr>
 <td><code>ai_flow_test.py</code></td>
-<td>تولید جریانی، پالایش، مسیر commit و اجبار محدوده</td>
+<td>Streaming, refinement, the commit path and the scope lock</td>
 </tr>
 <tr>
 <td><code>layout_test.py</code></td>
-<td>چیدمان همه‌ی صفحه‌ها در چند اندازه‌ی نمایشگر</td>
+<td>Every page at several window sizes</td>
+</tr>
+<tr>
+<td><code>responsive_test.py</code></td>
+<td>No overlapping or clipped controls from 900×560 to 2560×1440</td>
 </tr>
 </tbody>
 </table>
-<h3 id="سرور-شبیهسازی-گیتهاب">سرور شبیه‌سازی گیت‌هاب</h3>
-<p><code>tests/mock_github_server.py</code> یک سرور HTTP واقعی است که REST API گیت‌هاب را تقلید می‌کند:</p>
+<h3 id="the-mock-github-server">The mock GitHub server</h3>
+<p><code>tests/mock_github_server.py</code> is a real HTTP server that speaks the GitHub REST
+API:</p>
 <ul>
-<li>با هدر واقعی <code>Link: rel=&quot;next&quot;</code> صفحه‌بندی می‌کند</li>
-<li>محتوای فایل را base64 برمی‌گرداند</li>
-<li>احراز هویت را اجباری می‌کند</li>
-<li>پاسخ‌های واقعی ۴۰۱، ۴۰۳، ۴۰۴، ۴۲۲ و ۵۰۰ می‌دهد</li>
+<li>paginates with a genuine <code>Link: rel=&quot;next&quot;</code> header</li>
+<li>returns base64 file content</li>
+<li>enforces authentication</li>
+<li>answers with real 401, 403, 404, 422 and 500 bodies</li>
 </ul>
-<p>به همین دلیل سوت integration می‌تواند چیزهایی بگیرد که یک stub هرگز نمی‌گیرد؛ مثلاً کلاینتی که بعد از صفحه‌ی اول دیگر صفحه‌بندی نمی‌کند، یا rate limit را به‌جای پیام روشن، سه بار تلاش مجدد می‌کند و بعد شش ثانیه UI را قفل می‌کند.</p>
-<h3 id="جداسازی-از-دادهی-واقعی">جداسازی از داده‌ی واقعی</h3>
-<p><code>tests/_bootstrap.py</code> پیش از هر import، پوشه‌ی داده را به یک پوشه‌ی موقت هدایت می‌کند. یعنی اجرای تست‌ها <strong>هرگز</strong> به <code>data/secrets.json</code> واقعی دست نمی‌زند. این جداسازی عمدی است: بدون آن، یک توکن ساختگی نوشته‌شده توسط تست، توکن واقعی کاربر را بی‌صدا بازنویسی می‌کرد.</p>
-<h3 id="ابزارهای-توسعه">ابزارهای توسعه</h3>
-<pre><code class="language-bash">ruff check app                       # ایرادهای استاتیک
-bandit -r app                        # اسکن امنیتی
-node tools/verify_search.js          # تست موتور جستجوی سایت
-python tools/screenshot.py shots     # اسکرین‌شات از همه‌ی صفحه‌ها
-python tools/build_docs.py           # ساخت همین سایت
+<p>That is why the integration suite can catch things a stub never will — a client
+that quietly stops at page one, or that shows a blank error for a rate limit
+instead of naming the reset time.</p>
+<h3 id="keeping-the-tests-out-of-your-data">Keeping the tests out of your data</h3>
+<p><code>tests/_bootstrap.py</code> redirects the data folder to a temporary directory before
+anything is imported. Running the tests therefore <strong>never</strong> touches your real
+<code>data/secrets.json</code>. That isolation is deliberate: without it a stub token
+written by a test would silently overwrite your real one, and because the file is
+encrypted you would never find out.</p>
+<h3 id="development-tools">Development tools</h3>
+<pre><code class="language-bash">ruff check app                       # static checks
+bandit -r app                        # security scan
+node tools/verify_search.js          # test this site's search engine
+python tools/screenshot.py shots     # screenshots of every page
+python tools/build_docs.py           # build this site
+python tools/deploy_site.py          # build and push the site
 </code></pre>
-<h2 id="ساخت-سایت-مستندات">ساخت سایت مستندات</h2>
+<h2 id="building-this-site">Building this site</h2>
 <pre><code class="language-bash">python tools/build_docs.py
 </code></pre>
-<p>خروجی در پوشه‌ی <code>docs</code> نوشته می‌شود و همان چیزی است که GitHub Pages منتشر می‌کند. نیازی به Node، npm یا هیچ مرحله‌ی build دیگری نیست.</p>
+<p>The output is written to <code>docs/</code>, which is what GitHub Pages serves. No Node, no
+npm and no other build step is involved.</p>
 <table>
 <thead>
 <tr>
-<th>فایل</th>
-<th>نقش</th>
+<th>File</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>docs_src/pages/*.md</code></td>
-<td>محتوای صفحه‌ها</td>
+<td>the pages</td>
 </tr>
 <tr>
 <td><code>docs_src/assets/style.css</code></td>
-<td>ظاهر، RTL، پوسته‌ی تیره و روشن</td>
+<td>layout, light and dark themes</td>
 </tr>
 <tr>
 <td><code>docs_src/assets/search.js</code></td>
-<td>موتور جستجو</td>
+<td>the search engine</td>
 </tr>
 <tr>
 <td><code>docs_src/assets/app.js</code></td>
-<td>پوسته، منوی موبایل، اتصال جستجو</td>
+<td>theme, mobile menu, wiring up the search</td>
 </tr>
 <tr>
 <td><code>docs/</code></td>
-<td>خروجی تولیدشده — در گیت ذخیره می‌شود</td>
+<td>the generated output, committed to the repository</td>
 </tr>
 </tbody>
 </table>
-<h3 id="چرا-جستجو-دستنویس-است">چرا جستجو دست‌نویس است</h3>
-<p>محتوا فارسی است و یک نمایه‌ی عمومی در همان‌جا زمین می‌خورد: ی و ک عربی که دقیقاً شبیه ی و ک فارسی‌اند، نیم‌فاصله در واژه‌هایی مثل «می‌رود»، و اعراب.</p>
-<p>هر دو سمت — پایتون و جاوااسکریپت — یک تابع نرمال‌سازی دارند که این موارد را یکسان تا می‌کند. نتیجه این است که اگر کاربر با کیبورد عربی <code>مي رود</code> را تایپ کند، باز هم صفحه‌ی مربوطه پیدا می‌شود.</p>
-<h2 id="ساختار-پروژه">ساختار پروژه</h2>
+<p>The build also verifies that no page links to a page or heading anchor that does
+not exist.</p>
+<h3 id="why-the-search-is-hand-written">Why the search is hand-written</h3>
+<p>The content is English, but a generic index still breaks on the things this text
+contains: the ZWNJ in words like &quot;mil‑ro&quot;, Arabic yeh and kaf that render
+identically to English letters in a mixed-language document, and stray non-ASCII
+punctuation.</p>
+<p>Both sides — the Python index builder and the browser — apply the same
+normalisation, so a query typed loosely still finds the right page. This is
+covered by <code>tools/verify_search.js</code>.</p>
+<h2 id="project-layout">Project layout</h2>
 <pre><code class="language-text">app/
-  config.py              مسیرهای پرتابل و تنظیمات
-  core/                  بدون هیچ وابستگی‌ای به Qt
-    github_api.py        کلاینت REST گیت‌هاب
-    ai_api.py            کلاینت چت سازگار با OpenAI، با پشتیبانی جریانی
-    ai_guard.py          قفل محدوده‌ی گیت‌هاب
-    ai_tasks.py          هر قابلیت هوش مصنوعی، به‌صورت یک تابع
-    redact.py            پاک کردن متن شبیه توکن از خطاها
-    secure.py            ذخیره‌ی رمزنگاری‌شده‌ی رازها
+  config.py              portable paths and settings
+  core/                  no Qt imports anywhere in here
+    github_api.py        GitHub REST client
+    ai_api.py            OpenAI compatible chat client, with streaming
+    ai_guard.py          the GitHub-only scope lock
+    ai_tasks.py          every AI feature, as a function
+    redact.py            scrubbing token-shaped text out of errors
+    secure.py            encrypted secret storage
   ui/
-    theme.py             پالت‌ها، تایپوگرافی، QSS
-    sanitize.py          پاک‌سازنده‌ی HTML با فهرست‌مجاز
-    markdown.py          رندر markdown و برجسته‌سازی کد
-    editor.py            ویرایشگر دو ستونه با پیش‌نمایش زنده
-    workers.py           کارهای پس‌زمینه با پشتیبانی جریانی
-    pages/               نُه صفحه‌ی برنامه
+    theme.py             palettes, typography, the global QSS
+    sanitize.py          allow-list HTML sanitiser
+    markdown.py          markdown rendering and code highlighting
+    editor.py            split editor with live preview
+    widgets.py           cards, badges, toasts, flow layout, icons
+    workers.py           background tasks with streaming support
+    pages/               the nine pages
 tests/
 tools/
-docs_src/                سورس سایت مستندات
-docs/                    خروجی ساخته‌شده
+docs_src/                site source
+docs/                    generated site
 </code></pre>
 <blockquote>
-<p>نکته‌ی مهم درباره‌ی <code>app/core/</code>: این پوشه عمداً هیچ import ای از Qt ندارد. همین باعث می‌شود که کل منطق گیت‌هاب و هوش مصنوعی بدون بالا آوردن رابط کاربری قابل آزمود باشد — و تست integration بتواند کلاینت واقعی را مستقیم روی HTTP واقعی بیازماید.</p>
+<p>One thing worth knowing about <code>app/core/</code>: it imports nothing from Qt on
+purpose. That is what lets the GitHub and AI logic be tested without starting
+a UI, and what allows the integration suite to drive the real client over real
+HTTP.</p>
 </blockquote>
 
-<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#اجرا-از-سورس">اجرا از سورس</a></li><li class="toc-item toc-level-3"><a href="#پیشنیازها">پیش‌نیازها</a></li><li class="toc-item toc-level-2"><a href="#ساخت-exe-پرتابل">ساخت exe پرتابل</a></li><li class="toc-item toc-level-3"><a href="#گزینهها">گزینه‌ها</a></li><li class="toc-item toc-level-3"><a href="#خودکارارسازی-ساخت">خودکارارسازی ساخت</a></li><li class="toc-item toc-level-2"><a href="#اجرای-تستها">اجرای تست‌ها</a></li><li class="toc-item toc-level-3"><a href="#سرور-شبیهسازی-گیتهاب">سرور شبیه‌سازی گیت‌هاب</a></li><li class="toc-item toc-level-3"><a href="#جداسازی-از-دادهی-واقعی">جداسازی از داده‌ی واقعی</a></li><li class="toc-item toc-level-3"><a href="#ابزارهای-توسعه">ابزارهای توسعه</a></li><li class="toc-item toc-level-2"><a href="#ساخت-سایت-مستندات">ساخت سایت مستندات</a></li><li class="toc-item toc-level-3"><a href="#چرا-جستجو-دستنویس-است">چرا جستجو دست‌نویس است</a></li><li class="toc-item toc-level-2"><a href="#ساختار-پروژه">ساختار پروژه</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#running-from-source">Running from source</a></li><li class="toc-item toc-level-3"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#building-the-portable-exe">Building the portable exe</a></li><li class="toc-item toc-level-3"><a href="#options">Options</a></li><li class="toc-item toc-level-3"><a href="#what-the-build-script-does">What the build script does</a></li><li class="toc-item toc-level-2"><a href="#running-the-tests">Running the tests</a></li><li class="toc-item toc-level-3"><a href="#the-mock-github-server">The mock GitHub server</a></li><li class="toc-item toc-level-3"><a href="#keeping-the-tests-out-of-your-data">Keeping the tests out of your data</a></li><li class="toc-item toc-level-3"><a href="#development-tools">Development tools</a></li><li class="toc-item toc-level-2"><a href="#building-this-site">Building this site</a></li><li class="toc-item toc-level-3"><a href="#why-the-search-is-hand-written">Why the search is hand-written</a></li><li class="toc-item toc-level-2"><a href="#project-layout">Project layout</a></li></ul></nav>
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>

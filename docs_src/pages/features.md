@@ -1,211 +1,223 @@
 ---
-title: قابلیت‌ها
-description: مرور کامل همه‌ی بخش‌های GitHub Manager — استودیوی README، ریپازیتوری‌ها، ایشو و پول‌ریکویست، ریلیز، حساب و تنظیمات.
+title: Features
+description: A complete tour of GitHub Manager — README Studio, repositories, issues and pull requests, releases, account and settings.
 ---
 
-برنامه نُه صفحه دارد. این صفحه هر کدام را با جزئیات توضیح می‌دهد.
+The app has nine pages. This one covers each of them.
 
-## نقشه‌ی برنامه
+## Map of the app
 
-| صفحه | کارش چیست |
+| Page | What it is for |
 | --- | --- |
-| خوش‌آمد | اتصال توکن و راهنمای شروع |
-| داشبورد | نمای کلی حساب، فعالیت‌ها و میان‌برها |
-| استودیوی README | نوشتن و commit کردن README و فایل‌های جانبی |
-| ریپازیتوری‌ها | مدیریت کامل ریپازیتوری‌های شما |
-| ایشو و PR | کار با ایشوها و پول‌ریکویست‌ها |
-| ریلیز و کامیت | یادداشت ریلیز، پیام کامیت و نام شاخه |
-| دستیار هوش مصنوعی | گفت‌وگوی آزاد ولی مقید به گیت‌هاب |
-| حساب | پروفایل، بیو، آواتار و سازمان‌ها |
-| تنظیمات | ظاهر، سرویس هوش مصنوعی و داده‌ها |
+| Welcome | Connect a token and get oriented |
+| Dashboard | Account overview, recent activity and shortcuts |
+| README Studio | Write and commit READMEs and the supporting files |
+| Repositories | Full management of your repositories |
+| Issues & PRs | Work through issues and pull requests |
+| Releases & commits | Release notes, commit messages, branch names |
+| AI Assistant | Free-form chat, scoped strictly to GitHub |
+| Account | Profile, bio, avatar and organisations |
+| Settings | Appearance, AI provider and data |
 
 ---
 
-## استودیوی README
+## README Studio
 
-قلب برنامه. یک صفحه‌ی دو ستونه: ویرایشگر سمت راست، پیش‌نمایش زنده سمت چپ.
+The centre of the app. Two panes: the editor on the right, a live preview on the
+left.
 
-### تنظیمات تولید
+### Generation settings
 
-پیش از نوشتن می‌توانید به هوش مصنوعی بگویید چه بنویسد:
+Tell the AI what to write before it writes it:
 
-- **لحن** — حرفه‌ای، دوستانه، رسمی یا فنی
-- **زبان** — انگلیسی، فارسی یا هر زبان دیگر
-- **مخاطب** — توسعه‌دهنده، کاربر نهایی یا مشارکت‌کننده
-- **میزان خلاقیت** — عددی بین ۰ (دقیق) و ۱ (آزاد)
-- **بخش‌ها** — هر بخش را جداگانه روشن و خاموش می‌کنید: هدر و بج‌ها، معرفی، قابلیت‌ها، پشته‌ی فنی، نصب، استفاده، اسکرین‌شات، مشارکت، مجوز، نقشه‌ی راه
-- **دستور اضافه** — هر نکته‌ی دلخواهی، مثلاً «یک بخش داکر اضافه کن»
+- **Tone** — professional, friendly, minimal, detailed, playful or enterprise
+- **Language** — English, Persian, Spanish, French, German, Turkish, Arabic, Hindi or Portuguese
+- **Audience** — developers, beginners, teams, open source contributors, product managers or students
+- **Creativity** — a number between 0 (precise) and 1 (free)
+- **Sections** — toggle each one individually: header and badges, description, features, tech stack, installation, usage, screenshots, contributing, licence, roadmap
+- **Extra instructions** — anything else, for example "add a Docker section and a CLI usage example"
 
-### خروجی
+### The output
 
-مدل در واقع محتوای ریپازیتوری را می‌بیند: ساختار فایل‌ها، زبان‌های استفاده‌شده، موضوعات، README فعلی و چند فایل کلیدی. بنابراین خروجی به پروژه‌ی شما مربوط است، نه یک متن عمومی.
+The model sees the real repository: the file tree, the languages in use, the
+topics, the current README and a few key files. The result is about your project
+rather than generic filler.
 
-### اصلاح و بازبینی
+### Refine and review
 
-- **Refine** — یادداشتی مثل «مقدمه را روشن‌تر کن» می‌نویسید و همان سند به‌روز می‌شود
-- **Review** — پیش‌نمایش کامل همراه با دکمه‌های کپی و ذخیره روی دیسک
-- **Draft extra file** — برای CONTRIBUTING، LICENSE، ‏`.gitignore`، SECURITY، CODE_OF_CONDUCT و CHANGELOG هم قالب آماده دارد
+- **Refine** — write "make the intro clearer" and the same document is rewritten
+- **Review** — a full preview with copy-to-clipboard and save-to-disk
+- **Draft extra file** — ready-made templates for CONTRIBUTING, LICENSE, `.gitignore`, SECURITY, CODE_OF_CONDUCT and CHANGELOG
 
-### نوشتن روی گیت‌هاب
+### Writing to GitHub
 
-- **Commit to GitHub** — نام فایل، شاخه و پیام کامیت را می‌بینید و تأیید می‌کنید
-- **Save .md** — ذخیره روی دیسک بدون دست زدن به گیت‌هاب
-- **Load existing** — بازگردانی README فعلی از سرور
+- **Commit to GitHub** — you see the file, the branch and the commit message before confirming
+- **Save .md** — write to disk without touching GitHub
+- **Load existing** — pull the current README back down from the server
 
-> اگر README وجود نداشته باشد، برنامه خودش آن را می‌سازد؛ اگر باشد، `sha` فایل را می‌خواند و درست به‌روزرسانی می‌کند. این کار در commitهای موازی جلوی بازنویسی اشتباه را می‌گیرد.
+> If the repository has no README yet, one is created. If it does, the file's
+> `sha` is read first so the update is applied to the right version instead of
+> blindly overwriting whatever happens to be there.
 
 ---
 
-## ریپازیتوری‌ها
+## Repositories
 
-### فهرست و فیلتر
+### The list
 
-جست‌وجو بر اساس نام و توضیح، فیلتر بر اساس خصوصی/عمومی و archived، و سه چیدمان نمایش: فشرده، راحت و کارتی.
+Search by name and description, filter by private/public and archived, and pick
+one of three layouts: compact, comfortable or cards.
 
-### عملیات
+### Actions
 
-| عملیات | توضیح |
+| Action | Notes |
 | --- | --- |
-| ساخت | نام، توضیح، صفحه‌ی خانه، موضوعات، سطح دسترسی، README اولیه و قالب مجوز |
-| ویرایش | نام، توضیح، صفحه‌ی خانه، موضوعات، زبان پیش‌فرض و وضعیت بایگانی |
-| بایگانی | خواندنی و قابل بازگردانی، بدون ریسک حذف |
-| حذف | باید نام کامل ریپازیتوری را تایپ کنید تا تأیید شود |
-| fork | ساخت فوری نسخه‌ی فورک‌شده |
-| ستاره | افزودن یا برداشتن ستاره |
+| Create | Name, description, homepage, topics, visibility, an initial README and a licence template |
+| Edit | Name, description, homepage, topics, default branch and archived state |
+| Archive | Reversible and safe; nothing is deleted |
+| Delete | You must type the full repository name to confirm |
+| Fork | Creates the fork immediately |
+| Star | Adds or removes the star |
 
-### پیشنهاد هوش مصنوعی
+### AI suggestions
 
-دکمه‌ی «توضیح با هوش مصنوعی» کل ریپازیتوری را می‌خواند و یک توضیح یک‌خطی به‌همراه چند موضوع پیشنهادی می‌دهد. تا وقتی دکمه‌ی Apply را نزنید، چیزی به گیت‌هاب ارسال نمی‌شود.
+"Describe with AI" reads the whole repository and proposes a one-line
+description plus a set of topics. Nothing is sent to GitHub until you press
+Apply.
 
 ---
 
-## ایشو و پول‌ریکویست
+## Issues & pull requests
 
-### فهرست و جزئیات
+### List and detail
 
-- فیلتر بین ایشو و PR، و بین باز و بسته و همه
-- هر ردیف شماره، عنوان، نویسنده، تعداد کامنت و برچسب‌ها را نشان می‌دهد
-- صفحه‌ی جزئیات شامل متن ایشو و همه‌ی کامنت‌ها با نام نویسنده است
+- Toggle between issues and pull requests, and between open, closed and all
+- Each row shows the number, title, author, comment count and labels
+- The detail pane renders the issue body and every comment with its author
 
-### عملیات
+### Actions
 
-| عملیات | توضیح |
+| Action | Notes |
 | --- | --- |
-| Draft issue | یک یا دو جمله بنویسید؛ AI آن را به ایشوی ساختاریافته با بخش‌های Steps و Expected Behaviour تبدیل می‌کند |
-| AI reply | بر اساس متن ایشو و کامنت‌های قبلی پاسخ می‌نویسد؛ قبل از ارسال قابل ویرایش است |
-| AI triage | همه‌ی ایشوها را یک‌جا بررسی می‌کند و برای هرکدام نوع، اولویت و اقدام بعدی پیشنهاد می‌دهد |
-| Close / reopen | تغییر وضعیت با تأیید |
+| Draft issue | Write a sentence or two; the AI expands it into a structured issue with steps and expected behaviour |
+| AI reply | Drafted from the issue body and the existing comments, editable before it is posted |
+| AI triage | Reviews the whole queue at once and suggests a type, a priority and a next action for each |
+| Close / reopen | Changes state, with confirmation |
 
-> هنگام رفرش شدن فهرست، انتخاب کاربر روی همان ایشو باقی می‌ماند؛ بنابراین کلیک بعدی روی همان موردی اعمال می‌شود که می‌بینید.
-
----
-
-## ریلیز و کامیت
-
-### فهرست و بارگذاری
-
-دو فهرست کنار هم: کامیت‌های اخیر و ریلیزهای منتشرشده. هر دو قابل بارگذاری جداگانه هستند.
-
-### یادداشت ریلیز
-
-- **Generate notes** — کامیت‌ها را می‌گیرد و یادداشت ریلیز می‌نویسد؛ خروجی به‌صورت جریانی (token by token) نمایش داده می‌شود
-- **Publish** — با یک پنجره‌ی تأیید روی گیت‌هاب منتشر می‌شود
-- **New release** — ساخت دستی ریلیز با تگ، نام و متن دلخواه
-
-فیلد تگ به‌صورت خودکار از آخرین ریلیز پیشنهاد می‌شود؛ مثلاً اگر آخرین نسخه `v1.2.0` باشد، `v1.3.0` پیشنهاد می‌شود.
-
-### پیام کامیت و نام شاخه
-
-- **Write commit message** — تغییر را به زبان ساده توضیح دهید تا پیام کامیت Conventional با subject، body و بخش BREAKING CHANGE نوشته شود
-- **Suggest branch** — از روی همان توضیح، نام شاخه به‌شکل `feat/…` پیشنهاد می‌شود
-- **Create branch** — ساخت شاخه روی گیت‌هاب
-
-سه سبک پیام پشتیبانی می‌شود: Conventional Commits، imperative ساده و Angular.
+> The selection survives a refresh. Post a reply, and you are still looking at
+> the same issue when you get back, so the next action lands where you expect.
 
 ---
 
-## دستیار هوش مصنوعی
+## Releases & commits
 
-یک گفت‌وگوی آزاد با چهار نکته‌ی مهم:
+### Lists
 
-### مقید به گیت‌هاب
+Commits and releases sit side by side, each loadable on its own.
 
-سه لایه‌ی محافظت پشت سر هم کار می‌کنند:
+### Release notes
 
-۱. **قبل از ارسال** — درخواست دسته‌بندی می‌شود؛ درخواست خارج از حوزه هرگز به مدل نمی‌رسد
-۲. **در system prompt** — فهرست صریح مجاز و ممنوع به مدل داده می‌شود
-۳. **بعد از پاسخ** — خروجی هم اعتبارسنجی می‌شود و در صورت خروج از حوزه با پیام رد نمایش داده می‌شود
+- **Generate notes** — takes the commit list and writes release notes, streamed token by token as they arrive
+- **Publish** — confirmed with a dialog naming the tag and repository
+- **New release** — create one by hand with your own tag, name and body
 
-### زمینه‌ی ریپازیتوری
+The tag field is pre-filled from the newest release: if the latest is `v1.2.0` it
+suggests `v1.3.0`.
 
-اگر کلید «Attach repo context» روشن باشد، ساختار و محتوای ریپازیتوری انتخاب‌شده به مدل داده می‌شود تا پاسخ‌ها به پروژه‌ی شما مربوط باشند.
+### Commit messages and branch names
 
-### جریانی بودن
+- **Write commit message** — describe the change in plain language and get a Conventional Commit with a subject, a wrapped body and a BREAKING CHANGE footer when one is needed
+- **Suggest branch** — the same description yields a `feat/…` style branch name
+- **Create branch** — creates it on GitHub
 
-پاسخ‌ها توکن‌به‌توکن نمایش داده می‌شوند، با راهنمای کیبورد و پاسخ خودکار به Enter.
-
-### میان‌برها
-
-شش درخواست آماده: نوشتن README، پیشنهاد موضوعات، ساخت workflow برای تست‌ها، بازبینی README فعلی، نوشتن `.gitignore` و توضیح افزودن LICENSE.
-
----
-
-## حساب
-
-- **پروفایل** — نام، شرکت، موقعیت مکانی، وب‌سایت، توییتر و ایمیل عمومی
-- **بیو** — سه حالت: دستی، بهبود با هوش مصنوعی، یا چند گزینه‌ی آماده که یکی را انتخاب می‌کنید
-- **آواتار** — بارگذاری PNG، JPEG، GIF یا WebP؛ حجم و نوع پیش از ارسال بررسی می‌شود
-- **سازمان‌ها** — فهرست سازمان‌هایی که به آن‌ها دسترسی دارید
-- **پروفایل README** — ساخت یا به‌روزرسانی ریپازیتوری `<نام‌کاربری>/<نام‌کاربری>`
-- **فعالیت‌ها** — رویدادهای اخیر گیت‌هاب
+Three styles are supported: Conventional Commits, plain imperative and Angular.
 
 ---
 
-## تنظیمات
+## AI Assistant
 
-### ظاهر
+Free-form chat, with four things worth knowing.
 
-- پوسته‌ی تیره و روشن
-- شش رنگ تأکیدی: بنفش، آبی، سبز زمردی، کهربایی، صورتی و فیروزه‌ای
-- انتخاب قلم
-- مقیاس رابط کاربری از ۸۵٪ تا ۱۳۰٪
+### Scoped to GitHub
 
-### هوش مصنوعی
+Three independent layers:
 
-- انتخاب ارائه‌دهنده از فهرست یا آدرس دلخواه (سازگار با OpenAI)
-- مدل، دما، حداکثر توکن و مهلت انتظار
-- روشن یا خاموش کردن پاسخ جریانی
-- فهرست مدل‌های در دسترس
-- تست اتصال
+1. **Before sending** — the request is classified. Anything off-topic never reaches the model.
+2. **In the system prompt** — the model is given an explicit allow and deny list.
+3. **After the answer** — the response is validated too, and replaced with an out-of-scope notice if it strayed.
 
-### داده‌ها
+### Repository context
 
-- نشان دادن مسیر پوشه‌ی داده‌ها
-- پاک کردن توکن و کلید API
-- **پاک کردن کامل** — حذف توکن، کلید، کش ریپازیتوری و تنظیمات
+With "Attach repo context" on, the selected repository's structure and contents
+are included so answers are about your project.
+
+### Streaming
+
+Responses appear token by token, with Enter to send.
+
+### Shortcuts
+
+Six ready-made prompts: write a README, suggest topics, draft a CI workflow,
+review your current README, write a `.gitignore`, and explain adding a LICENSE.
 
 ---
 
-## میان‌برهای صفحه‌کلید
+## Account
 
-| کلید | کار |
+- **Profile** — name, company, location, website, Twitter handle and public email
+- **Bio** — write it yourself, have the AI improve it, or pick from several finished options
+- **Avatar** — upload a PNG, JPEG, GIF or WebP; type and file size are checked before anything is sent
+- **Organisations** — the organisations you have access to
+- **Profile README** — creates or updates the `<username>/<username>` repository
+- **Activity** — recent GitHub events
+
+---
+
+## Settings
+
+### Appearance
+
+- Dark and light themes
+- Six accent colours: violet, blue, emerald, amber, rose and cyan
+- Font family
+- UI scale from 85% to 130%
+
+### AI
+
+- Provider from the list, or any OpenAI compatible address
+- Model, temperature, max tokens and timeout
+- Streaming on or off
+- List the models the provider offers
+- Test the connection
+
+### Data
+
+- Where the data folder is
+- Clear the API key
+- **Erase everything** — tokens, keys, the repository cache and settings
+
+---
+
+## Keyboard shortcuts
+
+| Key | Action |
 | --- | --- |
-| `Ctrl+1` … `Ctrl+7` | پرش به صفحه‌ها |
-| `Ctrl+K` | دستیار هوش مصنوعی |
-| `Ctrl+,` | تنظیمات |
-| `Ctrl+R` | بازخوانی صفحه‌ی فعلی |
-| `Ctrl+N` | ریپازیتوری جدید |
-| `Ctrl+B` | باز و بسته کردن نوار کناری |
-| `Ctrl+Shift+R` | تعویض پوسته‌ی تیره و روشن |
-| `Ctrl+Q` | خروج |
+| `Ctrl+1` … `Ctrl+7` | Jump to a page |
+| `Ctrl+K` | AI Assistant |
+| `Ctrl+,` | Settings |
+| `Ctrl+R` | Refresh the current page |
+| `Ctrl+N` | New repository |
+| `Ctrl+B` | Collapse or expand the sidebar |
+| `Ctrl+Shift+R` | Toggle dark and light |
+| `Ctrl+Q` | Quit |
 
 ---
 
-## آنچه هنوز وجود ندارد
+## What is not here
 
-صداقت درباره‌ی مرزهای برنامه:
+Stated plainly, so you are not looking for it:
 
-- **بدون پشتیبانی از GitHub Enterprise در رابط کاربری** — کلاینت توانایی اشاره به آدرس دلخواه را دارد، ولی هنوز فیلدی در تنظیمات برای آن نیست
-- **بدون مدیریت SSH key یا کلید جدید API** — این‌ها نیاز به تأیید دوباره دارند و به‌عمد بیرون گذاشته شده‌اند
-- **بدون گراف دامنه‌ی گیت‌هاب** — آمار بازدید نمایش داده نمی‌شود
-- **بدون کار آفلاین** — بدون شبکه فقط صفحه‌ها باز می‌شوند؛ داده‌ای کش نمی‌شود، مگر مدل محلی داشته باشید
+- **No GitHub Enterprise setting in the UI** — the client can be pointed at another host, but there is no field for it yet
+- **No SSH key or API key management** — creating a token needs re-authentication in a browser, so it is deliberately left out
+- **No domain-level analytics** — GitHub traffic graphs are not shown
+- **No offline mode** — nothing is cached, so the app will not show you stale repository data

@@ -65,8 +65,8 @@
   function render(hits, words, query) {
     if (!query.trim()) { close(); return; }
     if (!hits.length) {
-      panel.innerHTML = '<p class="result-empty">نتیجه\u200cای برای «' +
-        escapeHtml(query) + "» پیدا نشد.</p>";
+      panel.innerHTML = '<p class="result-empty">No results for &ldquo;' +
+        escapeHtml(query) + "&rdquo;.</p>";
       panel.hidden = false;
       return;
     }

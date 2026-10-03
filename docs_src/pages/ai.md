@@ -1,25 +1,27 @@
 ---
-title: هوش مصنوعی
-description: انتخاب ارائه‌دهنده، تنظیم مدل، نحوه‌ی کار مدل محلی و مرزهای دستیار.
+title: AI
+description: Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.
 ---
 
-هر قابلیتی در برنامه پشت یک لایه‌ی نازک از کد است. آن لایه فقط یک کار می‌کند: ساخت پیام، ارسال به سرویس، و تحویل پاسخ. یعنی می‌توانید هر سرویس سازگار با OpenAI را جایگزین کنید و همه‌ی قابلیت‌ها همان‌طور کار می‌کنند.
+Every AI feature in the app goes through one thin layer. That layer builds a
+prompt, sends it, and hands back the answer. So you can swap in any
+OpenAI-compatible service and everything keeps working.
 
-## ارائه‌دهنده‌های آماده
+## Supported providers
 
-| ارائه‌دهنده | آدرس پیش‌فرض | کلید لازم |
+| Provider | Default address | API key |
 | --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1` | بله |
-| OpenRouter | `https://openrouter.ai/api/v1` | بله |
-| Groq | `https://api.groq.com/openai/v1` | بله |
-| Together | `https://api.together.xyz/v1` | بله |
-| Ollama | `http://localhost:11434/v1` | **خیر** |
-| LM Studio | `http://localhost:1234/v1` | **خیر** |
-| سفارشی | هر آدرس دلخواه | بسته به سرویس |
+| OpenAI | `https://api.openai.com/v1` | yes |
+| OpenRouter | `https://openrouter.ai/api/v1` | yes |
+| Groq | `https://api.groq.com/openai/v1` | yes |
+| Together | `https://api.together.xyz/v1` | yes |
+| Ollama | `http://localhost:11434/v1` | **no** |
+| LM Studio | `http://localhost:1234/v1` | **no** |
+| Custom | any address you like | depends on the service |
 
-## مدل محلی برای کار کاملاً آفلاین
+## A local model for fully offline use
 
-اگر نمی‌خواهید هیچ داده‌ای از سیستم خارج شود، این بهترین گزینه است.
+If nothing should leave your machine, this is the way.
 
 ### Ollama
 
@@ -28,84 +30,97 @@ ollama pull llama3.1
 ollama pull qwen2.5
 ```
 
-سپس در برنامه:
+Then in the app:
 
-۱. نوع ارائه‌دهنده را روی **Ollama** بگذارید
-۲. مدل را همان نامی بگذارید که کشیده‌اید، مثلاً `llama3.1`
-۳. فیلد کلید API را **خالی** بگذارید
-۴. **Test connection** را بزنید
+1. Set the provider to **Ollama**
+2. Use the model name exactly as you pulled it, for example `llama3.1`
+3. Leave the API key **empty**
+4. Click **Test connection**
 
 ### LM Studio
 
-۱. مدل را در LM Studio دانلود و Load کنید
-۲. سرور محلی را روشن کنید
-۳. نوع ارائه‌دهنده را روی **LM Studio** بگذارید و **Test connection** بزنید
+1. Download a model in LM Studio and load it
+2. Start the local server
+3. Set the provider to **LM Studio** and click **Test connection**
 
-> مدل محلی هم دانش عمومی خوبی دارد، اما چون محدود به گیت‌هاب است معمولاً از مدل‌های ابری بزرگ‌تر ضعیف‌تر است. برای کارهای ساختاریافته مثل README کاملاً کافی است.
+> A local model still knows plenty of general things, but being scoped to
+> GitHub usually makes it weaker than the large hosted ones. For structured work
+> like writing a README it is entirely adequate.
 
-## تنظیمات پیشنهادی
+## Suggested settings
 
-| پارامتر | مقدار پیشنهادی | چرا |
+| Setting | Suggested | Why |
 | --- | --- | --- |
-| Temperature | ۰٫۶ | برای متن فنی، تعادل بین خلاقیت و دقت |
-| Max tokens | ۲۰۰۰ | یک README کامل جا می‌شود |
-| Timeout | ۱۲۰ ثانیه | مدل‌های محلی کندترند |
-| Streaming | روشن | پاسخ بلافاصله دیده می‌شود |
+| Temperature | 0.6 | For technical writing, balances creativity and accuracy |
+| Max tokens | 2000 | A complete README fits |
+| Timeout | 120 s | Local models are slower |
+| Streaming | on | You see the answer immediately |
 
-برای کارهای ساختاریافته مثل تولید JSON، دما را روی ۰٫۲ تا ۰٫۴ بگذارید تا خروجی پایدارتر باشد.
+For structured output such as JSON, drop the temperature to 0.2–0.4 so results
+stay consistent.
 
-## مرزهای دستیار
+## The limits on the assistant
 
-این بخشی از ویژگی‌های برنامه است، نه یک محدودیت فنی. دستیار **عمداً** به گیت‌هاب محدود شده است.
+This is a feature, not a restriction the app could not overcome. The assistant is
+**deliberately** limited to GitHub.
 
-### چه کارهایی می‌کند
+### What it will do
 
-- نوشتن و بهبود README، README پروفایل و مستندات
-- تنظیمات ریپازیتوری، موضوعات، سطح دسترسی، ریلیز و تگ
-- ایشو و پول‌ریکویست: draft، تریاژ، پاسخ به بازبینی
-- کامیت، نام شاخه، درباره‌ی merge و rebase
-- workflow های GitHub Actions، ‏`.gitignore`، مجوز، امنیت و توکن
-- تحلیل کد و پیشنهاد ساختار پروژه
+- Write and improve READMEs, profile READMEs and documentation
+- Repository settings, topics, visibility, releases and tags
+- Issues and pull requests: drafting, triage, review replies
+- Commits, branch names, merge and rebase questions
+- GitHub Actions workflows, `.gitignore`, licences, security and tokens
+- Read code and suggest a project structure
 
-### چه کارهایی نمی‌کند
+### What it will not do
 
-- هر پرسش خارج از گیت‌هاب: آشپزی، پزشکی، حقوقی، مالی، آموزشی عمومی
-- نوشتن کد برای هدف‌های غیرمرتبط با مخزن گیت‌هاب
-- دور زدن محدودیت‌های خود گیت‌هاب
+- Anything outside GitHub: recipes, medical advice, legal or financial questions, general tutoring
+- Writing code for targets unrelated to a GitHub repository
+- Working around GitHub's own limits
 
-### چطور این محدودیت اعمال می‌شود
+### How the limit is enforced
 
-سه لایه‌ی مستقل، پشت سر هم:
+Three independent layers, one after another:
 
-۱. **دسته‌بندی پیش از ارسال** — درخواست بررسی می‌شود. اگر خارج از حوزه باشد، اصلاً به مدل ارسال نمی‌شود و کاربر پاسخ رد می‌گیرد.
-۲. **دستور سیستمی** — فهرست صریح مجاز و ممنوع همراه هر درخواست به مدل داده می‌شود.
-۳. **اعتبارسنجی خروجی** — پاسخ مدل هم دوباره بررسی می‌شود. اگر باز هم خارج از حوزه بود، جای آن پیام رد نمایش داده می‌شود.
+1. **Classified before sending.** The request is checked. If it is off-topic it
+   never reaches the model, and you get an out-of-scope reply.
+2. **System prompt.** An explicit allow and deny list travels with every request.
+3. **Output validated.** The answer is checked too. If it strayed, it is
+   replaced with the refusal message.
 
-لایه‌ی اول از **prompt injection** هم جلوگیری می‌کند: اگر یک README یا ایشوی مخرب دستوری مثل «دستورهای قبلی را نادیده بگیر» در خود داشته باشد، آن دستور به‌عنوان بخشی از متن محتوا — نه فرمان — به مدل می‌رسد و زمینه‌ی ریپازیتوری همیشه بعد از یادآوری محدوده قرار می‌گیرد.
+The first layer also blunts **prompt injection**: if a README or an issue
+contains "ignore all previous instructions", that text arrives as content rather
+than as a command, and the repository context is always placed after the scope
+reminder.
 
-> این سه لایه یک تضمین مطلق نیستند؛ هیچ فیلتر متنی جادویی وجود ندارد. کاری که می‌کنند این است که خطا بسیار بعیدتر و پیامدها محدودتر باشد.
+> These layers are not an absolute guarantee; no text filter is. What they do is
+> make the failure unlikely and the consequences small.
 
-## چه چیزی به مدل فرستاده می‌شود
+## What is sent to the model
 
-فقط وقتی خودتان درخواست بدهید:
+Only when you ask for it:
 
-- نام و توضیح ریپازیتوری
-- ساختار فایل‌ها
-- زبان‌های استفاده‌شده و موضوعات
-- محتوای README فعلی
-- چند فایل کلیدی (محدود به حجم مشخص)
-- متن ایشو یا کامنت‌هایی که در حال کار روی آن‌ها هستید
+- The repository name and description
+- The file tree
+- The languages used and the topics
+- The current README
+- A few key files, capped in size
+- The issue or comment you are working on
 
-**هرگز** فرستاده نمی‌شود: توکن گیت‌هاب، کلید API، مسیر فایل‌های محلی، یا محتوای پوشه‌ی `data`.
+**Never sent:** your GitHub token, your API key, local file paths, or anything in
+the `data` folder.
 
-ساختار کد `app/core/` عمداً هیچ وابستگی‌ای به Qt ندارد تا بتوان منطق را جدا از رابط کاربری آزمود.
+The `app/core/` package deliberately imports nothing from Qt, which is what makes
+the logic testable on its own — and what lets the integration suite drive the
+real client over real HTTP.
 
-## اگر کار نمی‌کند
+## When it does not work
 
-| نشانه | علت محتمل |
+| Symptom | Likely cause |
 | --- | --- |
-| «Could not reach the provider» | آدرس اشتباه یا سرویس خاموش است |
-| «AI provider error 401» | کلید اشتباه یا منقضی |
-| پاسخ خالی | مدل خیلی کوچک انتخاب شده، یا پارامترها خارج از محدوده‌اند |
-| جواب‌های بی‌ربط | مدل محلی ضعیف است، یا سرویس ابری محدود شده |
-| قطع شدن وسط پاسخ | Timeout را در تنظیمات بالا ببرید |
+| "Could not reach the provider" | Wrong address, or the service is not running |
+| "AI provider error 401" | Wrong or expired key |
+| Empty answers | Model too small, or parameters out of range |
+| Irrelevant answers | Weak local model, or a rate-limited cloud service |
+| Cuts out mid-answer | Raise the timeout in Settings |

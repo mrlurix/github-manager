@@ -1,9 +1,9 @@
 ---
-title: ساخت از سورس
-description: اجرای برنامه از سورس، تست‌ها، ساخت exe و ساخت همین سایت مستندات.
+title: Building from source
+description: Run the app from source, run the tests, build the exe and build this documentation site.
 ---
 
-## اجرا از سورس
+## Running from source
 
 ```bash
 git clone https://github.com/mrlurix/github-manager.git
@@ -12,138 +12,159 @@ pip install -r requirements.txt
 python main.py
 ```
 
-روی ویندوز می‌توانید `run.bat` را دوبار کلیک کنید.
+On Windows you can double-click `run.bat`.
 
-### پیش‌نیازها
+### Requirements
 
-| مورد | نسخه |
+| | |
 | --- | --- |
-| پایتون | ۳.۱۱ یا بالاتر |
-| PySide6 | ۶.x |
-| ویندوز | ۱۰ یا ۱۱ (روی لینوکس و macOS هم اجرا می‌شود) |
+| Python | 3.11 or newer |
+| PySide6 | 6.x |
+| OS | Windows 10 or 11 (it also runs on Linux and macOS) |
 
-## ساخت exe پرتابل
+## Building the portable exe
 
 ```bash
 python build.py --clean
 ```
 
-یا روی ویندوز:
+Or on Windows, run `build.bat`.
 
-```bat
-build.bat
-```
+The result is a single file at `dist/GitHubManager.exe`, about 63 MB, with no
+dependency on Python. Copy it anywhere.
 
-خروجی یک فایل در `dist/GitHubManager.exe` است — حدود ۶۳ مگابایت، مستقل از پایتون. فایل را هرجا خواستید بگذارید.
+### Options
 
-### گزینه‌ها
-
-| فرمان | نتیجه |
+| Command | Result |
 | --- | --- |
-| `python build.py` | ساخت معمولی |
-| `python build.py --clean` | پاک کردنArtefactهای قبلی و ساخت |
-| `python build.py --onedir` | خروجی پوشه‌ای — سریع‌تر بالا می‌آید |
+| `python build.py` | normal build |
+| `python build.py --clean` | wipe previous artefacts first |
+| `python build.py --onedir` | folder build; starts faster |
 
-### خودکارارسازی ساخت
+### What the build script does
 
-اسکریپت ساخت:
+- Renders the `.ico` at build time
+- Writes the Windows version resource
+- Generates the PyInstaller spec itself
+- **Checks its own output** — if a folder build slips through instead of a single
+  file, or the size is implausible, the build is reported as failed
 
-- آیکون `.ico` را در زمان ساخت تولید می‌کند
-- فایل version resource ویندوز را می‌سازد
-- spec پایتون‌اینستالر را خودش تولید می‌کند
-- **خروجی خودش را بررسی می‌کند** — اگر به‌جای یک فایل، خروجی پوشه‌ای تولید شده باشد یا حجم غیرمنطقی باشد، ساخت را ناموفق اعلام می‌کند
+That last check exists because getting it wrong produces an exe that fails at
+launch with `Failed to load Python DLL` and no clue at build time.
 
-نصب اختیاری [UPX](https://github.com/upx/upx) حجم را کمتر می‌کند.
+Installing [UPX](https://github.com/upx/upx) shrinks it further.
 
-## اجرای تست‌ها
+## Running the tests
 
 ```bash
 python tests/run_all_tests.py
 ```
 
-هشت سوت، بیش از ۵۰۰ بررسی. هیچ‌کدام به اینترنت وصل نمی‌شوند و به توکن نیاز ندارند.
+Nine suites, over 600 checks. None of them reach the internet or need a token.
 
-| سوت | چه چیزی را می‌سنجد |
+| Suite | What it covers |
 | --- | --- |
-| `ai_guard_test.py` | قفل محدوده‌ی هوش مصنوعی |
-| `ai_tasks_test.py` | همه‌ی توابع هوش مصنوعی و تجزیه‌ی JSON |
-| `security_test.py` | پاک‌سازی توکن، فهرست میزبان‌ها، اعتبارسنجی مسیر، پاک‌سازی HTML |
-| `integration_test.py` | کلاینت واقعی روی HTTP واقعی در برابر سرور شبیه‌سازی‌شده |
-| `smoke_test.py` | ساخت و رندر همه‌ی صفحه‌ها |
-| `feature_test.py` | جریان‌های کامل کاربر روی ویکجت‌های واقعی |
-| `ai_flow_test.py` | تولید جریانی، پالایش، مسیر commit و اجبار محدوده |
-| `layout_test.py` | چیدمان همه‌ی صفحه‌ها در چند اندازه‌ی نمایشگر |
+| `ai_guard_test.py` | The GitHub-only scope lock |
+| `ai_tasks_test.py` | Every AI task function and JSON parsing |
+| `security_test.py` | Token redaction, host allow-listing, path validation, HTML sanitising |
+| `integration_test.py` | The real client over real HTTP against `mock_github_server.py` |
+| `smoke_test.py` | Every page builds and renders |
+| `feature_test.py` | Full user flows through the real widgets |
+| `ai_flow_test.py` | Streaming, refinement, the commit path and the scope lock |
+| `layout_test.py` | Every page at several window sizes |
+| `responsive_test.py` | No overlapping or clipped controls from 900×560 to 2560×1440 |
 
-### سرور شبیه‌سازی گیت‌هاب
+### The mock GitHub server
 
-`tests/mock_github_server.py` یک سرور HTTP واقعی است که REST API گیت‌هاب را تقلید می‌کند:
+`tests/mock_github_server.py` is a real HTTP server that speaks the GitHub REST
+API:
 
-- با هدر واقعی `Link: rel="next"` صفحه‌بندی می‌کند
-- محتوای فایل را base64 برمی‌گرداند
-- احراز هویت را اجباری می‌کند
-- پاسخ‌های واقعی ۴۰۱، ۴۰۳، ۴۰۴، ۴۲۲ و ۵۰۰ می‌دهد
+- paginates with a genuine `Link: rel="next"` header
+- returns base64 file content
+- enforces authentication
+- answers with real 401, 403, 404, 422 and 500 bodies
 
-به همین دلیل سوت integration می‌تواند چیزهایی بگیرد که یک stub هرگز نمی‌گیرد؛ مثلاً کلاینتی که بعد از صفحه‌ی اول دیگر صفحه‌بندی نمی‌کند، یا rate limit را به‌جای پیام روشن، سه بار تلاش مجدد می‌کند و بعد شش ثانیه UI را قفل می‌کند.
+That is why the integration suite can catch things a stub never will — a client
+that quietly stops at page one, or that shows a blank error for a rate limit
+instead of naming the reset time.
 
-### جداسازی از داده‌ی واقعی
+### Keeping the tests out of your data
 
-`tests/_bootstrap.py` پیش از هر import، پوشه‌ی داده را به یک پوشه‌ی موقت هدایت می‌کند. یعنی اجرای تست‌ها **هرگز** به `data/secrets.json` واقعی دست نمی‌زند. این جداسازی عمدی است: بدون آن، یک توکن ساختگی نوشته‌شده توسط تست، توکن واقعی کاربر را بی‌صدا بازنویسی می‌کرد.
+`tests/_bootstrap.py` redirects the data folder to a temporary directory before
+anything is imported. Running the tests therefore **never** touches your real
+`data/secrets.json`. That isolation is deliberate: without it a stub token
+written by a test would silently overwrite your real one, and because the file is
+encrypted you would never find out.
 
-### ابزارهای توسعه
+### Development tools
 
 ```bash
-ruff check app                       # ایرادهای استاتیک
-bandit -r app                        # اسکن امنیتی
-node tools/verify_search.js          # تست موتور جستجوی سایت
-python tools/screenshot.py shots     # اسکرین‌شات از همه‌ی صفحه‌ها
-python tools/build_docs.py           # ساخت همین سایت
+ruff check app                       # static checks
+bandit -r app                        # security scan
+node tools/verify_search.js          # test this site's search engine
+python tools/screenshot.py shots     # screenshots of every page
+python tools/build_docs.py           # build this site
+python tools/deploy_site.py          # build and push the site
 ```
 
-## ساخت سایت مستندات
+## Building this site
 
 ```bash
 python tools/build_docs.py
 ```
 
-خروجی در پوشه‌ی `docs` نوشته می‌شود و همان چیزی است که GitHub Pages منتشر می‌کند. نیازی به Node، npm یا هیچ مرحله‌ی build دیگری نیست.
+The output is written to `docs/`, which is what GitHub Pages serves. No Node, no
+npm and no other build step is involved.
 
-| فایل | نقش |
+| File | Role |
 | --- | --- |
-| `docs_src/pages/*.md` | محتوای صفحه‌ها |
-| `docs_src/assets/style.css` | ظاهر، RTL، پوسته‌ی تیره و روشن |
-| `docs_src/assets/search.js` | موتور جستجو |
-| `docs_src/assets/app.js` | پوسته، منوی موبایل، اتصال جستجو |
-| `docs/` | خروجی تولیدشده — در گیت ذخیره می‌شود |
+| `docs_src/pages/*.md` | the pages |
+| `docs_src/assets/style.css` | layout, light and dark themes |
+| `docs_src/assets/search.js` | the search engine |
+| `docs_src/assets/app.js` | theme, mobile menu, wiring up the search |
+| `docs/` | the generated output, committed to the repository |
 
-### چرا جستجو دست‌نویس است
+The build also verifies that no page links to a page or heading anchor that does
+not exist.
 
-محتوا فارسی است و یک نمایه‌ی عمومی در همان‌جا زمین می‌خورد: ی و ک عربی که دقیقاً شبیه ی و ک فارسی‌اند، نیم‌فاصله در واژه‌هایی مثل «می‌رود»، و اعراب.
+### Why the search is hand-written
 
-هر دو سمت — پایتون و جاوااسکریپت — یک تابع نرمال‌سازی دارند که این موارد را یکسان تا می‌کند. نتیجه این است که اگر کاربر با کیبورد عربی `مي رود` را تایپ کند، باز هم صفحه‌ی مربوطه پیدا می‌شود.
+The content is English, but a generic index still breaks on the things this text
+contains: the ZWNJ in words like "mil‑ro", Arabic yeh and kaf that render
+identically to English letters in a mixed-language document, and stray non-ASCII
+punctuation.
 
-## ساختار پروژه
+Both sides — the Python index builder and the browser — apply the same
+normalisation, so a query typed loosely still finds the right page. This is
+covered by `tools/verify_search.js`.
+
+## Project layout
 
 ```text
 app/
-  config.py              مسیرهای پرتابل و تنظیمات
-  core/                  بدون هیچ وابستگی‌ای به Qt
-    github_api.py        کلاینت REST گیت‌هاب
-    ai_api.py            کلاینت چت سازگار با OpenAI، با پشتیبانی جریانی
-    ai_guard.py          قفل محدوده‌ی گیت‌هاب
-    ai_tasks.py          هر قابلیت هوش مصنوعی، به‌صورت یک تابع
-    redact.py            پاک کردن متن شبیه توکن از خطاها
-    secure.py            ذخیره‌ی رمزنگاری‌شده‌ی رازها
+  config.py              portable paths and settings
+  core/                  no Qt imports anywhere in here
+    github_api.py        GitHub REST client
+    ai_api.py            OpenAI compatible chat client, with streaming
+    ai_guard.py          the GitHub-only scope lock
+    ai_tasks.py          every AI feature, as a function
+    redact.py            scrubbing token-shaped text out of errors
+    secure.py            encrypted secret storage
   ui/
-    theme.py             پالت‌ها، تایپوگرافی، QSS
-    sanitize.py          پاک‌سازنده‌ی HTML با فهرست‌مجاز
-    markdown.py          رندر markdown و برجسته‌سازی کد
-    editor.py            ویرایشگر دو ستونه با پیش‌نمایش زنده
-    workers.py           کارهای پس‌زمینه با پشتیبانی جریانی
-    pages/               نُه صفحه‌ی برنامه
+    theme.py             palettes, typography, the global QSS
+    sanitize.py          allow-list HTML sanitiser
+    markdown.py          markdown rendering and code highlighting
+    editor.py            split editor with live preview
+    widgets.py           cards, badges, toasts, flow layout, icons
+    workers.py           background tasks with streaming support
+    pages/               the nine pages
 tests/
 tools/
-docs_src/                سورس سایت مستندات
-docs/                    خروجی ساخته‌شده
+docs_src/                site source
+docs/                    generated site
 ```
 
-> نکته‌ی مهم درباره‌ی `app/core/`: این پوشه عمداً هیچ import ای از Qt ندارد. همین باعث می‌شود که کل منطق گیت‌هاب و هوش مصنوعی بدون بالا آوردن رابط کاربری قابل آزمود باشد — و تست integration بتواند کلاینت واقعی را مستقیم روی HTTP واقعی بیازماید.
+> One thing worth knowing about `app/core/`: it imports nothing from Qt on
+> purpose. That is what lets the GitHub and AI logic be tested without starting
+> a UI, and what allows the integration suite to drive the real client over real
+> HTTP.

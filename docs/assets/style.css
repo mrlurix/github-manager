@@ -18,8 +18,9 @@
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.44);
   --radius: 14px;
   --radius-sm: 9px;
-  --mono: "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
-  --sans: "Vazirmatn", "IRANSans", "Segoe UI", "Noto Sans Arabic", Tahoma, system-ui, sans-serif;
+  --mono: "Cascadia Mono", "JetBrains Mono", Consolas, "SF Mono", monospace;
+  --sans: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+          "Helvetica Neue", Arial, sans-serif;
   --header-h: 62px;
   --sidebar-w: 252px;
 }
@@ -49,7 +50,7 @@ body {
   color: var(--text);
   font-family: var(--sans);
   font-size: 15px;
-  line-height: 1.85;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -188,9 +189,9 @@ h4 { font-size: 16px; margin: 22px 0 8px; color: var(--text-dim); }
 p { margin: 12px 0; }
 
 ul, ol { padding-inline-start: 26px; margin: 12px 0; }
-/* The marker sits outside the item box, so the gap between "۱." and its text
-   comes from padding on the item, not on the list. */
-li { margin: 6px 0; padding-inline-start: 6px; }
+/* The marker sits outside the item box, so the gap between the bullet and its
+   text comes from padding on the item, not on the list. */
+li { margin: 5px 0; padding-inline-start: 4px; }
 li::marker { color: var(--accent); }
 
 code {
@@ -208,7 +209,7 @@ pre code { background: none; border: none; padding: 0; font-size: 13px; }
 blockquote {
   margin: 18px 0; padding: 11px 16px;
   border-inline-start: 3px solid var(--accent);
-  background: var(--accent-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--accent-soft); border-radius: var(--radius-sm) 0 0 var(--radius-sm);
   color: var(--text-dim);
 }
 blockquote p { margin: 4px 0; }
@@ -261,9 +262,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 34px 0; }
     position: fixed; inset-block: var(--header-h) 0; inset-inline-start: 0;
     width: 264px; background: var(--bg-soft); border-inline-end: 1px solid var(--border);
     padding: 20px 16px; overflow-y: auto; z-index: 35;
-    transform: translateX(100%); transition: transform .2s ease;
+    transform: translateX(-100%); transition: transform .2s ease;
   }
-  html[dir="rtl"] .sidebar { transform: translateX(100%); }
   .sidebar.is-open { transform: translateX(0) !important; box-shadow: var(--shadow); }
   .search { max-width: none; }
   .hint { display: none; }

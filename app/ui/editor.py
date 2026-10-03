@@ -184,7 +184,10 @@ class AutoHeightTextBrowser(SafeLinksMixin, QTextBrowser):
         return self._measure(width) + self._extra
 
     def minimumSizeHint(self) -> QSize:  # noqa: N802
-        return QSize(120, 24)
+        # A floor, not the full measured height: without it a parent may crush
+        # the bubble to a couple of lines and the text stops being readable. A
+        # real floor makes the containing scroll area scroll instead.
+        return QSize(120, max(24, min(self._measure(480), 48)))
 
     def sizeHint(self) -> QSize:  # noqa: N802
         return QSize(480, self._measure(480) + self._extra)

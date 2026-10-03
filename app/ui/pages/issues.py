@@ -27,6 +27,7 @@ from ..theme import markdown_css
 from ..widgets import (
     Badge,
     Card,
+    FlowWidget,
     PageHeader,
     button,
     hline,
@@ -139,25 +140,25 @@ class IssuesPage(Page):
 
         # ------------------------------------------------------------- toolbar
         bar = Card(flat=True)
-        row = QHBoxLayout()
-        row.setSpacing(10)
+        # A flow row rather than a fixed one: the repository picker plus the two
+        # filters plus the link is more than a narrow window can hold, and a
+        # plain QHBoxLayout would let them overlap.
+        row = FlowWidget(spacing=10)
         self.repo_combo = QComboBox()
-        self.repo_combo.setMinimumWidth(240)
+        self.repo_combo.setMinimumWidth(200)
         self.repo_combo.currentTextChanged.connect(self._on_repo_changed)
-        row.addWidget(self.repo_combo)
-        row.addWidget(button("Choose…", variant="outline", icon="folder", on_click=self.pick_repo))
-        row.addWidget(spacer(10))
+        row.add(self.repo_combo)
+        row.add(button("Choose…", variant="outline", icon="folder", on_click=self.pick_repo))
         self.kind = QComboBox()
         self.kind.addItems(["Issues", "Pull requests"])
         self.kind.currentIndexChanged.connect(self.refresh)
-        row.addWidget(self.kind)
+        row.add(self.kind)
         self.state = QComboBox()
         self.state.addItems(["Open", "Closed", "All"])
         self.state.currentIndexChanged.connect(self.refresh)
-        row.addWidget(self.state)
-        row.addWidget(spacer())
-        row.addWidget(button("Open on GitHub", variant="ghost", icon="external", on_click=self.open_browser))
-        bar.add_layout(row)
+        row.add(self.state)
+        row.add(button("Open on GitHub", variant="ghost", icon="external", on_click=self.open_browser))
+        bar.add(row)
         layout.addWidget(bar)
 
         self.split = QSplitter(Qt.Orientation.Horizontal)

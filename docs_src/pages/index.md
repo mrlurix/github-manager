@@ -1,84 +1,84 @@
 ---
-title: خانه
-description: GitHub Manager — یک کلاینت دسکتاپ پرتابل برای گیت‌هاب با دستیار هوش مصنوعی که فقط و فقط درباره گیت‌هاب کار می‌کند.
+title: Home
+description: GitHub Manager — a portable GitHub desktop client with an AI assistant that only ever works on GitHub.
 ---
 
 <div class="hero">
-  <h1>همه‌ی کارهای گیت‌هاب، در یک برنامه‌ی دسکتاپ</h1>
+  <h1>All of GitHub, in one desktop app</h1>
   <p>
-    نوشتن README، مدیریت ریپازیتوری، ایشو و پول‌ریکویست، ریلیز و کامیت — با یک دستیار هوش مصنوعی که
-    تمام کار را انجام می‌دهد و پیش از آنکه درخواستی به مدل برسد، هر چیزی خارج از گیت‌هاب را رد می‌کند.
+    Write READMEs, manage repositories, work through issues and pull requests,
+    publish releases and write commit messages — with an AI assistant that does
+    the work and refuses anything outside GitHub before the request ever reaches
+    the model.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">دانلود نسخه ۱.۰.۰</a>
-    <a class="btn" href="features.html">قابلیت‌ها</a>
-    <a class="btn" href="install.html">راهنمای نصب</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.0.0</a>
+    <a class="btn" href="features.html">Features</a>
+    <a class="btn" href="install.html">Getting started</a>
   </div>
 </div>
 
 <div class="cards">
   <div class="card">
-    <h3>استودیوی README</h3>
-    <p>از روی محتوای واقعی ریپازیتوری یک README کامل می‌سازد؛ بعد با درخواست شما اصلاحش می‌کند و در نهایت commit می‌کند.</p>
+    <h3>README Studio</h3>
+    <p>Builds a complete README from the actual repository contents, refines it when you ask, and commits it when you approve.</p>
   </div>
   <div class="card">
-    <h3>ریپازیتوری‌ها</h3>
-    <p>ساخت، ویرایش، بایگانی، حذف، fork، ستاره و تغییر موضوعات — همه از داخل برنامه و با تأیید گرفتن.</p>
+    <h3>Repositories</h3>
+    <p>Create, edit, archive, delete, fork, star and change topics — all from inside the app, every write confirmed first.</p>
   </div>
   <div class="card">
-    <h3>ایشو و پول‌ریکویست</h3>
-    <p>draft کردن ایشو، تریاژ گروهی، پاسخ هوشمند به کامنت‌ها و بستن یا باز کردن هر مورد.</p>
+    <h3>Issues &amp; pull requests</h3>
+    <p>Draft an issue, triage a whole queue at once, reply to review comments, and close or reopen anything.</p>
   </div>
   <div class="card">
-    <h3>ریلیز و کامیت</h3>
-    <p>کامیت‌های خام را به یادداشت ریلیز تبدیل می‌کند، پیام کامیت Conventional می‌نویسد و نام شاخه پیشنهاد می‌دهد.</p>
+    <h3>Releases &amp; commits</h3>
+    <p>Turns a raw commit list into release notes, writes Conventional Commit messages, suggests branch names and publishes.</p>
   </div>
   <div class="card">
-    <h3>دستیار مقید به گیت‌هاب</h3>
-    <p>پیش از ارسال به مدل، درخواست‌های خارج از حوزه‌ی گیت‌هاب تشخیص داده و رد می‌شوند.</p>
+    <h3>Scoped to GitHub</h3>
+    <p>Off-topic requests are detected and refused before they are sent to the model.</p>
   </div>
   <div class="card">
-    <h3>پرتابل</h3>
-    <p>یک فایل exe. بدون نصب، بدون پایتون، بدون دسترسی مدیر. مدل محلی هم پشتیبانی می‌شود.</p>
+    <h3>Portable</h3>
+    <p>One exe file. No installer, no Python, no admin rights. A local model works too.</p>
   </div>
 </div>
 
-## این برنامه چه کار نمی‌کند
+## What this app will not do
 
-<p>
-  عمداً محدود است. دستیار داخلی به هیچ موضوعی بیرون از گیت‌هاب پاسخ نمی‌دهد؛ نه دستور پخت غذا، نه
-  مشاوره پزشکی، نه قیمت سهام. اگر درخواستی خارج از حوزه باشد، پیش از رسیدن به مدل مسدود می‌شود و پاسخ
-  «خارج از محدوده» داده می‌شود.
-</p>
+It is deliberately limited. The built-in assistant does not answer anything
+outside GitHub: not recipes, not medical advice, not stock prices. If a request
+falls outside the domain it is blocked before it reaches the model and you get an
+out-of-scope reply instead.
 
-<span class="pill pill-ok">محدوده قفل است</span>
-<span class="pill">کار کاملاً آفلاین ممکن است</span>
-<span class="pill">هیچ داده‌ای بدون اجازه‌ی شما ارسال نمی‌شود</span>
+<span class="pill pill-ok">Scope is enforced</span>
+<span class="pill">Works fully offline with a local model</span>
+<span class="pill">Nothing leaves the machine without your say-so</span>
 
-## چطور کار می‌کند
+## How it works
 
-۱. **اتصال** — یک Personal Access Token از گیت‌هاب بسازید و در برنامه بگذارید. توکن با DPAPI ویندوز رمزنگاری می‌شود.
-
-۲. **پیکربندی هوش مصنوعی** — هر سرویس سازگار با OpenAI: OpenAI، OpenRouter، Groq، Together، Ollama یا LM Studio. اگر مدل محلی دارید، اصلاً کلید API لازم نیست.
-
-۳. **کار** — README بسازید، ایشو تریاژ کنید، ریلیز منتشر کنید. هر عملیات نوشتنی قبل از ارسال یک پنجره‌ی تأیید نشان می‌دهد.
+1. **Connect** — create a Personal Access Token on GitHub and paste it in. The token is encrypted with Windows DPAPI.
+2. **Pick a model** — any OpenAI compatible endpoint: OpenAI, OpenRouter, Groq, Together, Ollama or LM Studio. A local model needs no API key.
+3. **Work** — generate a README, triage issues, publish a release. Every write shows a confirmation first.
 
 ```text
-اتصال  →  انتخاب ریپازیتوری  →  درخواست به هوش مصنوعی  →  بازبینی و تأیید  →  commit روی گیت‌هاب
+Connect  →  Pick a repository  →  Ask the AI  →  Review and approve  →  Commit to GitHub
 ```
 
-## پیش‌نیازها
+## Requirements
 
-| مورد | توضیح |
+| | |
 | --- | --- |
-| سیستم‌عامل | ویندوز ۶۴ بیتی (نسخه‌های ۱۰ و ۱۱ تست شده‌اند) |
-| پایتون | لازم **نیست** — نسخه‌ی exe خودش مستقل است |
-| فضای دیسک | حدود ۱۳۰ مگابایت برای اجرا |
-| دسترسی شبکه | فقط برای گیت‌هاب و سرویس هوش مصنوعی |
+| OS | 64-bit Windows (tested on 10 and 11) |
+| Python | not required — the exe is self-contained |
+| Disk | roughly 130 MB while running |
+| Network | GitHub, plus whichever AI provider you configure |
 
-## قدم بعدی
+## Next
 
-- [قابلیت‌ها](features.html) — مرور کامل همه‌ی بخش‌های برنامه
-- [نصب و راه‌اندازی](install.html) — دانلود و شروع کار
-- [هوش مصنوعی](ai.html) — انتخاب مدل و تنظیم محدوده
-- [امنیت](security.html) — توکن، مسیرها و پاک‌سازی HTML
+- [Features](features.html) — every page of the app in detail
+- [Getting started](install.html) — download and first run
+- [AI](ai.html) — choosing a model and how the scope limit works
+- [Security](security.html) — tokens, path validation and HTML sanitising
+- [FAQ](faq.html) — the questions that come up most

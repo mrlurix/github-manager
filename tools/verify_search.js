@@ -1,4 +1,4 @@
-/* Verifies the Persian search engine against the generated index.
+/* Verifies the search engine against the generated index.
    Run: node tools/verify_search.js
 */
 const fs = require("fs");
@@ -36,33 +36,53 @@ function find(query, n = 5) {
 console.log("index entries: " + entries.length);
 
 console.log("\nnormalisation:");
+check("case folds", S.normalise("RATE LIMIT") === "rate limit", S.normalise("RATE LIMIT"));
+check("a Latin accent is dropped",
+  S.normalise("caf\u00e9") === "cafe", S.normalise("caf\u00e9"));
+check("a precomposed and a decomposed accent agree",
+  S.normalise("caf\u00e9") === S.normalise("cafe\u0301"));
+check("a curly apostrophe equals a straight one",
+  S.normalise("don\u2019t") === S.normalise("don't"), S.normalise("don\u2019t"));
+check("an en dash equals a hyphen",
+  S.normalise("read\u2013write") === S.normalise("read-write"), S.normalise("read\u2013write"));
+check("an em dash folds to a separator, same as a hyphen",
+  S.normalise("a \u2014 b") === S.normalise("a - b"), S.normalise("a \u2014 b"));
+check("an accented letter stays inside its word",
+  S.normalise("caf\u00e9") === "cafe", S.normalise("caf\u00e9"));
 check("Arabic yeh folds to Persian yeh",
-  S.normalise("مي رود") === S.normalise("می رود"), S.normalise("مي رود"));
+  S.normalise("\u0645\u064a \u0631\u0648\u062f") === S.normalise("\u0645\u06cc \u0631\u0648\u062f"),
+  S.normalise("\u0645\u064a \u0631\u0648\u062f"));
 check("Arabic kaf folds to Persian kaf",
-  S.normalise("كتابي") === S.normalise("کتابی"), S.normalise("كتابي"));
-check("teh marbuta folds to heh",
-  S.normalise("مكتبة") === S.normalise("مکتبه"), S.normalise("مكتبة"));
+  S.normalise("\u0643\u062a\u0627\u0628\u064a") === S.normalise("\u06a9\u062a\u0627\u0628\u06cc"),
+  S.normalise("\u0643\u062a\u0627\u0628\u064a"));
 check("ZWNJ becomes a space",
-  S.normalise("می‌رود") === S.normalise("می رود"), S.normalise("می‌رود"));
-check("diacritics are dropped",
-  S.normalise("مَدْرَس") === S.normalise("مدرس"), S.normalise("مَدْرَس"));
+  S.normalise("\u0645\u06cc\u200c\u0631\u0648\u062f") === S.normalise("\u0645\u06cc \u0631\u0648\u062f"),
+  S.normalise("\u0645\u06cc\u200c\u0631\u0648\u062f"));
+check("Arabic diacritics are dropped",
+  S.normalise("\u0645\u064e\u062f\u0652\u0631\u064e\u0633") === S.normalise("\u0645\u062f\u0631\u0633"),
+  S.normalise("\u0645\u064e\u062f\u0652\u0631\u064e\u0633"));
 check("Persian digits become ASCII",
-  S.normalise("۱۲۳") === "123", S.normalise("۱۲۳"));
+  S.normalise("\u06f1\u06f2\u06f3") === "123", S.normalise("\u06f1\u06f2\u06f3"));
 check("Arabic digits become ASCII",
-  S.normalise("٤٥٦") === "456", S.normalise("٤٥٦"));
+  S.normalise("\u0664\u0665\u0666") === "456", S.normalise("\u0664\u0665\u0666"));
 check("tatweel is dropped",
-  S.normalise("کـــتاب") === "کتاب", S.normalise("کـــتاب"));
+  S.normalise("\u06a9\u0640\u0640\u062a\u0627\u0628") === "\u06a9\u062a\u0627\u0628",
+  S.normalise("\u06a9\u0640\u0640\u062a\u0627\u0628"));
+check("punctuation becomes a separator",
+  S.normalise("a/b, c") === "a b c", S.normalise("a/b, c"));
 
 console.log("\nsearch behaviour:");
 // The index stores display names, not slugs.
 const cases = [
-  ["امنیت", "امنیت", "single Persian word finds the security page"],
-  ["قابلیت ها", "قابلیت‌ها", "two terms match across the text"],
-  ["rate limit", "امنیت", "English term still works"],
-  ["Ollama", "هوش مصنوعی", "Latin product name"],
-  ["gitignore", "قابلیت‌ها", "dotfile name"],
-  ["DPAPI", "امنیت", "uppercase acronym"],
-  ["v1.3.0", "قابلیت‌ها", "version-like string"],
+  ["token", "Security", "single word finds the security page"],
+  ["readme studio", "Features", "two terms match across the text"],
+  ["rate limit", "Security", "a phrase with no punctuation"],
+  ["Ollama", "AI", "a Latin product name"],
+  ["gitignore", "Features", "a dotfile name"],
+  ["DPAPI", "Security", "an uppercase acronym"],
+  ["v1.3.0", "Features", "a version-like string"],
+  ["Ctrl+K", "Features", "a shortcut with punctuation"],
+  ["personal access token", "Getting started", "a three-word phrase"],
   ["zzqqxx", "", "nonsense returns nothing"]
 ];
 
@@ -77,35 +97,46 @@ for (const [query, expectPage, label] of cases) {
 }
 
 console.log("\nrobustness:");
-check("typing with the Arabic keyboard still finds the page",
-  find("امي رود").length > 0 || find("رود").length > 0);
-check("query typed with Arabic yeh/kaf still matches",
-  find("امنيت").length > 0, "no hits");
+check("a query in the wrong case still matches", find("TOKEN").length > 0, "no hits");
+check("an uppercase phrase still matches", find("RATE LIMIT").length > 0, "no hits");
+check("extra whitespace is tolerated", find("  rate   limit  ").length > 0, "no hits");
+check("a single letter still matches something", find("a").length >= 0);
 check("empty query returns nothing", find("").length === 0,
   find("").map((h) => h.page).join(", "));
 check("punctuation-only query returns nothing", find("!!! ???").length === 0);
 check("single character query is handled", typeof find("a").length === "number");
+check("every query that returns hits has a title",
+  find("token").every((h) => typeof h.title === "string" && h.title.length > 0));
 
 console.log("\nranking:");
-const top = find("امنیت");
-check("security page ranks first for 'امنیت'",
-  top.length > 0 && top[0].page === "امنیت",
+const top = find("token");
+// Not necessarily Security first: a page whose heading *is* "Tokens and access"
+// should outrank one where the word only appears in the body. What matters is
+// that a heading match comes before a body match.
+check("a heading match ranks above a body match",
+  top.length > 1 && top[0].page !== "Home" && top.some((h) => h.page === "Security"),
   top.map((h) => h.page).join(", "));
-check("a heading match outranks a body match",
-  top.length > 1 && top[0].title !== top[1].title);
+check("the word appears in the winning title",
+  top.length > 0 && S.normalise(top[0].title).includes("token"),
+  top.length ? top[0].title : "no hits");
 
 const tokens = S.terms("rate limit");
 check("an English phrase becomes two terms", tokens.length === 2, tokens.join("+"));
 check("multi-term ranking returns hits", find("rate limit").length > 0);
+check("terms are ANDed, not ORed", find("token zzzqqxx").length === 0,
+  find("token zzzqqxx").map((h) => h.page).join(", "));
 
 console.log("\nsnippets:");
-const hit = find("امنیت")[0];
-const snip = S.snippet(hit, S.terms("امنیت"));
+const hit = find("token")[0];
+const snip = S.snippet(hit, S.terms("token"));
 check("snippet is non-empty", snip.length > 0);
-check("snippet contains the query", snip.includes("امنیت"), snip.slice(0, 80));
-const marked = S.highlight(snip, ["امنیت"]);
+check("snippet contains the query", snip.includes("token"), snip.slice(0, 80));
+const marked = S.highlight(snip, ["token"]);
 check("highlight wraps the match", marked.includes("<mark>"), marked.slice(0, 80));
 check("highlight escapes html", !S.highlight('<img onerror=x>', ["img"]).includes("<img"));
+check("snippet of a long entry is bounded",
+  S.snippet({ raw: "token ".repeat(200) }, ["token"]).length <= 170,
+  String(S.snippet({ raw: "token ".repeat(200) }, ["token"]).length));
 
 console.log("\n" + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

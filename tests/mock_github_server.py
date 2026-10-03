@@ -627,7 +627,6 @@ class _Handler(BaseHTTPRequestHandler):
                 )
                 return
             if method == "DELETE":
-                target_exists = target in state.files
                 state.files.pop(target, None)
                 self._send(204)
                 return

@@ -1,110 +1,129 @@
 ---
-title: سوالات متداول
-description: پرسش‌های رایج درباره‌ی توکن، حریم خصوصی، محدودیت‌های برنامه و عیب‌یابی.
+title: FAQ
+description: Common questions about tokens, privacy, the app's limits and troubleshooting.
 ---
 
-## توکن و دسترسی
+## Tokens and access
 
-### چرا توکن، و نه ورود با نام کاربری و رمز؟
+### Why a token rather than signing in?
 
-برنامه عمداً از OAuth استفاده نمی‌کند. برای OAuth به یک کلاینت ثبت‌شده و یک برنامه‌ی در حال اجرا در مرورگر نیاز است، که با «یک فایل exe پرتابل» سازگار نیست. Personal Access Token ساده‌تر و شفاف‌تر است: خودتان تعیین می‌کنید چه دسترسی‌ای بدهید و چه زمانی آن را باطل کنید.
+The app deliberately does not use OAuth. OAuth needs a registered client and a
+browser round trip, which does not fit "a single portable exe". A Personal
+Access Token is simpler and more transparent: you decide what it can do, and
+when to revoke it.
 
-### آیا برنامه به اینترنت دسترسی غیرمنتظره دارد؟
+### Does the app phone anywhere unexpected?
 
-فقط به دو مقصد، که هر دو در تنظیمات قابل تغییرند:
+Only two places, both configurable in Settings:
 
-- API گیت‌هاب — `api.github.com`
-- سرویس هوش مصنوعی که خودتان انتخاب می‌کنید
+- The GitHub API — `api.github.com`
+- Whichever AI provider you chose
 
-اگر مدل محلی انتخاب کنید، ترافیک برنامه فقط بین کامپیوتر شما و `localhost` می‌ماند.
+If you pick a local model, traffic stays between your machine and `localhost`.
 
-### اگر توکنم لو برود چه؟
+### What if my token leaks?
 
-در [github.com/settings/tokens](https://github.com/settings/tokens) آن را **Delete** کنید. آنی فوراً باطل می‌شود و برنامه از آن استفاده نمی‌کند.
+Delete it on [github.com/settings/tokens](https://github.com/settings/tokens).
+It stops working immediately and the app stops using it.
 
-## حریم خصوصی
+## Privacy
 
-### محتوای ریپازیتوری من کجا می‌رود؟
+### Where does my repository content go?
 
-فقط جایی که خودتان تعیین کرده‌اید. هنگام درخواست از AI، ساختار فایل‌ها و چند فایل کلیدی برای مدل فرستاده می‌شود — اما این کار فقط با یک دکمه‌ی صریح انجام می‌شود، نه خودکار.
+Only where you send it. When you ask the AI for something, the file tree and a
+few key files are sent to the model — but that only happens when you press the
+button, never automatically.
 
-### آیا گیت‌هاب دسترسی‌ام را ذخیره می‌کند؟
+### Does GitHub store my access?
 
-بله، در واقع نه: توکن شما فقط روی دستگاه خودتان و رمزنگاری‌شده ذخیره می‌شود. هیچ سرور واسطی وجود ندارد. این برنامه به گیت‌هاب وصل می‌شود، نه به هیچ سرویس میانی.
+Not remotely, in fact: your token is stored only on your own machine, encrypted.
+There is no server in the middle. This app talks to GitHub, not to anyone else.
 
-### برنامه چه چیزی ذخیره می‌کند؟
+### What does the app store?
 
 ```text
 data/
-  settings.json     تنظیمات ظاهر و هوش مصنوعی
-  secrets.json      توکن و کلید API، رمزنگاری‌شده با DPAPI
+  settings.json     appearance and AI settings
+  secrets.json      token and API key, encrypted with DPAPI
 ```
 
-همین. هیچ لاگ، هیچ تله‌ی‌ی تحلیلی، هیچ ارسال آماری.
+That is all. No logs, no analytics, no crash reporting.
 
-### می‌توانم کل پوشه‌ی data را روی فلش ببرم؟
+### Can I keep the data folder on a USB stick?
 
-بله. این دقیقاً همان چیزی است که برنامه برای آن طراحی شده. پوشه‌ی `data` کنار exe می‌ماند و همه‌چیز همراهش جابه‌جا می‌شود.
+Yes — that is exactly what it is designed for. The `data` folder stays next to
+the executable and travels with it.
 
-## محدودیت‌ها
+## Limits
 
-### چرا GitHub Enterprise در تنظیمات نیست؟
+### Why is there no GitHub Enterprise setting?
 
-کلاینت توانایی اشاره به یک آدرس دلخواه را دارد و تست‌ها هم آن را بررسی می‌کنند، اما هنوز فیلدی در رابط کاربری برایش اضافه نشده. اگر لازم دارید، یک تغییر کوچک در تنظیمات کافی است.
+The client can be pointed at a different API root and the tests cover that, but
+there is no field for it in the UI yet. It is a small change if you need it.
 
-### چرا عملیات گراف نیست؟
+### Why no graphs?
 
-نمایش آمار بازدید نیاز به اکانت تحلیلی جداگانه دارد که هیچ ارتباطی با جریان کار اصلی ندارد. عمداً بیرون گذاشته شده.
+GitHub traffic analytics live behind a separate account, and they have nothing to
+do with the core workflow. Deliberately left out.
 
-### آیا می‌توانم کلید API جدید بسازم؟
+### Can it create API tokens for me?
 
-نه. ساخت توکن نیاز به تأیید هویت دو مرحله‌ای دارد که فقط در مرورگر امن انجام می‌شود. به همین دلیل برنامه به‌جای ساختن، شما را به صفحه‌ی ساخت توکن هدایت می‌کند.
+No. Creating one needs two-factor re-authentication in a browser, so the app
+sends you to the token page instead of pretending it can do it.
 
-### آیا کار آفلاین دارد؟
+### Does it work offline?
 
-فقط با مدل محلی. بخش گیت‌هاب بدون شبکه کار نمی‌کند چون هیچ داده‌ای کش نمی‌شود — و این عمدی است تا ریپازیتوری هرگز وضعیت کهنه نشان ندهد.
+Only with a local model. The GitHub side needs a network because nothing is
+cached — and that is on purpose, so you never see a stale view of a repository.
 
-### چند ریپازیتوری را می‌بیند؟
+### How many repositories can it see?
 
-تا ۶۰۰ ریپازیتوری، با صفحه‌بندی خودکار. اگر بیشتری دارید، فقط بخشی نمایش داده می‌شود.
+Up to 600, fetched page by page. With more than that you will see part of the
+list.
 
-## عیب‌یابی
+## Troubleshooting
 
-### دکمه‌های هوش مصنوعی خاکستری‌اند
+### The AI buttons are greyed out
 
-یعنی سرویس AI پیکربندی نشده. به **Settings → AI** بروید و یک ارائه‌دهنده انتخاب کنید. برای Ollama و LM Studio نیازی به کلید نیست؛ کافی است مدل را داشته باشید و **Test connection** بزنید.
+The AI provider is not configured. Go to **Settings → AI** and pick a provider.
+Ollama and LM Studio need no key — just the model, then **Test connection**.
 
-### README خالی باز می‌شود
+### The README comes back empty
 
-اگر ریپازیتوری README نداشته باشد، طبیعی است. روی **Generate README** بزنید تا ساخته شود، یا **Load existing** را امتحان کنید تا مطمئن شوید مسیر درست است.
+Expected if the repository has no README yet. Use **Generate README** to create
+one, or **Load existing** to check the path is right.
 
-### پیام خطای ۴۰۳ مربوط به rate limit
+### I got a 403 rate limit error
 
-سهمیه‌ی ساعتی گیت‌هاب تمام شده. خود برنامه در پیام خطا زمان تقریبی ریست را می‌نویسد. برنامه عمداً این خطا را دوباره تلاش نمی‌کند، چون با فاصله‌ی چند ثانیه حل نمی‌شود و فقط رابط کاربری را قفل می‌کند.
+Your hourly GitHub quota is spent. The app tells you roughly when it resets. It
+deliberately does not retry, because waiting a few seconds cannot help and would
+only freeze the interface.
 
-### رابط کاربری درست نمایش داده نمی‌شود
+### The interface looks wrong
 
-بزرگ‌نمایی ویندوز را روی ۱۰۰٪ بگذارید، یا از **Settings → UI scale** کمی کم یا زیاد کنید.
+Set Windows display scaling to 100%, or nudge **Settings → UI scale** up or down.
 
-### برنامه هنگام commit چیزی نمی‌گوید
+### Nothing happens after I press commit
 
-احتمالاً قبلاً یک کار در حال اجراست. چند ثانیه صبر کنید؛ عملیات گیت‌هاب ممکن است چند دقیقه طول بکشد. اگر خطایی رخ دهد، در پایین صفحه به‌صورت toast نمایش داده می‌شود.
+The request is probably still running. A GitHub call can take a while. If it
+fails you get a message at the bottom of the page.
 
-## مشارکت
+## Contributing
 
-مخزن عمومی است. اگر مشکلی دیدید یا قابلیتی کم بود:
+The repository is open. If you find a problem or a missing feature:
 
-۱. یک Issue باز کنید
-۲. در صورت تمایل Pull Request بدهید
+1. Open an issue
+2. Send a pull request if you like
 
-پیش از ارسال، تست‌ها را اجرا کنید:
+Run the tests before you push:
 
 ```bash
 python tests/run_all_tests.py
 ```
 
-همه‌ی هشت سوت باید سبز باشند.
+All nine suites should be green.
 
-## مجوز
+## Licence
 
-MIT. فایل [LICENSE](https://github.com/mrlurix/github-manager/blob/main/LICENSE) در مخزن موجود است.
+MIT. See [LICENSE](https://github.com/mrlurix/github-manager/blob/main/LICENSE)
+in the repository.

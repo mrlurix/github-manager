@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سوالات متداول · GitHub Manager</title>
-<meta name="description" content="پرسش‌های رایج درباره‌ی توکن، حریم خصوصی، محدودیت‌های برنامه و عیب‌یابی.">
+<title>FAQ · GitHub Manager</title>
+<meta name="description" content="Common questions about tokens, privacy, the app&#x27;s limits and troubleshooting.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="سوالات متداول · GitHub Manager">
-<meta property="og:description" content="پرسش‌های رایج درباره‌ی توکن، حریم خصوصی، محدودیت‌های برنامه و عیب‌یابی.">
+<meta property="og:title" content="FAQ · GitHub Manager">
+<meta property="og:description" content="Common questions about tokens, privacy, the app&#x27;s limits and troubleshooting.">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -31,14 +31,14 @@
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -47,7 +47,7 @@
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -58,76 +58,97 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link is-active" href="faq.html">سوالات متداول</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link is-active" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
-<h2 id="توکن-و-دسترسی">توکن و دسترسی</h2>
-<h3 id="چرا-توکن،-و-نه-ورود-با-نام-کاربری-و-رمز؟">چرا توکن، و نه ورود با نام کاربری و رمز؟</h3>
-<p>برنامه عمداً از OAuth استفاده نمی‌کند. برای OAuth به یک کلاینت ثبت‌شده و یک برنامه‌ی در حال اجرا در مرورگر نیاز است، که با «یک فایل exe پرتابل» سازگار نیست. Personal Access Token ساده‌تر و شفاف‌تر است: خودتان تعیین می‌کنید چه دسترسی‌ای بدهید و چه زمانی آن را باطل کنید.</p>
-<h3 id="آیا-برنامه-به-اینترنت-دسترسی-غیرمنتظره-دارد؟">آیا برنامه به اینترنت دسترسی غیرمنتظره دارد؟</h3>
-<p>فقط به دو مقصد، که هر دو در تنظیمات قابل تغییرند:</p>
+<h2 id="tokens-and-access">Tokens and access</h2>
+<h3 id="why-a-token-rather-than-signing-in">Why a token rather than signing in?</h3>
+<p>The app deliberately does not use OAuth. OAuth needs a registered client and a
+browser round trip, which does not fit &quot;a single portable exe&quot;. A Personal
+Access Token is simpler and more transparent: you decide what it can do, and
+when to revoke it.</p>
+<h3 id="does-the-app-phone-anywhere-unexpected">Does the app phone anywhere unexpected?</h3>
+<p>Only two places, both configurable in Settings:</p>
 <ul>
-<li>API گیت‌هاب — <code>api.github.com</code></li>
-<li>سرویس هوش مصنوعی که خودتان انتخاب می‌کنید</li>
+<li>The GitHub API — <code>api.github.com</code></li>
+<li>Whichever AI provider you chose</li>
 </ul>
-<p>اگر مدل محلی انتخاب کنید، ترافیک برنامه فقط بین کامپیوتر شما و <code>localhost</code> می‌ماند.</p>
-<h3 id="اگر-توکنم-لو-برود-چه؟">اگر توکنم لو برود چه؟</h3>
-<p>در <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">>github.com/settings/tokens</a> آن را <strong>Delete</strong> کنید. آنی فوراً باطل می‌شود و برنامه از آن استفاده نمی‌کند.</p>
-<h2 id="حریم-خصوصی">حریم خصوصی</h2>
-<h3 id="محتوای-ریپازیتوری-من-کجا-میرود؟">محتوای ریپازیتوری من کجا می‌رود؟</h3>
-<p>فقط جایی که خودتان تعیین کرده‌اید. هنگام درخواست از AI، ساختار فایل‌ها و چند فایل کلیدی برای مدل فرستاده می‌شود — اما این کار فقط با یک دکمه‌ی صریح انجام می‌شود، نه خودکار.</p>
-<h3 id="آیا-گیتهاب-دسترسیام-را-ذخیره-میکند؟">آیا گیت‌هاب دسترسی‌ام را ذخیره می‌کند؟</h3>
-<p>بله، در واقع نه: توکن شما فقط روی دستگاه خودتان و رمزنگاری‌شده ذخیره می‌شود. هیچ سرور واسطی وجود ندارد. این برنامه به گیت‌هاب وصل می‌شود، نه به هیچ سرویس میانی.</p>
-<h3 id="برنامه-چه-چیزی-ذخیره-میکند؟">برنامه چه چیزی ذخیره می‌کند؟</h3>
+<p>If you pick a local model, traffic stays between your machine and <code>localhost</code>.</p>
+<h3 id="what-if-my-token-leaks">What if my token leaks?</h3>
+<p>Delete it on <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">>github.com/settings/tokens</a>.
+It stops working immediately and the app stops using it.</p>
+<h2 id="privacy">Privacy</h2>
+<h3 id="where-does-my-repository-content-go">Where does my repository content go?</h3>
+<p>Only where you send it. When you ask the AI for something, the file tree and a
+few key files are sent to the model — but that only happens when you press the
+button, never automatically.</p>
+<h3 id="does-github-store-my-access">Does GitHub store my access?</h3>
+<p>Not remotely, in fact: your token is stored only on your own machine, encrypted.
+There is no server in the middle. This app talks to GitHub, not to anyone else.</p>
+<h3 id="what-does-the-app-store">What does the app store?</h3>
 <pre><code class="language-text">data/
-  settings.json     تنظیمات ظاهر و هوش مصنوعی
-  secrets.json      توکن و کلید API، رمزنگاری‌شده با DPAPI
+  settings.json     appearance and AI settings
+  secrets.json      token and API key, encrypted with DPAPI
 </code></pre>
-<p>همین. هیچ لاگ، هیچ تله‌ی‌ی تحلیلی، هیچ ارسال آماری.</p>
-<h3 id="میتوانم-کل-پوشهی-data-را-روی-فلش-ببرم؟">می‌توانم کل پوشه‌ی data را روی فلش ببرم؟</h3>
-<p>بله. این دقیقاً همان چیزی است که برنامه برای آن طراحی شده. پوشه‌ی <code>data</code> کنار exe می‌ماند و همه‌چیز همراهش جابه‌جا می‌شود.</p>
-<h2 id="محدودیتها">محدودیت‌ها</h2>
-<h3 id="چرا-github-enterprise-در-تنظیمات-نیست؟">چرا GitHub Enterprise در تنظیمات نیست؟</h3>
-<p>کلاینت توانایی اشاره به یک آدرس دلخواه را دارد و تست‌ها هم آن را بررسی می‌کنند، اما هنوز فیلدی در رابط کاربری برایش اضافه نشده. اگر لازم دارید، یک تغییر کوچک در تنظیمات کافی است.</p>
-<h3 id="چرا-عملیات-گراف-نیست؟">چرا عملیات گراف نیست؟</h3>
-<p>نمایش آمار بازدید نیاز به اکانت تحلیلی جداگانه دارد که هیچ ارتباطی با جریان کار اصلی ندارد. عمداً بیرون گذاشته شده.</p>
-<h3 id="آیا-میتوانم-کلید-api-جدید-بسازم؟">آیا می‌توانم کلید API جدید بسازم؟</h3>
-<p>نه. ساخت توکن نیاز به تأیید هویت دو مرحله‌ای دارد که فقط در مرورگر امن انجام می‌شود. به همین دلیل برنامه به‌جای ساختن، شما را به صفحه‌ی ساخت توکن هدایت می‌کند.</p>
-<h3 id="آیا-کار-آفلاین-دارد؟">آیا کار آفلاین دارد؟</h3>
-<p>فقط با مدل محلی. بخش گیت‌هاب بدون شبکه کار نمی‌کند چون هیچ داده‌ای کش نمی‌شود — و این عمدی است تا ریپازیتوری هرگز وضعیت کهنه نشان ندهد.</p>
-<h3 id="چند-ریپازیتوری-را-میبیند؟">چند ریپازیتوری را می‌بیند؟</h3>
-<p>تا ۶۰۰ ریپازیتوری، با صفحه‌بندی خودکار. اگر بیشتری دارید، فقط بخشی نمایش داده می‌شود.</p>
-<h2 id="عیبیابی">عیب‌یابی</h2>
-<h3 id="دکمههای-هوش-مصنوعی-خاکستریاند">دکمه‌های هوش مصنوعی خاکستری‌اند</h3>
-<p>یعنی سرویس AI پیکربندی نشده. به <strong>Settings → AI</strong> بروید و یک ارائه‌دهنده انتخاب کنید. برای Ollama و LM Studio نیازی به کلید نیست؛ کافی است مدل را داشته باشید و <strong>Test connection</strong> بزنید.</p>
-<h3 id="readme-خالی-باز-میشود">README خالی باز می‌شود</h3>
-<p>اگر ریپازیتوری README نداشته باشد، طبیعی است. روی <strong>Generate README</strong> بزنید تا ساخته شود، یا <strong>Load existing</strong> را امتحان کنید تا مطمئن شوید مسیر درست است.</p>
-<h3 id="پیام-خطای-۴۰۳-مربوط-به-rate-limit">پیام خطای ۴۰۳ مربوط به rate limit</h3>
-<p>سهمیه‌ی ساعتی گیت‌هاب تمام شده. خود برنامه در پیام خطا زمان تقریبی ریست را می‌نویسد. برنامه عمداً این خطا را دوباره تلاش نمی‌کند، چون با فاصله‌ی چند ثانیه حل نمی‌شود و فقط رابط کاربری را قفل می‌کند.</p>
-<h3 id="رابط-کاربری-درست-نمایش-داده-نمیشود">رابط کاربری درست نمایش داده نمی‌شود</h3>
-<p>بزرگ‌نمایی ویندوز را روی ۱۰۰٪ بگذارید، یا از <strong>Settings → UI scale</strong> کمی کم یا زیاد کنید.</p>
-<h3 id="برنامه-هنگام-commit-چیزی-نمیگوید">برنامه هنگام commit چیزی نمی‌گوید</h3>
-<p>احتمالاً قبلاً یک کار در حال اجراست. چند ثانیه صبر کنید؛ عملیات گیت‌هاب ممکن است چند دقیقه طول بکشد. اگر خطایی رخ دهد، در پایین صفحه به‌صورت toast نمایش داده می‌شود.</p>
-<h2 id="مشارکت">مشارکت</h2>
-<p>مخزن عمومی است. اگر مشکلی دیدید یا قابلیتی کم بود:</p>
-<p>۱. یک Issue باز کنید
-۲. در صورت تمایل Pull Request بدهید</p>
-<p>پیش از ارسال، تست‌ها را اجرا کنید:</p>
+<p>That is all. No logs, no analytics, no crash reporting.</p>
+<h3 id="can-i-keep-the-data-folder-on-a-usb-stick">Can I keep the data folder on a USB stick?</h3>
+<p>Yes — that is exactly what it is designed for. The <code>data</code> folder stays next to
+the executable and travels with it.</p>
+<h2 id="limits">Limits</h2>
+<h3 id="why-is-there-no-github-enterprise-setting">Why is there no GitHub Enterprise setting?</h3>
+<p>The client can be pointed at a different API root and the tests cover that, but
+there is no field for it in the UI yet. It is a small change if you need it.</p>
+<h3 id="why-no-graphs">Why no graphs?</h3>
+<p>GitHub traffic analytics live behind a separate account, and they have nothing to
+do with the core workflow. Deliberately left out.</p>
+<h3 id="can-it-create-api-tokens-for-me">Can it create API tokens for me?</h3>
+<p>No. Creating one needs two-factor re-authentication in a browser, so the app
+sends you to the token page instead of pretending it can do it.</p>
+<h3 id="does-it-work-offline">Does it work offline?</h3>
+<p>Only with a local model. The GitHub side needs a network because nothing is
+cached — and that is on purpose, so you never see a stale view of a repository.</p>
+<h3 id="how-many-repositories-can-it-see">How many repositories can it see?</h3>
+<p>Up to 600, fetched page by page. With more than that you will see part of the
+list.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="the-ai-buttons-are-greyed-out">The AI buttons are greyed out</h3>
+<p>The AI provider is not configured. Go to <strong>Settings → AI</strong> and pick a provider.
+Ollama and LM Studio need no key — just the model, then <strong>Test connection</strong>.</p>
+<h3 id="the-readme-comes-back-empty">The README comes back empty</h3>
+<p>Expected if the repository has no README yet. Use <strong>Generate README</strong> to create
+one, or <strong>Load existing</strong> to check the path is right.</p>
+<h3 id="i-got-a-403-rate-limit-error">I got a 403 rate limit error</h3>
+<p>Your hourly GitHub quota is spent. The app tells you roughly when it resets. It
+deliberately does not retry, because waiting a few seconds cannot help and would
+only freeze the interface.</p>
+<h3 id="the-interface-looks-wrong">The interface looks wrong</h3>
+<p>Set Windows display scaling to 100%, or nudge <strong>Settings → UI scale</strong> up or down.</p>
+<h3 id="nothing-happens-after-i-press-commit">Nothing happens after I press commit</h3>
+<p>The request is probably still running. A GitHub call can take a while. If it
+fails you get a message at the bottom of the page.</p>
+<h2 id="contributing">Contributing</h2>
+<p>The repository is open. If you find a problem or a missing feature:</p>
+<ol>
+<li>Open an issue</li>
+<li>Send a pull request if you like</li>
+</ol>
+<p>Run the tests before you push:</p>
 <pre><code class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>همه‌ی هشت سوت باید سبز باشند.</p>
-<h2 id="مجوز">مجوز</h2>
-<p>MIT. فایل <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">>LICENSE</a> در مخزن موجود است.</p>
+<p>All nine suites should be green.</p>
+<h2 id="licence">Licence</h2>
+<p>MIT. See <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">>LICENSE</a>
+in the repository.</p>
 
-<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#توکن-و-دسترسی">توکن و دسترسی</a></li><li class="toc-item toc-level-3"><a href="#چرا-توکن،-و-نه-ورود-با-نام-کاربری-و-رمز؟">چرا توکن، و نه ورود با نام کاربری و رمز؟</a></li><li class="toc-item toc-level-3"><a href="#آیا-برنامه-به-اینترنت-دسترسی-غیرمنتظره-دارد؟">آیا برنامه به اینترنت دسترسی غیرمنتظره دارد؟</a></li><li class="toc-item toc-level-3"><a href="#اگر-توکنم-لو-برود-چه؟">اگر توکنم لو برود چه؟</a></li><li class="toc-item toc-level-2"><a href="#حریم-خصوصی">حریم خصوصی</a></li><li class="toc-item toc-level-3"><a href="#محتوای-ریپازیتوری-من-کجا-میرود؟">محتوای ریپازیتوری من کجا می‌رود؟</a></li><li class="toc-item toc-level-3"><a href="#آیا-گیتهاب-دسترسیام-را-ذخیره-میکند؟">آیا گیت‌هاب دسترسی‌ام را ذخیره می‌کند؟</a></li><li class="toc-item toc-level-3"><a href="#برنامه-چه-چیزی-ذخیره-میکند؟">برنامه چه چیزی ذخیره می‌کند؟</a></li><li class="toc-item toc-level-3"><a href="#میتوانم-کل-پوشهی-data-را-روی-فلش-ببرم؟">می‌توانم کل پوشه‌ی data را روی فلش ببرم؟</a></li><li class="toc-item toc-level-2"><a href="#محدودیتها">محدودیت‌ها</a></li><li class="toc-item toc-level-3"><a href="#چرا-github-enterprise-در-تنظیمات-نیست؟">چرا GitHub Enterprise در تنظیمات نیست؟</a></li><li class="toc-item toc-level-3"><a href="#چرا-عملیات-گراف-نیست؟">چرا عملیات گراف نیست؟</a></li><li class="toc-item toc-level-3"><a href="#آیا-میتوانم-کلید-api-جدید-بسازم؟">آیا می‌توانم کلید API جدید بسازم؟</a></li><li class="toc-item toc-level-3"><a href="#آیا-کار-آفلاین-دارد؟">آیا کار آفلاین دارد؟</a></li><li class="toc-item toc-level-3"><a href="#چند-ریپازیتوری-را-میبیند؟">چند ریپازیتوری را می‌بیند؟</a></li><li class="toc-item toc-level-2"><a href="#عیبیابی">عیب‌یابی</a></li><li class="toc-item toc-level-3"><a href="#دکمههای-هوش-مصنوعی-خاکستریاند">دکمه‌های هوش مصنوعی خاکستری‌اند</a></li><li class="toc-item toc-level-3"><a href="#readme-خالی-باز-میشود">README خالی باز می‌شود</a></li><li class="toc-item toc-level-3"><a href="#پیام-خطای-۴۰۳-مربوط-به-rate-limit">پیام خطای ۴۰۳ مربوط به rate limit</a></li><li class="toc-item toc-level-3"><a href="#رابط-کاربری-درست-نمایش-داده-نمیشود">رابط کاربری درست نمایش داده نمی‌شود</a></li><li class="toc-item toc-level-3"><a href="#برنامه-هنگام-commit-چیزی-نمیگوید">برنامه هنگام commit چیزی نمی‌گوید</a></li><li class="toc-item toc-level-2"><a href="#مشارکت">مشارکت</a></li><li class="toc-item toc-level-2"><a href="#مجوز">مجوز</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#tokens-and-access">Tokens and access</a></li><li class="toc-item toc-level-3"><a href="#why-a-token-rather-than-signing-in">Why a token rather than signing in?</a></li><li class="toc-item toc-level-3"><a href="#does-the-app-phone-anywhere-unexpected">Does the app phone anywhere unexpected?</a></li><li class="toc-item toc-level-3"><a href="#what-if-my-token-leaks">What if my token leaks?</a></li><li class="toc-item toc-level-2"><a href="#privacy">Privacy</a></li><li class="toc-item toc-level-3"><a href="#where-does-my-repository-content-go">Where does my repository content go?</a></li><li class="toc-item toc-level-3"><a href="#does-github-store-my-access">Does GitHub store my access?</a></li><li class="toc-item toc-level-3"><a href="#what-does-the-app-store">What does the app store?</a></li><li class="toc-item toc-level-3"><a href="#can-i-keep-the-data-folder-on-a-usb-stick">Can I keep the data folder on a USB stick?</a></li><li class="toc-item toc-level-2"><a href="#limits">Limits</a></li><li class="toc-item toc-level-3"><a href="#why-is-there-no-github-enterprise-setting">Why is there no GitHub Enterprise setting?</a></li><li class="toc-item toc-level-3"><a href="#why-no-graphs">Why no graphs?</a></li><li class="toc-item toc-level-3"><a href="#can-it-create-api-tokens-for-me">Can it create API tokens for me?</a></li><li class="toc-item toc-level-3"><a href="#does-it-work-offline">Does it work offline?</a></li><li class="toc-item toc-level-3"><a href="#how-many-repositories-can-it-see">How many repositories can it see?</a></li><li class="toc-item toc-level-2"><a href="#troubleshooting">Troubleshooting</a></li><li class="toc-item toc-level-3"><a href="#the-ai-buttons-are-greyed-out">The AI buttons are greyed out</a></li><li class="toc-item toc-level-3"><a href="#the-readme-comes-back-empty">The README comes back empty</a></li><li class="toc-item toc-level-3"><a href="#i-got-a-403-rate-limit-error">I got a 403 rate limit error</a></li><li class="toc-item toc-level-3"><a href="#the-interface-looks-wrong">The interface looks wrong</a></li><li class="toc-item toc-level-3"><a href="#nothing-happens-after-i-press-commit">Nothing happens after I press commit</a></li><li class="toc-item toc-level-2"><a href="#contributing">Contributing</a></li><li class="toc-item toc-level-2"><a href="#licence">Licence</a></li></ul></nav>
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>

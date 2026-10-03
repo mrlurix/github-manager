@@ -1,20 +1,39 @@
-/* Client-side search over the Persian-normalised index built by
-   tools/build_docs.py. The normaliser here mirrors the Python one so that the
-   query and the stored text are folded identically. */
+/* Client-side search over the index built by tools/build_docs.py. The
+   normaliser here mirrors the Python one step for step, so that a query and the
+   stored text are folded identically. Both sides must agree: if they drift, a
+   query silently stops matching text that is visibly right in front of you. */
 
 /* eslint-env browser */
 (function () {
   "use strict";
 
   var ZWNJ = "‌";
-  var DIACRITICS = /[ً-ٰٟۖ-ۭ]/g;
   var TATWEEL = /ـ+/g;
-  var PUNCT = /[^\w\s؀-ۿ]+/g;
+  /* Anything that is not a letter, a digit or a space. This has to be
+     Unicode-aware: the ASCII \w class would cut an accented letter out of the
+     middle of a word, so "café" would index as "caf" + "". */
+  var PUNCT = /[^\p{L}\p{N}\s؀-ۿ]+/gu;
+  /* Combining marks, dropped after NFD. Covers Latin accents and the Arabic
+     vowel marks as well, since those are category Mn too. */
+  var COMBINING = /\p{Mn}/gu;
+  /* Characters that read as ASCII but are stored as something else, so a query
+     typed with a straight apostrophe matches text written with a curly one. */
+  var TYPOGRAPHIC = {
+    "‘": "'", "’": "'", "‚": "'", "‛": "'",
+    "“": '"', "”": '"', "„": '"',
+    "–": "-", "—": "-", "‒": "-", "−": "-",
+    "‑": "-", "‐": "-", "⁃": "-"
+  };
 
-  /** Fold Persian text: Arabic yeh/kaf, ZWNJ, diacritics, digits. */
+  /** Fold text so a loosely typed query still matches: case, accents,
+      typographic punctuation and Arabic letter variants all collapse. */
   function normalise(text) {
     if (!text) return "";
-    var value = String(text).normalize ? String(text).normalize("NFKC") : String(text);
+    var value = String(text);
+    if (value.normalize) {
+      value = value.normalize("NFKC").normalize("NFD")
+        .replace(COMBINING, "").normalize("NFC");
+    }
     var out = "";
     for (var i = 0; i < value.length; i++) {
       var ch = value[i];
@@ -22,9 +41,13 @@
       // Arabic-Indic and Extended Arabic-Indic digits become ASCII.
       if (code >= 0x0660 && code <= 0x0669) { out += String(code - 0x0660); continue; }
       if (code >= 0x06f0 && code <= 0x06f9) { out += String(code - 0x06f0); continue; }
+      if (Object.prototype.hasOwnProperty.call(TYPOGRAPHIC, ch)) {
+        out += TYPOGRAPHIC[ch];
+        continue;
+      }
       switch (ch) {
         case "ي": case "ى": out += "ی"; break;   // ARABIC YEH / ALEF MAKSURA
-        case "ك": case "ﮐ": case "ﮑ": out += "ک"; break;
+        case "ك": case "ﭐ": case "ﮐ": case "ﮑ": out += "ک"; break;
         case "ة": out += "ه"; break;                // TEH MARBUTA
         case "ؤ": out += "و"; break;
         case "إ": case "أ": case "آ": out += "ا"; break;
@@ -33,7 +56,6 @@
       }
     }
     return out
-      .replace(DIACRITICS, "")
       .replace(TATWEEL, "")
       .replace(PUNCT, " ")
       .replace(/\s+/g, " ")
@@ -46,7 +68,7 @@
     return normalise(query).split(" ").filter(function (t) { return t.length > 0; });
   }
 
-  var State = { entries: null, loading: false, cache: null };
+  var State = { entries: null, loading: false };
 
   function load(cb) {
     if (State.entries) return cb(State.entries);
@@ -98,22 +120,17 @@
   /** Pull a readable excerpt around the first matching term. */
   function locate(entry, words) {
     var raw = entry.raw || "";
-    var lower = raw.toLowerCase();
+    var lower = normalise(raw);
     for (var i = 0; i < words.length; i++) {
-      // Prefer a hit in the original text so the excerpt keeps its ZWNJ and
-      // vowel marks; fall back to the folded text when the query was typed
-      // with Arabic yeh/kaf.
-      var at = lower.indexOf(words[i]);
-      if (at !== -1) {
-        return { text: raw, at: at, word: words[i] };
-      }
-      var folded = normalise(raw);
-      var foldedAt = folded.indexOf(words[i]);
+      // Prefer the folded text. In an English document the query and the text
+      // differ only by case and accents, so the offsets line up with what the
+      // reader will see in the excerpt.
+      var foldedAt = lower.indexOf(words[i]);
       if (foldedAt !== -1) {
-        return { text: folded, at: foldedAt, word: words[i] };
+        return { text: lower, at: foldedAt, word: words[i] };
       }
     }
-    return { text: raw, at: 0, word: words[0] || "" };
+    return { text: normalise(raw), at: 0, word: words[0] || "" };
   }
 
   function snippet(entry, words) {

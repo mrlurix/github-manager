@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>خانه · GitHub Manager</title>
-<meta name="description" content="GitHub Manager — یک کلاینت دسکتاپ پرتابل برای گیت‌هاب با دستیار هوش مصنوعی که فقط و فقط درباره گیت‌هاب کار می‌کند.">
+<title>Home · GitHub Manager</title>
+<meta name="description" content="GitHub Manager — a portable GitHub desktop client with an AI assistant that only ever works on GitHub.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="خانه · GitHub Manager">
-<meta property="og:description" content="GitHub Manager — یک کلاینت دسکتاپ پرتابل برای گیت‌هاب با دستیار هوش مصنوعی که فقط و فقط درباره گیت‌هاب کار می‌کند.">
+<meta property="og:title" content="Home · GitHub Manager">
+<meta property="og:description" content="GitHub Manager — a portable GitHub desktop client with an AI assistant that only ever works on GitHub.">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -31,14 +31,14 @@
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -47,7 +47,7 @@
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -58,106 +58,110 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link is-active" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <nav class="nav"><a class="nav-link is-active" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
 <div class="hero">
-  <h1>همه‌ی کارهای گیت‌هاب، در یک برنامه‌ی دسکتاپ</h1>
+  <h1>All of GitHub, in one desktop app</h1>
   <p>
-    نوشتن README، مدیریت ریپازیتوری، ایشو و پول‌ریکویست، ریلیز و کامیت — با یک دستیار هوش مصنوعی که
-    تمام کار را انجام می‌دهد و پیش از آنکه درخواستی به مدل برسد، هر چیزی خارج از گیت‌هاب را رد می‌کند.
+    Write READMEs, manage repositories, work through issues and pull requests,
+    publish releases and write commit messages — with an AI assistant that does
+    the work and refuses anything outside GitHub before the request ever reaches
+    the model.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">دانلود نسخه ۱.۰.۰</a>
-    <a class="btn" href="features.html">قابلیت‌ها</a>
-    <a class="btn" href="install.html">راهنمای نصب</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.0.0</a>
+    <a class="btn" href="features.html">Features</a>
+    <a class="btn" href="install.html">Getting started</a>
   </div>
 </div>
 <div class="cards">
   <div class="card">
-    <h3>استودیوی README</h3>
-    <p>از روی محتوای واقعی ریپازیتوری یک README کامل می‌سازد؛ بعد با درخواست شما اصلاحش می‌کند و در نهایت commit می‌کند.</p>
+    <h3>README Studio</h3>
+    <p>Builds a complete README from the actual repository contents, refines it when you ask, and commits it when you approve.</p>
   </div>
   <div class="card">
-    <h3>ریپازیتوری‌ها</h3>
-    <p>ساخت، ویرایش، بایگانی، حذف، fork، ستاره و تغییر موضوعات — همه از داخل برنامه و با تأیید گرفتن.</p>
+    <h3>Repositories</h3>
+    <p>Create, edit, archive, delete, fork, star and change topics — all from inside the app, every write confirmed first.</p>
   </div>
   <div class="card">
-    <h3>ایشو و پول‌ریکویست</h3>
-    <p>draft کردن ایشو، تریاژ گروهی، پاسخ هوشمند به کامنت‌ها و بستن یا باز کردن هر مورد.</p>
+    <h3>Issues &amp; pull requests</h3>
+    <p>Draft an issue, triage a whole queue at once, reply to review comments, and close or reopen anything.</p>
   </div>
   <div class="card">
-    <h3>ریلیز و کامیت</h3>
-    <p>کامیت‌های خام را به یادداشت ریلیز تبدیل می‌کند، پیام کامیت Conventional می‌نویسد و نام شاخه پیشنهاد می‌دهد.</p>
+    <h3>Releases &amp; commits</h3>
+    <p>Turns a raw commit list into release notes, writes Conventional Commit messages, suggests branch names and publishes.</p>
   </div>
   <div class="card">
-    <h3>دستیار مقید به گیت‌هاب</h3>
-    <p>پیش از ارسال به مدل، درخواست‌های خارج از حوزه‌ی گیت‌هاب تشخیص داده و رد می‌شوند.</p>
+    <h3>Scoped to GitHub</h3>
+    <p>Off-topic requests are detected and refused before they are sent to the model.</p>
   </div>
   <div class="card">
-    <h3>پرتابل</h3>
-    <p>یک فایل exe. بدون نصب، بدون پایتون، بدون دسترسی مدیر. مدل محلی هم پشتیبانی می‌شود.</p>
+    <h3>Portable</h3>
+    <p>One exe file. No installer, no Python, no admin rights. A local model works too.</p>
   </div>
 </div>
-<h2 id="این-برنامه-چه-کار-نمیکند">این برنامه چه کار نمی‌کند</h2>
-<p>
-  عمداً محدود است. دستیار داخلی به هیچ موضوعی بیرون از گیت‌هاب پاسخ نمی‌دهد؛ نه دستور پخت غذا، نه
-  مشاوره پزشکی، نه قیمت سهام. اگر درخواستی خارج از حوزه باشد، پیش از رسیدن به مدل مسدود می‌شود و پاسخ
-  «خارج از محدوده» داده می‌شود.
-</p>
-<p><span class="pill pill-ok">محدوده قفل است</span>
-<span class="pill">کار کاملاً آفلاین ممکن است</span>
-<span class="pill">هیچ داده‌ای بدون اجازه‌ی شما ارسال نمی‌شود</span></p>
-<h2 id="چطور-کار-میکند">چطور کار می‌کند</h2>
-<p>۱. <strong>اتصال</strong> — یک Personal Access Token از گیت‌هاب بسازید و در برنامه بگذارید. توکن با DPAPI ویندوز رمزنگاری می‌شود.</p>
-<p>۲. <strong>پیکربندی هوش مصنوعی</strong> — هر سرویس سازگار با OpenAI: OpenAI، OpenRouter، Groq، Together، Ollama یا LM Studio. اگر مدل محلی دارید، اصلاً کلید API لازم نیست.</p>
-<p>۳. <strong>کار</strong> — README بسازید، ایشو تریاژ کنید، ریلیز منتشر کنید. هر عملیات نوشتنی قبل از ارسال یک پنجره‌ی تأیید نشان می‌دهد.</p>
-<pre><code class="language-text">اتصال  →  انتخاب ریپازیتوری  →  درخواست به هوش مصنوعی  →  بازبینی و تأیید  →  commit روی گیت‌هاب
+<h2 id="what-this-app-will-not-do">What this app will not do</h2>
+<p>It is deliberately limited. The built-in assistant does not answer anything
+outside GitHub: not recipes, not medical advice, not stock prices. If a request
+falls outside the domain it is blocked before it reaches the model and you get an
+out-of-scope reply instead.</p>
+<p><span class="pill pill-ok">Scope is enforced</span>
+<span class="pill">Works fully offline with a local model</span>
+<span class="pill">Nothing leaves the machine without your say-so</span></p>
+<h2 id="how-it-works">How it works</h2>
+<ol>
+<li><strong>Connect</strong> — create a Personal Access Token on GitHub and paste it in. The token is encrypted with Windows DPAPI.</li>
+<li><strong>Pick a model</strong> — any OpenAI compatible endpoint: OpenAI, OpenRouter, Groq, Together, Ollama or LM Studio. A local model needs no API key.</li>
+<li><strong>Work</strong> — generate a README, triage issues, publish a release. Every write shows a confirmation first.</li>
+</ol>
+<pre><code class="language-text">Connect  →  Pick a repository  →  Ask the AI  →  Review and approve  →  Commit to GitHub
 </code></pre>
-<h2 id="پیشنیازها">پیش‌نیازها</h2>
+<h2 id="requirements">Requirements</h2>
 <table>
 <thead>
 <tr>
-<th>مورد</th>
-<th>توضیح</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>سیستم‌عامل</td>
-<td>ویندوز ۶۴ بیتی (نسخه‌های ۱۰ و ۱۱ تست شده‌اند)</td>
+<td>OS</td>
+<td>64-bit Windows (tested on 10 and 11)</td>
 </tr>
 <tr>
-<td>پایتون</td>
-<td>لازم <strong>نیست</strong> — نسخه‌ی exe خودش مستقل است</td>
+<td>Python</td>
+<td>not required — the exe is self-contained</td>
 </tr>
 <tr>
-<td>فضای دیسک</td>
-<td>حدود ۱۳۰ مگابایت برای اجرا</td>
+<td>Disk</td>
+<td>roughly 130 MB while running</td>
 </tr>
 <tr>
-<td>دسترسی شبکه</td>
-<td>فقط برای گیت‌هاب و سرویس هوش مصنوعی</td>
+<td>Network</td>
+<td>GitHub, plus whichever AI provider you configure</td>
 </tr>
 </tbody>
 </table>
-<h2 id="قدم-بعدی">قدم بعدی</h2>
+<h2 id="next">Next</h2>
 <ul>
-<li><a href="features.html">قابلیت‌ها</a> — مرور کامل همه‌ی بخش‌های برنامه</li>
-<li><a href="install.html">نصب و راه‌اندازی</a> — دانلود و شروع کار</li>
-<li><a href="ai.html">هوش مصنوعی</a> — انتخاب مدل و تنظیم محدوده</li>
-<li><a href="security.html">امنیت</a> — توکن، مسیرها و پاک‌سازی HTML</li>
+<li><a href="features.html">Features</a> — every page of the app in detail</li>
+<li><a href="install.html">Getting started</a> — download and first run</li>
+<li><a href="ai.html">AI</a> — choosing a model and how the scope limit works</li>
+<li><a href="security.html">Security</a> — tokens, path validation and HTML sanitising</li>
+<li><a href="faq.html">FAQ</a> — the questions that come up most</li>
 </ul>
 
-<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#این-برنامه-چه-کار-نمیکند">این برنامه چه کار نمی‌کند</a></li><li class="toc-item toc-level-2"><a href="#چطور-کار-میکند">چطور کار می‌کند</a></li><li class="toc-item toc-level-2"><a href="#پیشنیازها">پیش‌نیازها</a></li><li class="toc-item toc-level-2"><a href="#قدم-بعدی">قدم بعدی</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#what-this-app-will-not-do">What this app will not do</a></li><li class="toc-item toc-level-2"><a href="#how-it-works">How it works</a></li><li class="toc-item toc-level-2"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#next">Next</a></li></ul></nav>
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>

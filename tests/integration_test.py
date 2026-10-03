@@ -15,7 +15,6 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -59,7 +58,7 @@ def wait_for(predicate, app: QApplication, timeout: float = 8.0) -> bool:
 # --------------------------------------------------------------------- HTTP
 def test_real_http_basics(server: MockGitHubServer) -> None:
     """The client must parse real payloads, not just call methods."""
-    from app.core.github_api import GitHubClient, GitHubError
+    from app.core.github_api import GitHubClient
 
     client = GitHubClient(VALID_TOKEN, api_url=server.url)
 
@@ -141,7 +140,7 @@ def test_pagination_over_real_http(server: MockGitHubServer) -> None:
 
 def test_real_writes(server: MockGitHubServer) -> None:
     """Write paths must actually change server state."""
-    from app.core.github_api import GitHubClient, GitHubError
+    from app.core.github_api import GitHubClient
 
     client = GitHubClient(VALID_TOKEN, api_url=server.url)
 
@@ -304,13 +303,11 @@ def test_token_never_leaves(server: MockGitHubServer) -> None:
 
 def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
     """Drive the real window against the real client over real HTTP."""
-    from PySide6.QtCore import QTimer
-    from PySide6.QtWidgets import QDialog
 
     from app.core.github_api import GitHubClient
     from app.ui.context import AppContext
     from app.ui.main_window import MainWindow
-    from tests.feature_test import StubAI, auto_dialog, fill_dialog
+    from tests.feature_test import StubAI, auto_dialog
 
     ctx = AppContext()
     ctx.secrets.set("github_token", VALID_TOKEN)

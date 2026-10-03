@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>امنیت · GitHub Manager</title>
-<meta name="description" content="ذخیره‌سازی توکن، اعتبارسنجی مسیر، پاک‌سازی HTML و محدود کردن دسترسی شبکه.">
+<title>Security · GitHub Manager</title>
+<meta name="description" content="Token storage, path validation, HTML sanitising, rate limit handling and how far the token can travel.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="امنیت · GitHub Manager">
-<meta property="og:description" content="ذخیره‌سازی توکن، اعتبارسنجی مسیر، پاک‌سازی HTML و محدود کردن دسترسی شبکه.">
+<meta property="og:title" content="Security · GitHub Manager">
+<meta property="og:description" content="Token storage, path validation, HTML sanitising, rate limit handling and how far the token can travel.">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -31,14 +31,14 @@
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -47,7 +47,7 @@
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -58,181 +58,199 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link is-active" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link is-active" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
-<p>امنیت در این برنامه روی یک واقعیت بنا شده است: بخش زیادی از متنی که نمایش داده می‌شود، <strong>متنی است که کاربر کنترل نمی‌کند</strong> — خروجی یک مدل، README یک ریپازیتوری دیگر، یا متن یک ایشوی غریبه. این صفحه توضیح می‌دهد با آن چه می‌شود.</p>
-<h2 id="توکن-گیتهاب">توکن گیت‌هاب</h2>
-<h3 id="ذخیرهسازی">ذخیره‌سازی</h3>
+<p>Security in this app is built around one fact: a lot of the text it displays is
+text you do <strong>not</strong> control — output from a model, a README from someone else's
+repository, the body of an issue written by a stranger. This page explains what
+happens to that text.</p>
+<h2 id="the-github-token">The GitHub token</h2>
+<h3 id="storage">Storage</h3>
 <ul>
-<li>با <strong>DPAPI ویندوز</strong> (<code>CryptProtectData</code>) رمزنگاری می‌شود</li>
-<li>به حساب کاربری ویندوز شما گره خورده است — کاربر دیگری روی همین دستگاه نمی‌تواند بازش کند</li>
-<li>یک لایه entropy اختصاصی دارد تا فقط همین برنامه بتواند بخواند</li>
-<li>روی سیستم‌های غیر ویندوز به‌صورت obfuscated ذخیره می‌شود و روی POSIX با دسترسی <code>0600</code> نوشته می‌شود</li>
+<li>Encrypted with <strong>Windows DPAPI</strong> (<code>CryptProtectData</code>)</li>
+<li>Bound to your Windows account — another user on the same machine cannot decrypt it</li>
+<li>Uses an extra entropy value, so only this application can read it back</li>
+<li>On non-Windows systems it is stored obfuscated, written <code>0600</code> on POSIX</li>
 </ul>
-<h3 id="نمایش">نمایش</h3>
+<h3 id="display">Display</h3>
 <ul>
-<li>هیچ‌جا در رابط کاربری به‌صورت خام نمایش داده نمی‌شود</li>
-<li>پیش از ورود، کاراکتر آخر پنهان است</li>
-<li>هر پیام خطا، toast و پنجره‌ی گفت‌وگو <strong>پیش از نمایش</strong> از فیلتر عبور می‌کند</li>
+<li>Never shown in the clear anywhere in the UI</li>
+<li>The last character is masked before you submit it</li>
+<li>Every error message, toast and dialog is <strong>scrubbed before it is shown</strong></li>
 </ul>
-<h3 id="پاک-کردن">پاک کردن</h3>
+<h3 id="removing-it">Removing it</h3>
 <ul>
-<li><strong>Settings → Clear API key</strong> کلید مدل را پاک می‌کند</li>
-<li><strong>Settings → Erase everything</strong> توکن، کلید، کش ریپازیتوری و تنظیمات را حذف می‌کند</li>
-<li>برای حذف دستی، کافی است پوشه‌ی <code>data</code> را کنار برنامه پاک کنید</li>
+<li><strong>Settings → Clear API key</strong> removes the model key</li>
+<li><strong>Settings → Erase everything</strong> removes tokens, keys, the repository cache and settings</li>
+<li>To wipe it by hand, delete the <code>data</code> folder next to the executable</li>
 </ul>
-<h2 id="توکن-هرگز-به-جای-دیگری-نمیرود">توکن هرگز به جای دیگری نمی‌رود</h2>
-<p>سربرگ <code>Authorization</code> به نشانی‌ای می‌رود که خود برنامه تعیین کرده است. هر آدرس مطلق دیگری رد می‌شود:</p>
+<h2 id="the-token-never-leaves-github">The token never leaves GitHub</h2>
+<p>The <code>Authorization</code> header goes only to the address the app itself configured.
+Any other absolute URL is refused:</p>
 <table>
 <thead>
 <tr>
-<th>آدرس</th>
-<th>نتیجه</th>
+<th>URL</th>
+<th>Result</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>https://api.github.com/...</code></td>
-<td>مجاز</td>
+<td>allowed</td>
 </tr>
 <tr>
 <td><code>https://uploads.github.com/...</code></td>
-<td>مجاز (بارگذاری دارایی ریلیز)</td>
+<td>allowed (release asset uploads)</td>
 </tr>
 <tr>
 <td><code>https://evil.example.com/...</code></td>
-<td>رد می‌شود</td>
+<td>refused</td>
 </tr>
 <tr>
 <td><code>https://api.github.com.evil.com/...</code></td>
-<td>رد می‌شود</td>
+<td>refused</td>
 </tr>
 <tr>
 <td><code>https://user:pass@api.github.com@evil.com/...</code></td>
-<td>رد می‌شود</td>
+<td>refused</td>
 </tr>
 </tbody>
 </table>
-<p>اعتبارسنجی روی میزبان (<code>hostname</code>) انجام می‌شود، نه روی متن آدرس — بنابراین ترفندهایی مثل یکسان جلوه دادن میزبان با پسوند، کار نمی‌کنند.</p>
-<h2 id="اعتبارسنجی-ورودی">اعتبارسنجی ورودی</h2>
-<p>نام ریپازیتوری از جعبه‌ی متن هم قابل ورود است، پس فرض نمی‌کنیم قابل اعتماد است.</p>
+<p>The check is made on the parsed <strong>hostname</strong>, not on the text of the URL, so
+tricks that merely look like the right host do not work.</p>
+<h2 id="input-validation">Input validation</h2>
+<p>A repository name can be typed by hand in the picker, so it is not trusted.</p>
 <table>
 <thead>
 <tr>
-<th>ورودی</th>
-<th>قاعده</th>
+<th>Input</th>
+<th>Rule</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>نام ریپازیتوری</td>
-<td>دقیقاً <code>owner/repo</code> با کاراکترهای مجاز گیت‌هاب</td>
+<td>Repository name</td>
+<td>exactly <code>owner/repo</code>, using GitHub's own allowed characters</td>
 </tr>
 <tr>
-<td>مسیر فایل</td>
-<td>بدون <code>..</code>، بدون جداکننده‌ی مسیر در هر بخش</td>
+<td>File path</td>
+<td>no <code>..</code>, no path separator inside a segment</td>
 </tr>
 <tr>
-<td>نام شاخه</td>
-<td>بدون فاصله و کاراکترهای <code>~ ^ : ? * [ \</code> و بدون <code>/</code> در انتها</td>
+<td>Branch name</td>
+<td>no space and none of <code>~ ^ : ? * [ \</code>, and no trailing <code>/</code></td>
 </tr>
 </tbody>
 </table>
-<p>هر چیزی مثل <code>owner/../../user</code> <strong>پیش از ساخته شدن URL</strong> رد می‌شود، نه اینکه به سرور فرستاده شود و ۴۰۴ بگیرد.</p>
-<h2 id="پاکسازی-html">پاک‌سازی HTML</h2>
-<p>پیش‌نمایش روی <code>QTextBrowser</code> رندر می‌شود — و این یک موتور HTML واقعی است که تصویر می‌خواند و دنبال لینک می‌رود. برای همین خروجی markdown از یک پاک‌سازنده‌ی <strong>فهرست‌مجاز</strong> رد می‌شود.</p>
+<p>Anything like <code>owner/../../user</code> is refused <strong>before the URL is built</strong>, rather
+than being sent and coming back as a 404.</p>
+<h2 id="html-sanitising">HTML sanitising</h2>
+<p>The preview renders into a <code>QTextBrowser</code>, which is a real HTML engine: it
+fetches images and follows links. Rendered markdown therefore passes through an
+<strong>allow-list</strong> sanitiser.</p>
 <table>
 <thead>
 <tr>
-<th>تهدید</th>
-<th>مقابله</th>
+<th>Threat</th>
+<th>What happens</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>تزریق <code>&lt;script&gt;</code>، <code>&lt;iframe&gt;</code>، <code>&lt;object&gt;</code></td>
-<td>حذف کامل تگ و محتوای آن</td>
+<td><code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code></td>
+<td>tag and its content removed</td>
 </tr>
 <tr>
-<td>رویدادهای <code>onclick</code> و هم‌نوع</td>
-<td>حذف هر صفتی که با <code>on</code> شروع شود</td>
+<td><code>onclick</code> and friends</td>
+<td>any attribute starting with <code>on</code> removed</td>
 </tr>
 <tr>
-<td>تصویر با مسیر <code>file://</code></td>
-<td>محدود به <code>http</code> و <code>https</code></td>
+<td>Image with a <code>file://</code> source</td>
+<td>limited to <code>http</code> and <code>https</code></td>
 </tr>
 <tr>
-<td>تصویر با <code>data:</code> یا مسیر نسبی بدون میزبان</td>
-<td>رد می‌شود</td>
+<td>Image with <code>data:</code> or a schemeless path</td>
+<td>refused</td>
 </tr>
 <tr>
-<td>لینک <code>javascript:</code> یا <code>file:</code></td>
-<td>محدود به <code>http</code>، <code>https</code> و <code>mailto</code></td>
+<td><code>javascript:</code> or <code>file:</code> links</td>
+<td>limited to <code>http</code>, <code>https</code> and <code>mailto</code></td>
 </tr>
 <tr>
-<td>CSS با <code>url()</code> یا <code>@import</code></td>
-<td>حذف کامل آن declaration</td>
+<td>CSS with <code>url()</code> or <code>@import</code></td>
+<td>the whole declaration is dropped</td>
 </tr>
 <tr>
-<td>دور زدن با کامنت CSS (<code>ur/**/l(</code>)</td>
-<td>هر declaration دارای کامنت حذف می‌شود</td>
+<td>CSS hiding a keyword with a comment (<code>ur/**/l(</code>)</td>
+<td>any declaration containing a comment is dropped</td>
 </tr>
 <tr>
-<td><code>&lt;a href=&quot;...&quot;&gt;</code> به یک قاب نام‌دار</td>
-<td><code>target</code> فقط <code>_blank</code> یا <code>_self</code> مجاز است</td>
+<td><code>&lt;a target=&quot;…&quot;&gt;</code> pointing at a named frame</td>
+<td>only <code>_blank</code> and <code>_self</code> are allowed</td>
 </tr>
 </tbody>
 </table>
-<p>علاوه بر پاک‌سازی، <strong>هر کلیک روی لینک یک بار دیگر بررسی می‌شود</strong> پیش از آنکه مرورگر باز شود. اگر پاک‌سازنده در آینده با نسخه‌ی جدیدی از markdown-it دور زده شود، این لایه هنوز جلوی باز شدن آدرس خطرناک را می‌گیرد.</p>
+<p>On top of that, <strong>every link click is checked again</strong> before the browser opens.
+If a future markdown renderer ever slipped past the sanitiser, this layer would
+still stop a dangerous URL from launching.</p>
 <blockquote>
-<p>تصاویر <code>http(s)</code> از راه دور <strong>بارگذاری می‌شوند</strong> تا بج‌ها کار کنند. این یک انتخاب آگاهانه است؛ گیت‌هاب هم همین کار را می‌کند. آنچه باقی می‌ماند این است که یک شخص ثالث می‌تواند ببیند کدام صفحه‌ی ریپازیتوری باز شده.</p>
+<p>Remote <code>http(s)</code> images <strong>are</strong> loaded so that badges work. That is a conscious
+choice — GitHub does the same thing behind its camo proxy. What remains is that
+a third party can see which repository page was opened.</p>
 </blockquote>
-<h2 id="محدودیت-نرخ-و-رفتار-با-خطا">محدودیت نرخ و رفتار با خطا</h2>
-<p>گیت‌هاب برای هر توکن یک سهمیه‌ی ساعتی دارد. وقتی تمام شود، API یک خطای ۴۰۳ برمی‌گرداند با متنی شبیه به <code>API rate limit exceeded</code>.</p>
-<blockquote>
-<p>پیام‌های خطای برنامه انگلیسی هستند، چون متن خطا از خود گیت‌هاب می‌آید. اگر همین متن را در جستجوی همین سایت وارد کنید، به همین صفحه می‌رسید.</p>
-</blockquote>
-<p>برنامه <strong>عمداً این خطا را دوباره تلاش نمی‌کند</strong>. تلاش مجدد بعد از دو ثانیه هیچ فایده‌ای ندارد، چون سهمیه ساعتی بعد از چند دقیقه برمی‌گردد، نه چند ثانیه؛ تنها نتیجه‌اش قفل شدن چند ثانیه‌ای رابط کاربری است. به‌جای آن:</p>
+<h2 id="rate-limits-and-error-handling">Rate limits and error handling</h2>
+<p>GitHub enforces an hourly quota per token. When it runs out, the API returns 403.</p>
+<p>The app <strong>does not retry that</strong>. Retrying after a couple of seconds cannot help,
+because the quota returns after minutes, not seconds — all it achieves is freezing
+the UI for several seconds before explaining why. Instead:</p>
 <ul>
-<li>خطا بلافاصله نشان داده می‌شود</li>
-<li>زمان تقریبی ریست از روی هدر <code>X-RateLimit-Reset</code> حساب و در پیام نوشته می‌شود</li>
+<li>The error appears immediately</li>
+<li>The approximate reset time, read from the <code>X-RateLimit-Reset</code> header, is included in the message</li>
 </ul>
-<p>خطاهای ۴۰۱ و ۴۲۲ هم به همان شکل رفتار می‌کنند: یک بار درخواست، یک پیام روشن، بدون تلاش مجدد. تنها خطاهای ۵xx هستند که دوباره تلاش می‌شوند، چون آن‌ها موقتی‌اند.</p>
-<p>هر پیام خطا پیش از نمایش از فیلتر عبور می‌کند، بنابراین اگر بدنه‌ی پاسخ یک سرویس، کلید API شما را بازتاب دهد، روی صفحه ظاهر نمی‌شود.</p>
-<h2 id="چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</h2>
-<p>فهرست دقیق در صفحه‌ی <a href="ai.html">هوش مصنوعی</a> آمده است. خلاصه: محتوای ریپازیتوری، آن هم فقط وقتی که خودتان درخواست بدهید.</p>
-<p><strong>هرگز</strong> فرستاده نمی‌شود: توکن گیت‌هاب، کلید API، مسیر فایل‌های محلی، محتوای پوشه‌ی <code>data</code>.</p>
-<h2 id="اعتبارسنجی-مسیر">اعتبارسنجی مسیر</h2>
-<p>هنگام باز کردن فایل یا پوشه از درون برنامه، آدرس به‌صورت آرگومان به سیستم داده می‌شود، نه به‌صورت رشته‌ای به shell. بنابراین مسیری که شامل کاراکترهای خاص shell باشد، هرگز به‌عنوان دستور تفسیر نمی‌شود.</p>
-<h2 id="عملیات-نوشتنی">عملیات نوشتنی</h2>
-<p>هیچ کاری در گیت‌هاب بدون تأیید انجام نمی‌شود:</p>
+<p>401 and 422 behave the same way: one request, one clear message, no retry. Only
+5xx is retried, because those are genuinely transient.</p>
+<p>Every error message passes through the redaction filter, so a service that echoes
+your API key back in an error body never shows it on screen.</p>
+<h2 id="what-is-sent-to-the-model">What is sent to the model</h2>
+<p>The exact list is on the <a href="ai.html">AI</a> page. In short: repository content, and
+only when you ask for it.</p>
+<p><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or the
+contents of the <code>data</code> folder.</p>
+<h2 id="path-handling">Path handling</h2>
+<p>When the app opens a file or folder on your behalf, the path is passed to the
+system as an argument rather than as a string to a shell. A path containing shell
+metacharacters can therefore never be interpreted as a command.</p>
+<h2 id="write-operations">Write operations</h2>
+<p>Nothing is written to GitHub without confirmation:</p>
 <ul>
-<li><strong>حذف ریپازیتوری</strong> — باید نام کامل ریپازیتوری را دستی تایپ کنید</li>
-<li><strong>انتشار ریلیز</strong> — پنجره‌ی تأیید با ذکر تگ و ریپازیتوری</li>
-<li><strong>commit فایل</strong> — پنجره‌ی تأیید با نام فایل، شاخه و پیام</li>
-<li><strong>بستن ایشو یا ساخت ایشو</strong> — پنجره‌ی تأیید</li>
+<li><strong>Delete repository</strong> — you must type the full repository name</li>
+<li><strong>Publish release</strong> — a dialog naming the tag and repository</li>
+<li><strong>Commit a file</strong> — a dialog showing the path, the branch and the message</li>
+<li><strong>Close an issue or create one</strong> — a confirmation dialog</li>
 </ul>
-<p>دستیار هوش مصنوعی هیچ‌وقت بدون یکی از این تأییدها چیزی نمی‌نویسد.</p>
-<h2 id="کاهش-سطح-دسترسی">کاهش سطح دسترسی</h2>
-<p>کمترین دسترسی ممکن را به توکن بدهید:</p>
+<p>The AI assistant never writes anything without one of these.</p>
+<h2 id="reducing-your-exposure">Reducing your exposure</h2>
+<p>Give the token the least it can do:</p>
 <ul>
-<li>فقط ریپازیتوری‌هایی که واقعاً کار می‌کنید</li>
-<li>اگر ریپازیتوری حذف نمی‌کنید، scope حذف را ندهید</li>
-<li>برای فقط خواندن، <code>Contents: Read-only</code> کافی است</li>
+<li>Only the repositories you really work in</li>
+<li>Skip the delete scope if you do not delete repositories</li>
+<li><code>Contents: Read-only</code> is enough if you only ever read</li>
 </ul>
-<h2 id="گزارش-مشکل-امنیتی">گزارش مشکل امنیتی</h2>
-<p>اگر مشکلی پیدا کردید، به‌صورت خصوصی در مخزن گزارش دهید تا قبل از انتشار عمومی بررسی و رفع شود.</p>
+<h2 id="reporting-a-problem">Reporting a problem</h2>
+<p>If you find a security issue, report it privately on the repository so it can be
+fixed before it becomes public.</p>
 
-<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#توکن-گیتهاب">توکن گیت‌هاب</a></li><li class="toc-item toc-level-3"><a href="#ذخیرهسازی">ذخیره‌سازی</a></li><li class="toc-item toc-level-3"><a href="#نمایش">نمایش</a></li><li class="toc-item toc-level-3"><a href="#پاک-کردن">پاک کردن</a></li><li class="toc-item toc-level-2"><a href="#توکن-هرگز-به-جای-دیگری-نمیرود">توکن هرگز به جای دیگری نمی‌رود</a></li><li class="toc-item toc-level-2"><a href="#اعتبارسنجی-ورودی">اعتبارسنجی ورودی</a></li><li class="toc-item toc-level-2"><a href="#پاکسازی-html">پاک‌سازی HTML</a></li><li class="toc-item toc-level-2"><a href="#محدودیت-نرخ-و-رفتار-با-خطا">محدودیت نرخ و رفتار با خطا</a></li><li class="toc-item toc-level-2"><a href="#چه-چیزی-به-مدل-فرستاده-میشود">چه چیزی به مدل فرستاده می‌شود</a></li><li class="toc-item toc-level-2"><a href="#اعتبارسنجی-مسیر">اعتبارسنجی مسیر</a></li><li class="toc-item toc-level-2"><a href="#عملیات-نوشتنی">عملیات نوشتنی</a></li><li class="toc-item toc-level-2"><a href="#کاهش-سطح-دسترسی">کاهش سطح دسترسی</a></li><li class="toc-item toc-level-2"><a href="#گزارش-مشکل-امنیتی">گزارش مشکل امنیتی</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#the-github-token">The GitHub token</a></li><li class="toc-item toc-level-3"><a href="#storage">Storage</a></li><li class="toc-item toc-level-3"><a href="#display">Display</a></li><li class="toc-item toc-level-3"><a href="#removing-it">Removing it</a></li><li class="toc-item toc-level-2"><a href="#the-token-never-leaves-github">The token never leaves GitHub</a></li><li class="toc-item toc-level-2"><a href="#input-validation">Input validation</a></li><li class="toc-item toc-level-2"><a href="#html-sanitising">HTML sanitising</a></li><li class="toc-item toc-level-2"><a href="#rate-limits-and-error-handling">Rate limits and error handling</a></li><li class="toc-item toc-level-2"><a href="#what-is-sent-to-the-model">What is sent to the model</a></li><li class="toc-item toc-level-2"><a href="#path-handling">Path handling</a></li><li class="toc-item toc-level-2"><a href="#write-operations">Write operations</a></li><li class="toc-item toc-level-2"><a href="#reducing-your-exposure">Reducing your exposure</a></li><li class="toc-item toc-level-2"><a href="#reporting-a-problem">Reporting a problem</a></li></ul></nav>
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>

@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>قابلیت‌ها · GitHub Manager</title>
-<meta name="description" content="مرور کامل همه‌ی بخش‌های GitHub Manager — استودیوی README، ریپازیتوری‌ها، ایشو و پول‌ریکویست، ریلیز، حساب و تنظیمات.">
+<title>Features · GitHub Manager</title>
+<meta name="description" content="A complete tour of GitHub Manager — README Studio, repositories, issues and pull requests, releases, account and settings.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="قابلیت‌ها · GitHub Manager">
-<meta property="og:description" content="مرور کامل همه‌ی بخش‌های GitHub Manager — استودیوی README، ریپازیتوری‌ها، ایشو و پول‌ریکویست، ریلیز، حساب و تنظیمات.">
+<meta property="og:title" content="Features · GitHub Manager">
+<meta property="og:description" content="A complete tour of GitHub Manager — README Studio, repositories, issues and pull requests, releases, account and settings.">
 </head>
 <body>
-<a class="skip" href="#main">پرش به محتوا</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="منو" aria-expanded="false">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
@@ -31,14 +31,14 @@
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="جستجو در مستندات…"
-             autocomplete="off" aria-label="جستجو در مستندات" aria-controls="searchResults">
+      <input id="searchInput" type="search" placeholder="Search the docs…"
+             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
       <kbd class="hint" id="searchHint">Ctrl K</kbd>
       <div class="results" id="searchResults" hidden></div>
     </div>
 
     <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="تغییر پوسته">
+      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
@@ -47,7 +47,7 @@
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
-      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="مخزن روی گیت‌هاب">
+      <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
         </svg>
@@ -58,294 +58,308 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">خانه</a><a class="nav-link is-active" href="features.html">قابلیت‌ها</a><a class="nav-link" href="install.html">نصب و راه‌اندازی</a><a class="nav-link" href="ai.html">هوش مصنوعی</a><a class="nav-link" href="security.html">امنیت</a><a class="nav-link" href="build.html">ساخت از سورس</a><a class="nav-link" href="faq.html">سوالات متداول</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link is-active" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">دانلود نسخه ۱.۰.۰</a>
-      <p class="muted">یک فایل exe · بدون نیاز به نصب پایتون</p>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
-<p>برنامه نُه صفحه دارد. این صفحه هر کدام را با جزئیات توضیح می‌دهد.</p>
-<h2 id="نقشهی-برنامه">نقشه‌ی برنامه</h2>
+<p>The app has nine pages. This one covers each of them.</p>
+<h2 id="map-of-the-app">Map of the app</h2>
 <table>
 <thead>
 <tr>
-<th>صفحه</th>
-<th>کارش چیست</th>
+<th>Page</th>
+<th>What it is for</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>خوش‌آمد</td>
-<td>اتصال توکن و راهنمای شروع</td>
+<td>Welcome</td>
+<td>Connect a token and get oriented</td>
 </tr>
 <tr>
-<td>داشبورد</td>
-<td>نمای کلی حساب، فعالیت‌ها و میان‌برها</td>
+<td>Dashboard</td>
+<td>Account overview, recent activity and shortcuts</td>
 </tr>
 <tr>
-<td>استودیوی README</td>
-<td>نوشتن و commit کردن README و فایل‌های جانبی</td>
+<td>README Studio</td>
+<td>Write and commit READMEs and the supporting files</td>
 </tr>
 <tr>
-<td>ریپازیتوری‌ها</td>
-<td>مدیریت کامل ریپازیتوری‌های شما</td>
+<td>Repositories</td>
+<td>Full management of your repositories</td>
 </tr>
 <tr>
-<td>ایشو و PR</td>
-<td>کار با ایشوها و پول‌ریکویست‌ها</td>
+<td>Issues &amp; PRs</td>
+<td>Work through issues and pull requests</td>
 </tr>
 <tr>
-<td>ریلیز و کامیت</td>
-<td>یادداشت ریلیز، پیام کامیت و نام شاخه</td>
+<td>Releases &amp; commits</td>
+<td>Release notes, commit messages, branch names</td>
 </tr>
 <tr>
-<td>دستیار هوش مصنوعی</td>
-<td>گفت‌وگوی آزاد ولی مقید به گیت‌هاب</td>
+<td>AI Assistant</td>
+<td>Free-form chat, scoped strictly to GitHub</td>
 </tr>
 <tr>
-<td>حساب</td>
-<td>پروفایل، بیو، آواتار و سازمان‌ها</td>
+<td>Account</td>
+<td>Profile, bio, avatar and organisations</td>
 </tr>
 <tr>
-<td>تنظیمات</td>
-<td>ظاهر، سرویس هوش مصنوعی و داده‌ها</td>
+<td>Settings</td>
+<td>Appearance, AI provider and data</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="استودیوی-readme">استودیوی README</h2>
-<p>قلب برنامه. یک صفحه‌ی دو ستونه: ویرایشگر سمت راست، پیش‌نمایش زنده سمت چپ.</p>
-<h3 id="تنظیمات-تولید">تنظیمات تولید</h3>
-<p>پیش از نوشتن می‌توانید به هوش مصنوعی بگویید چه بنویسد:</p>
+<h2 id="readme-studio">README Studio</h2>
+<p>The centre of the app. Two panes: the editor on the right, a live preview on the
+left.</p>
+<h3 id="generation-settings">Generation settings</h3>
+<p>Tell the AI what to write before it writes it:</p>
 <ul>
-<li><strong>لحن</strong> — حرفه‌ای، دوستانه، رسمی یا فنی</li>
-<li><strong>زبان</strong> — انگلیسی، فارسی یا هر زبان دیگر</li>
-<li><strong>مخاطب</strong> — توسعه‌دهنده، کاربر نهایی یا مشارکت‌کننده</li>
-<li><strong>میزان خلاقیت</strong> — عددی بین ۰ (دقیق) و ۱ (آزاد)</li>
-<li><strong>بخش‌ها</strong> — هر بخش را جداگانه روشن و خاموش می‌کنید: هدر و بج‌ها، معرفی، قابلیت‌ها، پشته‌ی فنی، نصب، استفاده، اسکرین‌شات، مشارکت، مجوز، نقشه‌ی راه</li>
-<li><strong>دستور اضافه</strong> — هر نکته‌ی دلخواهی، مثلاً «یک بخش داکر اضافه کن»</li>
+<li><strong>Tone</strong> — professional, friendly, minimal, detailed, playful or enterprise</li>
+<li><strong>Language</strong> — English, Persian, Spanish, French, German, Turkish, Arabic, Hindi or Portuguese</li>
+<li><strong>Audience</strong> — developers, beginners, teams, open source contributors, product managers or students</li>
+<li><strong>Creativity</strong> — a number between 0 (precise) and 1 (free)</li>
+<li><strong>Sections</strong> — toggle each one individually: header and badges, description, features, tech stack, installation, usage, screenshots, contributing, licence, roadmap</li>
+<li><strong>Extra instructions</strong> — anything else, for example &quot;add a Docker section and a CLI usage example&quot;</li>
 </ul>
-<h3 id="خروجی">خروجی</h3>
-<p>مدل در واقع محتوای ریپازیتوری را می‌بیند: ساختار فایل‌ها، زبان‌های استفاده‌شده، موضوعات، README فعلی و چند فایل کلیدی. بنابراین خروجی به پروژه‌ی شما مربوط است، نه یک متن عمومی.</p>
-<h3 id="اصلاح-و-بازبینی">اصلاح و بازبینی</h3>
+<h3 id="the-output">The output</h3>
+<p>The model sees the real repository: the file tree, the languages in use, the
+topics, the current README and a few key files. The result is about your project
+rather than generic filler.</p>
+<h3 id="refine-and-review">Refine and review</h3>
 <ul>
-<li><strong>Refine</strong> — یادداشتی مثل «مقدمه را روشن‌تر کن» می‌نویسید و همان سند به‌روز می‌شود</li>
-<li><strong>Review</strong> — پیش‌نمایش کامل همراه با دکمه‌های کپی و ذخیره روی دیسک</li>
-<li><strong>Draft extra file</strong> — برای CONTRIBUTING، LICENSE، ‏<code>.gitignore</code>، SECURITY، CODE_OF_CONDUCT و CHANGELOG هم قالب آماده دارد</li>
+<li><strong>Refine</strong> — write &quot;make the intro clearer&quot; and the same document is rewritten</li>
+<li><strong>Review</strong> — a full preview with copy-to-clipboard and save-to-disk</li>
+<li><strong>Draft extra file</strong> — ready-made templates for CONTRIBUTING, LICENSE, <code>.gitignore</code>, SECURITY, CODE_OF_CONDUCT and CHANGELOG</li>
 </ul>
-<h3 id="نوشتن-روی-گیتهاب">نوشتن روی گیت‌هاب</h3>
+<h3 id="writing-to-github">Writing to GitHub</h3>
 <ul>
-<li><strong>Commit to GitHub</strong> — نام فایل، شاخه و پیام کامیت را می‌بینید و تأیید می‌کنید</li>
-<li><strong>Save .md</strong> — ذخیره روی دیسک بدون دست زدن به گیت‌هاب</li>
-<li><strong>Load existing</strong> — بازگردانی README فعلی از سرور</li>
+<li><strong>Commit to GitHub</strong> — you see the file, the branch and the commit message before confirming</li>
+<li><strong>Save .md</strong> — write to disk without touching GitHub</li>
+<li><strong>Load existing</strong> — pull the current README back down from the server</li>
 </ul>
 <blockquote>
-<p>اگر README وجود نداشته باشد، برنامه خودش آن را می‌سازد؛ اگر باشد، <code>sha</code> فایل را می‌خواند و درست به‌روزرسانی می‌کند. این کار در commitهای موازی جلوی بازنویسی اشتباه را می‌گیرد.</p>
+<p>If the repository has no README yet, one is created. If it does, the file's
+<code>sha</code> is read first so the update is applied to the right version instead of
+blindly overwriting whatever happens to be there.</p>
 </blockquote>
 <hr />
-<h2 id="ریپازیتوریها">ریپازیتوری‌ها</h2>
-<h3 id="فهرست-و-فیلتر">فهرست و فیلتر</h3>
-<p>جست‌وجو بر اساس نام و توضیح، فیلتر بر اساس خصوصی/عمومی و archived، و سه چیدمان نمایش: فشرده، راحت و کارتی.</p>
-<h3 id="عملیات">عملیات</h3>
+<h2 id="repositories">Repositories</h2>
+<h3 id="the-list">The list</h3>
+<p>Search by name and description, filter by private/public and archived, and pick
+one of three layouts: compact, comfortable or cards.</p>
+<h3 id="actions">Actions</h3>
 <table>
 <thead>
 <tr>
-<th>عملیات</th>
-<th>توضیح</th>
+<th>Action</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>ساخت</td>
-<td>نام، توضیح، صفحه‌ی خانه، موضوعات، سطح دسترسی، README اولیه و قالب مجوز</td>
+<td>Create</td>
+<td>Name, description, homepage, topics, visibility, an initial README and a licence template</td>
 </tr>
 <tr>
-<td>ویرایش</td>
-<td>نام، توضیح، صفحه‌ی خانه، موضوعات، زبان پیش‌فرض و وضعیت بایگانی</td>
+<td>Edit</td>
+<td>Name, description, homepage, topics, default branch and archived state</td>
 </tr>
 <tr>
-<td>بایگانی</td>
-<td>خواندنی و قابل بازگردانی، بدون ریسک حذف</td>
+<td>Archive</td>
+<td>Reversible and safe; nothing is deleted</td>
 </tr>
 <tr>
-<td>حذف</td>
-<td>باید نام کامل ریپازیتوری را تایپ کنید تا تأیید شود</td>
+<td>Delete</td>
+<td>You must type the full repository name to confirm</td>
 </tr>
 <tr>
-<td>fork</td>
-<td>ساخت فوری نسخه‌ی فورک‌شده</td>
+<td>Fork</td>
+<td>Creates the fork immediately</td>
 </tr>
 <tr>
-<td>ستاره</td>
-<td>افزودن یا برداشتن ستاره</td>
+<td>Star</td>
+<td>Adds or removes the star</td>
 </tr>
 </tbody>
 </table>
-<h3 id="پیشنهاد-هوش-مصنوعی">پیشنهاد هوش مصنوعی</h3>
-<p>دکمه‌ی «توضیح با هوش مصنوعی» کل ریپازیتوری را می‌خواند و یک توضیح یک‌خطی به‌همراه چند موضوع پیشنهادی می‌دهد. تا وقتی دکمه‌ی Apply را نزنید، چیزی به گیت‌هاب ارسال نمی‌شود.</p>
+<h3 id="ai-suggestions">AI suggestions</h3>
+<p>&quot;Describe with AI&quot; reads the whole repository and proposes a one-line
+description plus a set of topics. Nothing is sent to GitHub until you press
+Apply.</p>
 <hr />
-<h2 id="ایشو-و-پولریکویست">ایشو و پول‌ریکویست</h2>
-<h3 id="فهرست-و-جزئیات">فهرست و جزئیات</h3>
+<h2 id="issues-pull-requests">Issues &amp; pull requests</h2>
+<h3 id="list-and-detail">List and detail</h3>
 <ul>
-<li>فیلتر بین ایشو و PR، و بین باز و بسته و همه</li>
-<li>هر ردیف شماره، عنوان، نویسنده، تعداد کامنت و برچسب‌ها را نشان می‌دهد</li>
-<li>صفحه‌ی جزئیات شامل متن ایشو و همه‌ی کامنت‌ها با نام نویسنده است</li>
+<li>Toggle between issues and pull requests, and between open, closed and all</li>
+<li>Each row shows the number, title, author, comment count and labels</li>
+<li>The detail pane renders the issue body and every comment with its author</li>
 </ul>
-<h3 id="عملیات-2">عملیات</h3>
+<h3 id="actions-2">Actions</h3>
 <table>
 <thead>
 <tr>
-<th>عملیات</th>
-<th>توضیح</th>
+<th>Action</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Draft issue</td>
-<td>یک یا دو جمله بنویسید؛ AI آن را به ایشوی ساختاریافته با بخش‌های Steps و Expected Behaviour تبدیل می‌کند</td>
+<td>Write a sentence or two; the AI expands it into a structured issue with steps and expected behaviour</td>
 </tr>
 <tr>
 <td>AI reply</td>
-<td>بر اساس متن ایشو و کامنت‌های قبلی پاسخ می‌نویسد؛ قبل از ارسال قابل ویرایش است</td>
+<td>Drafted from the issue body and the existing comments, editable before it is posted</td>
 </tr>
 <tr>
 <td>AI triage</td>
-<td>همه‌ی ایشوها را یک‌جا بررسی می‌کند و برای هرکدام نوع، اولویت و اقدام بعدی پیشنهاد می‌دهد</td>
+<td>Reviews the whole queue at once and suggests a type, a priority and a next action for each</td>
 </tr>
 <tr>
 <td>Close / reopen</td>
-<td>تغییر وضعیت با تأیید</td>
+<td>Changes state, with confirmation</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p>هنگام رفرش شدن فهرست، انتخاب کاربر روی همان ایشو باقی می‌ماند؛ بنابراین کلیک بعدی روی همان موردی اعمال می‌شود که می‌بینید.</p>
+<p>The selection survives a refresh. Post a reply, and you are still looking at
+the same issue when you get back, so the next action lands where you expect.</p>
 </blockquote>
 <hr />
-<h2 id="ریلیز-و-کامیت">ریلیز و کامیت</h2>
-<h3 id="فهرست-و-بارگذاری">فهرست و بارگذاری</h3>
-<p>دو فهرست کنار هم: کامیت‌های اخیر و ریلیزهای منتشرشده. هر دو قابل بارگذاری جداگانه هستند.</p>
-<h3 id="یادداشت-ریلیز">یادداشت ریلیز</h3>
+<h2 id="releases-commits">Releases &amp; commits</h2>
+<h3 id="lists">Lists</h3>
+<p>Commits and releases sit side by side, each loadable on its own.</p>
+<h3 id="release-notes">Release notes</h3>
 <ul>
-<li><strong>Generate notes</strong> — کامیت‌ها را می‌گیرد و یادداشت ریلیز می‌نویسد؛ خروجی به‌صورت جریانی (token by token) نمایش داده می‌شود</li>
-<li><strong>Publish</strong> — با یک پنجره‌ی تأیید روی گیت‌هاب منتشر می‌شود</li>
-<li><strong>New release</strong> — ساخت دستی ریلیز با تگ، نام و متن دلخواه</li>
+<li><strong>Generate notes</strong> — takes the commit list and writes release notes, streamed token by token as they arrive</li>
+<li><strong>Publish</strong> — confirmed with a dialog naming the tag and repository</li>
+<li><strong>New release</strong> — create one by hand with your own tag, name and body</li>
 </ul>
-<p>فیلد تگ به‌صورت خودکار از آخرین ریلیز پیشنهاد می‌شود؛ مثلاً اگر آخرین نسخه <code>v1.2.0</code> باشد، <code>v1.3.0</code> پیشنهاد می‌شود.</p>
-<h3 id="پیام-کامیت-و-نام-شاخه">پیام کامیت و نام شاخه</h3>
+<p>The tag field is pre-filled from the newest release: if the latest is <code>v1.2.0</code> it
+suggests <code>v1.3.0</code>.</p>
+<h3 id="commit-messages-and-branch-names">Commit messages and branch names</h3>
 <ul>
-<li><strong>Write commit message</strong> — تغییر را به زبان ساده توضیح دهید تا پیام کامیت Conventional با subject، body و بخش BREAKING CHANGE نوشته شود</li>
-<li><strong>Suggest branch</strong> — از روی همان توضیح، نام شاخه به‌شکل <code>feat/…</code> پیشنهاد می‌شود</li>
-<li><strong>Create branch</strong> — ساخت شاخه روی گیت‌هاب</li>
+<li><strong>Write commit message</strong> — describe the change in plain language and get a Conventional Commit with a subject, a wrapped body and a BREAKING CHANGE footer when one is needed</li>
+<li><strong>Suggest branch</strong> — the same description yields a <code>feat/…</code> style branch name</li>
+<li><strong>Create branch</strong> — creates it on GitHub</li>
 </ul>
-<p>سه سبک پیام پشتیبانی می‌شود: Conventional Commits، imperative ساده و Angular.</p>
+<p>Three styles are supported: Conventional Commits, plain imperative and Angular.</p>
 <hr />
-<h2 id="دستیار-هوش-مصنوعی">دستیار هوش مصنوعی</h2>
-<p>یک گفت‌وگوی آزاد با چهار نکته‌ی مهم:</p>
-<h3 id="مقید-به-گیتهاب">مقید به گیت‌هاب</h3>
-<p>سه لایه‌ی محافظت پشت سر هم کار می‌کنند:</p>
-<p>۱. <strong>قبل از ارسال</strong> — درخواست دسته‌بندی می‌شود؛ درخواست خارج از حوزه هرگز به مدل نمی‌رسد
-۲. <strong>در system prompt</strong> — فهرست صریح مجاز و ممنوع به مدل داده می‌شود
-۳. <strong>بعد از پاسخ</strong> — خروجی هم اعتبارسنجی می‌شود و در صورت خروج از حوزه با پیام رد نمایش داده می‌شود</p>
-<h3 id="زمینهی-ریپازیتوری">زمینه‌ی ریپازیتوری</h3>
-<p>اگر کلید «Attach repo context» روشن باشد، ساختار و محتوای ریپازیتوری انتخاب‌شده به مدل داده می‌شود تا پاسخ‌ها به پروژه‌ی شما مربوط باشند.</p>
-<h3 id="جریانی-بودن">جریانی بودن</h3>
-<p>پاسخ‌ها توکن‌به‌توکن نمایش داده می‌شوند، با راهنمای کیبورد و پاسخ خودکار به Enter.</p>
-<h3 id="میانبرها">میان‌برها</h3>
-<p>شش درخواست آماده: نوشتن README، پیشنهاد موضوعات، ساخت workflow برای تست‌ها، بازبینی README فعلی، نوشتن <code>.gitignore</code> و توضیح افزودن LICENSE.</p>
+<h2 id="ai-assistant">AI Assistant</h2>
+<p>Free-form chat, with four things worth knowing.</p>
+<h3 id="scoped-to-github">Scoped to GitHub</h3>
+<p>Three independent layers:</p>
+<ol>
+<li><strong>Before sending</strong> — the request is classified. Anything off-topic never reaches the model.</li>
+<li><strong>In the system prompt</strong> — the model is given an explicit allow and deny list.</li>
+<li><strong>After the answer</strong> — the response is validated too, and replaced with an out-of-scope notice if it strayed.</li>
+</ol>
+<h3 id="repository-context">Repository context</h3>
+<p>With &quot;Attach repo context&quot; on, the selected repository's structure and contents
+are included so answers are about your project.</p>
+<h3 id="streaming">Streaming</h3>
+<p>Responses appear token by token, with Enter to send.</p>
+<h3 id="shortcuts">Shortcuts</h3>
+<p>Six ready-made prompts: write a README, suggest topics, draft a CI workflow,
+review your current README, write a <code>.gitignore</code>, and explain adding a LICENSE.</p>
 <hr />
-<h2 id="حساب">حساب</h2>
+<h2 id="account">Account</h2>
 <ul>
-<li><strong>پروفایل</strong> — نام، شرکت، موقعیت مکانی، وب‌سایت، توییتر و ایمیل عمومی</li>
-<li><strong>بیو</strong> — سه حالت: دستی، بهبود با هوش مصنوعی، یا چند گزینه‌ی آماده که یکی را انتخاب می‌کنید</li>
-<li><strong>آواتار</strong> — بارگذاری PNG، JPEG، GIF یا WebP؛ حجم و نوع پیش از ارسال بررسی می‌شود</li>
-<li><strong>سازمان‌ها</strong> — فهرست سازمان‌هایی که به آن‌ها دسترسی دارید</li>
-<li><strong>پروفایل README</strong> — ساخت یا به‌روزرسانی ریپازیتوری <code>&lt;نام‌کاربری&gt;/&lt;نام‌کاربری&gt;</code></li>
-<li><strong>فعالیت‌ها</strong> — رویدادهای اخیر گیت‌هاب</li>
-</ul>
-<hr />
-<h2 id="تنظیمات">تنظیمات</h2>
-<h3 id="ظاهر">ظاهر</h3>
-<ul>
-<li>پوسته‌ی تیره و روشن</li>
-<li>شش رنگ تأکیدی: بنفش، آبی، سبز زمردی، کهربایی، صورتی و فیروزه‌ای</li>
-<li>انتخاب قلم</li>
-<li>مقیاس رابط کاربری از ۸۵٪ تا ۱۳۰٪</li>
-</ul>
-<h3 id="هوش-مصنوعی">هوش مصنوعی</h3>
-<ul>
-<li>انتخاب ارائه‌دهنده از فهرست یا آدرس دلخواه (سازگار با OpenAI)</li>
-<li>مدل، دما، حداکثر توکن و مهلت انتظار</li>
-<li>روشن یا خاموش کردن پاسخ جریانی</li>
-<li>فهرست مدل‌های در دسترس</li>
-<li>تست اتصال</li>
-</ul>
-<h3 id="دادهها">داده‌ها</h3>
-<ul>
-<li>نشان دادن مسیر پوشه‌ی داده‌ها</li>
-<li>پاک کردن توکن و کلید API</li>
-<li><strong>پاک کردن کامل</strong> — حذف توکن، کلید، کش ریپازیتوری و تنظیمات</li>
+<li><strong>Profile</strong> — name, company, location, website, Twitter handle and public email</li>
+<li><strong>Bio</strong> — write it yourself, have the AI improve it, or pick from several finished options</li>
+<li><strong>Avatar</strong> — upload a PNG, JPEG, GIF or WebP; type and file size are checked before anything is sent</li>
+<li><strong>Organisations</strong> — the organisations you have access to</li>
+<li><strong>Profile README</strong> — creates or updates the <code>&lt;username&gt;/&lt;username&gt;</code> repository</li>
+<li><strong>Activity</strong> — recent GitHub events</li>
 </ul>
 <hr />
-<h2 id="میانبرهای-صفحهکلید">میان‌برهای صفحه‌کلید</h2>
+<h2 id="settings">Settings</h2>
+<h3 id="appearance">Appearance</h3>
+<ul>
+<li>Dark and light themes</li>
+<li>Six accent colours: violet, blue, emerald, amber, rose and cyan</li>
+<li>Font family</li>
+<li>UI scale from 85% to 130%</li>
+</ul>
+<h3 id="ai">AI</h3>
+<ul>
+<li>Provider from the list, or any OpenAI compatible address</li>
+<li>Model, temperature, max tokens and timeout</li>
+<li>Streaming on or off</li>
+<li>List the models the provider offers</li>
+<li>Test the connection</li>
+</ul>
+<h3 id="data">Data</h3>
+<ul>
+<li>Where the data folder is</li>
+<li>Clear the API key</li>
+<li><strong>Erase everything</strong> — tokens, keys, the repository cache and settings</li>
+</ul>
+<hr />
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2>
 <table>
 <thead>
 <tr>
-<th>کلید</th>
-<th>کار</th>
+<th>Key</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>Ctrl+1</code> … <code>Ctrl+7</code></td>
-<td>پرش به صفحه‌ها</td>
+<td>Jump to a page</td>
 </tr>
 <tr>
 <td><code>Ctrl+K</code></td>
-<td>دستیار هوش مصنوعی</td>
+<td>AI Assistant</td>
 </tr>
 <tr>
 <td><code>Ctrl+,</code></td>
-<td>تنظیمات</td>
+<td>Settings</td>
 </tr>
 <tr>
 <td><code>Ctrl+R</code></td>
-<td>بازخوانی صفحه‌ی فعلی</td>
+<td>Refresh the current page</td>
 </tr>
 <tr>
 <td><code>Ctrl+N</code></td>
-<td>ریپازیتوری جدید</td>
+<td>New repository</td>
 </tr>
 <tr>
 <td><code>Ctrl+B</code></td>
-<td>باز و بسته کردن نوار کناری</td>
+<td>Collapse or expand the sidebar</td>
 </tr>
 <tr>
 <td><code>Ctrl+Shift+R</code></td>
-<td>تعویض پوسته‌ی تیره و روشن</td>
+<td>Toggle dark and light</td>
 </tr>
 <tr>
 <td><code>Ctrl+Q</code></td>
-<td>خروج</td>
+<td>Quit</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="آنچه-هنوز-وجود-ندارد">آنچه هنوز وجود ندارد</h2>
-<p>صداقت درباره‌ی مرزهای برنامه:</p>
+<h2 id="what-is-not-here">What is not here</h2>
+<p>Stated plainly, so you are not looking for it:</p>
 <ul>
-<li><strong>بدون پشتیبانی از GitHub Enterprise در رابط کاربری</strong> — کلاینت توانایی اشاره به آدرس دلخواه را دارد، ولی هنوز فیلدی در تنظیمات برای آن نیست</li>
-<li><strong>بدون مدیریت SSH key یا کلید جدید API</strong> — این‌ها نیاز به تأیید دوباره دارند و به‌عمد بیرون گذاشته شده‌اند</li>
-<li><strong>بدون گراف دامنه‌ی گیت‌هاب</strong> — آمار بازدید نمایش داده نمی‌شود</li>
-<li><strong>بدون کار آفلاین</strong> — بدون شبکه فقط صفحه‌ها باز می‌شوند؛ داده‌ای کش نمی‌شود، مگر مدل محلی داشته باشید</li>
+<li><strong>No GitHub Enterprise setting in the UI</strong> — the client can be pointed at another host, but there is no field for it yet</li>
+<li><strong>No SSH key or API key management</strong> — creating a token needs re-authentication in a browser, so it is deliberately left out</li>
+<li><strong>No domain-level analytics</strong> — GitHub traffic graphs are not shown</li>
+<li><strong>No offline mode</strong> — nothing is cached, so the app will not show you stale repository data</li>
 </ul>
 
-<nav class="toc" aria-label="فهرست این صفحه"><p class="toc-title">در این صفحه</p><ul><li class="toc-item toc-level-2"><a href="#نقشهی-برنامه">نقشه‌ی برنامه</a></li><li class="toc-item toc-level-2"><a href="#استودیوی-readme">استودیوی README</a></li><li class="toc-item toc-level-3"><a href="#تنظیمات-تولید">تنظیمات تولید</a></li><li class="toc-item toc-level-3"><a href="#خروجی">خروجی</a></li><li class="toc-item toc-level-3"><a href="#اصلاح-و-بازبینی">اصلاح و بازبینی</a></li><li class="toc-item toc-level-3"><a href="#نوشتن-روی-گیتهاب">نوشتن روی گیت‌هاب</a></li><li class="toc-item toc-level-2"><a href="#ریپازیتوریها">ریپازیتوری‌ها</a></li><li class="toc-item toc-level-3"><a href="#فهرست-و-فیلتر">فهرست و فیلتر</a></li><li class="toc-item toc-level-3"><a href="#عملیات">عملیات</a></li><li class="toc-item toc-level-3"><a href="#پیشنهاد-هوش-مصنوعی">پیشنهاد هوش مصنوعی</a></li><li class="toc-item toc-level-2"><a href="#ایشو-و-پولریکویست">ایشو و پول‌ریکویست</a></li><li class="toc-item toc-level-3"><a href="#فهرست-و-جزئیات">فهرست و جزئیات</a></li><li class="toc-item toc-level-3"><a href="#عملیات-2">عملیات</a></li><li class="toc-item toc-level-2"><a href="#ریلیز-و-کامیت">ریلیز و کامیت</a></li><li class="toc-item toc-level-3"><a href="#فهرست-و-بارگذاری">فهرست و بارگذاری</a></li><li class="toc-item toc-level-3"><a href="#یادداشت-ریلیز">یادداشت ریلیز</a></li><li class="toc-item toc-level-3"><a href="#پیام-کامیت-و-نام-شاخه">پیام کامیت و نام شاخه</a></li><li class="toc-item toc-level-2"><a href="#دستیار-هوش-مصنوعی">دستیار هوش مصنوعی</a></li><li class="toc-item toc-level-3"><a href="#مقید-به-گیتهاب">مقید به گیت‌هاب</a></li><li class="toc-item toc-level-3"><a href="#زمینهی-ریپازیتوری">زمینه‌ی ریپازیتوری</a></li><li class="toc-item toc-level-3"><a href="#جریانی-بودن">جریانی بودن</a></li><li class="toc-item toc-level-3"><a href="#میانبرها">میان‌برها</a></li><li class="toc-item toc-level-2"><a href="#حساب">حساب</a></li><li class="toc-item toc-level-2"><a href="#تنظیمات">تنظیمات</a></li><li class="toc-item toc-level-3"><a href="#ظاهر">ظاهر</a></li><li class="toc-item toc-level-3"><a href="#هوش-مصنوعی">هوش مصنوعی</a></li><li class="toc-item toc-level-3"><a href="#دادهها">داده‌ها</a></li><li class="toc-item toc-level-2"><a href="#میانبرهای-صفحهکلید">میان‌برهای صفحه‌کلید</a></li><li class="toc-item toc-level-2"><a href="#آنچه-هنوز-وجود-ندارد">آنچه هنوز وجود ندارد</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
     <footer class="page-foot">
-      <p>متن و کد این پروژه تحت مجوز MIT منتشر شده است.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">انتشارها</a></p>
+      <p>Text and code released under the MIT licence.</p>
+      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
     </footer>
   </main>
 </div>

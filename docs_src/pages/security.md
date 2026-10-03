@@ -1,120 +1,139 @@
 ---
-title: امنیت
-description: ذخیره‌سازی توکن، اعتبارسنجی مسیر، پاک‌سازی HTML و محدود کردن دسترسی شبکه.
+title: Security
+description: Token storage, path validation, HTML sanitising, rate limit handling and how far the token can travel.
 ---
 
-امنیت در این برنامه روی یک واقعیت بنا شده است: بخش زیادی از متنی که نمایش داده می‌شود، **متنی است که کاربر کنترل نمی‌کند** — خروجی یک مدل، README یک ریپازیتوری دیگر، یا متن یک ایشوی غریبه. این صفحه توضیح می‌دهد با آن چه می‌شود.
+Security in this app is built around one fact: a lot of the text it displays is
+text you do **not** control — output from a model, a README from someone else's
+repository, the body of an issue written by a stranger. This page explains what
+happens to that text.
 
-## توکن گیت‌هاب
+## The GitHub token
 
-### ذخیره‌سازی
+### Storage
 
-- با **DPAPI ویندوز** (`CryptProtectData`) رمزنگاری می‌شود
-- به حساب کاربری ویندوز شما گره خورده است — کاربر دیگری روی همین دستگاه نمی‌تواند بازش کند
-- یک لایه entropy اختصاصی دارد تا فقط همین برنامه بتواند بخواند
-- روی سیستم‌های غیر ویندوز به‌صورت obfuscated ذخیره می‌شود و روی POSIX با دسترسی `0600` نوشته می‌شود
+- Encrypted with **Windows DPAPI** (`CryptProtectData`)
+- Bound to your Windows account — another user on the same machine cannot decrypt it
+- Uses an extra entropy value, so only this application can read it back
+- On non-Windows systems it is stored obfuscated, written `0600` on POSIX
 
-### نمایش
+### Display
 
-- هیچ‌جا در رابط کاربری به‌صورت خام نمایش داده نمی‌شود
-- پیش از ورود، کاراکتر آخر پنهان است
-- هر پیام خطا، toast و پنجره‌ی گفت‌وگو **پیش از نمایش** از فیلتر عبور می‌کند
+- Never shown in the clear anywhere in the UI
+- The last character is masked before you submit it
+- Every error message, toast and dialog is **scrubbed before it is shown**
 
-### پاک کردن
+### Removing it
 
-- **Settings → Clear API key** کلید مدل را پاک می‌کند
-- **Settings → Erase everything** توکن، کلید، کش ریپازیتوری و تنظیمات را حذف می‌کند
-- برای حذف دستی، کافی است پوشه‌ی `data` را کنار برنامه پاک کنید
+- **Settings → Clear API key** removes the model key
+- **Settings → Erase everything** removes tokens, keys, the repository cache and settings
+- To wipe it by hand, delete the `data` folder next to the executable
 
-## توکن هرگز به جای دیگری نمی‌رود
+## The token never leaves GitHub
 
-سربرگ `Authorization` به نشانی‌ای می‌رود که خود برنامه تعیین کرده است. هر آدرس مطلق دیگری رد می‌شود:
+The `Authorization` header goes only to the address the app itself configured.
+Any other absolute URL is refused:
 
-| آدرس | نتیجه |
+| URL | Result |
 | --- | --- |
-| `https://api.github.com/...` | مجاز |
-| `https://uploads.github.com/...` | مجاز (بارگذاری دارایی ریلیز) |
-| `https://evil.example.com/...` | رد می‌شود |
-| `https://api.github.com.evil.com/...` | رد می‌شود |
-| `https://user:pass@api.github.com@evil.com/...` | رد می‌شود |
+| `https://api.github.com/...` | allowed |
+| `https://uploads.github.com/...` | allowed (release asset uploads) |
+| `https://evil.example.com/...` | refused |
+| `https://api.github.com.evil.com/...` | refused |
+| `https://user:pass@api.github.com@evil.com/...` | refused |
 
-اعتبارسنجی روی میزبان (`hostname`) انجام می‌شود، نه روی متن آدرس — بنابراین ترفندهایی مثل یکسان جلوه دادن میزبان با پسوند، کار نمی‌کنند.
+The check is made on the parsed **hostname**, not on the text of the URL, so
+tricks that merely look like the right host do not work.
 
-## اعتبارسنجی ورودی
+## Input validation
 
-نام ریپازیتوری از جعبه‌ی متن هم قابل ورود است، پس فرض نمی‌کنیم قابل اعتماد است.
+A repository name can be typed by hand in the picker, so it is not trusted.
 
-| ورودی | قاعده |
+| Input | Rule |
 | --- | --- |
-| نام ریپازیتوری | دقیقاً `owner/repo` با کاراکترهای مجاز گیت‌هاب |
-| مسیر فایل | بدون `..`، بدون جداکننده‌ی مسیر در هر بخش |
-| نام شاخه | بدون فاصله و کاراکترهای `~ ^ : ? * [ \` و بدون `/` در انتها |
+| Repository name | exactly `owner/repo`, using GitHub's own allowed characters |
+| File path | no `..`, no path separator inside a segment |
+| Branch name | no space and none of `~ ^ : ? * [ \`, and no trailing `/` |
 
-هر چیزی مثل `owner/../../user` **پیش از ساخته شدن URL** رد می‌شود، نه اینکه به سرور فرستاده شود و ۴۰۴ بگیرد.
+Anything like `owner/../../user` is refused **before the URL is built**, rather
+than being sent and coming back as a 404.
 
-## پاک‌سازی HTML
+## HTML sanitising
 
-پیش‌نمایش روی `QTextBrowser` رندر می‌شود — و این یک موتور HTML واقعی است که تصویر می‌خواند و دنبال لینک می‌رود. برای همین خروجی markdown از یک پاک‌سازنده‌ی **فهرست‌مجاز** رد می‌شود.
+The preview renders into a `QTextBrowser`, which is a real HTML engine: it
+fetches images and follows links. Rendered markdown therefore passes through an
+**allow-list** sanitiser.
 
-| تهدید | مقابله |
+| Threat | What happens |
 | --- | --- |
-| تزریق `<script>`، `<iframe>`، `<object>` | حذف کامل تگ و محتوای آن |
-| رویدادهای `onclick` و هم‌نوع | حذف هر صفتی که با `on` شروع شود |
-| تصویر با مسیر `file://` | محدود به `http` و `https` |
-| تصویر با `data:` یا مسیر نسبی بدون میزبان | رد می‌شود |
-| لینک `javascript:` یا `file:` | محدود به `http`، `https` و `mailto` |
-| CSS با `url()` یا `@import` | حذف کامل آن declaration |
-| دور زدن با کامنت CSS (`ur/**/l(`) | هر declaration دارای کامنت حذف می‌شود |
-| `<a href="...">` به یک قاب نام‌دار | `target` فقط `_blank` یا `_self` مجاز است |
+| `<script>`, `<iframe>`, `<object>` | tag and its content removed |
+| `onclick` and friends | any attribute starting with `on` removed |
+| Image with a `file://` source | limited to `http` and `https` |
+| Image with `data:` or a schemeless path | refused |
+| `javascript:` or `file:` links | limited to `http`, `https` and `mailto` |
+| CSS with `url()` or `@import` | the whole declaration is dropped |
+| CSS hiding a keyword with a comment (`ur/**/l(`) | any declaration containing a comment is dropped |
+| `<a target="…">` pointing at a named frame | only `_blank` and `_self` are allowed |
 
-علاوه بر پاک‌سازی، **هر کلیک روی لینک یک بار دیگر بررسی می‌شود** پیش از آنکه مرورگر باز شود. اگر پاک‌سازنده در آینده با نسخه‌ی جدیدی از markdown-it دور زده شود، این لایه هنوز جلوی باز شدن آدرس خطرناک را می‌گیرد.
+On top of that, **every link click is checked again** before the browser opens.
+If a future markdown renderer ever slipped past the sanitiser, this layer would
+still stop a dangerous URL from launching.
 
-> تصاویر `http(s)` از راه دور **بارگذاری می‌شوند** تا بج‌ها کار کنند. این یک انتخاب آگاهانه است؛ گیت‌هاب هم همین کار را می‌کند. آنچه باقی می‌ماند این است که یک شخص ثالث می‌تواند ببیند کدام صفحه‌ی ریپازیتوری باز شده.
+> Remote `http(s)` images **are** loaded so that badges work. That is a conscious
+> choice — GitHub does the same thing behind its camo proxy. What remains is that
+> a third party can see which repository page was opened.
 
-## محدودیت نرخ و رفتار با خطا
+## Rate limits and error handling
 
-گیت‌هاب برای هر توکن یک سهمیه‌ی ساعتی دارد. وقتی تمام شود، API یک خطای ۴۰۳ برمی‌گرداند با متنی شبیه به `API rate limit exceeded`.
+GitHub enforces an hourly quota per token. When it runs out, the API returns 403.
 
-> پیام‌های خطای برنامه انگلیسی هستند، چون متن خطا از خود گیت‌هاب می‌آید. اگر همین متن را در جستجوی همین سایت وارد کنید، به همین صفحه می‌رسید.
+The app **does not retry that**. Retrying after a couple of seconds cannot help,
+because the quota returns after minutes, not seconds — all it achieves is freezing
+the UI for several seconds before explaining why. Instead:
 
-برنامه **عمداً این خطا را دوباره تلاش نمی‌کند**. تلاش مجدد بعد از دو ثانیه هیچ فایده‌ای ندارد، چون سهمیه ساعتی بعد از چند دقیقه برمی‌گردد، نه چند ثانیه؛ تنها نتیجه‌اش قفل شدن چند ثانیه‌ای رابط کاربری است. به‌جای آن:
+- The error appears immediately
+- The approximate reset time, read from the `X-RateLimit-Reset` header, is included in the message
 
-- خطا بلافاصله نشان داده می‌شود
-- زمان تقریبی ریست از روی هدر `X-RateLimit-Reset` حساب و در پیام نوشته می‌شود
+401 and 422 behave the same way: one request, one clear message, no retry. Only
+5xx is retried, because those are genuinely transient.
 
-خطاهای ۴۰۱ و ۴۲۲ هم به همان شکل رفتار می‌کنند: یک بار درخواست، یک پیام روشن، بدون تلاش مجدد. تنها خطاهای ۵xx هستند که دوباره تلاش می‌شوند، چون آن‌ها موقتی‌اند.
+Every error message passes through the redaction filter, so a service that echoes
+your API key back in an error body never shows it on screen.
 
-هر پیام خطا پیش از نمایش از فیلتر عبور می‌کند، بنابراین اگر بدنه‌ی پاسخ یک سرویس، کلید API شما را بازتاب دهد، روی صفحه ظاهر نمی‌شود.
+## What is sent to the model
 
-## چه چیزی به مدل فرستاده می‌شود
+The exact list is on the [AI](ai.html) page. In short: repository content, and
+only when you ask for it.
 
-فهرست دقیق در صفحه‌ی [هوش مصنوعی](ai.html) آمده است. خلاصه: محتوای ریپازیتوری، آن هم فقط وقتی که خودتان درخواست بدهید.
+**Never sent:** your GitHub token, your API key, local file paths, or the
+contents of the `data` folder.
 
-**هرگز** فرستاده نمی‌شود: توکن گیت‌هاب، کلید API، مسیر فایل‌های محلی، محتوای پوشه‌ی `data`.
+## Path handling
 
-## اعتبارسنجی مسیر
+When the app opens a file or folder on your behalf, the path is passed to the
+system as an argument rather than as a string to a shell. A path containing shell
+metacharacters can therefore never be interpreted as a command.
 
-هنگام باز کردن فایل یا پوشه از درون برنامه، آدرس به‌صورت آرگومان به سیستم داده می‌شود، نه به‌صورت رشته‌ای به shell. بنابراین مسیری که شامل کاراکترهای خاص shell باشد، هرگز به‌عنوان دستور تفسیر نمی‌شود.
+## Write operations
 
-## عملیات نوشتنی
+Nothing is written to GitHub without confirmation:
 
-هیچ کاری در گیت‌هاب بدون تأیید انجام نمی‌شود:
+- **Delete repository** — you must type the full repository name
+- **Publish release** — a dialog naming the tag and repository
+- **Commit a file** — a dialog showing the path, the branch and the message
+- **Close an issue or create one** — a confirmation dialog
 
-- **حذف ریپازیتوری** — باید نام کامل ریپازیتوری را دستی تایپ کنید
-- **انتشار ریلیز** — پنجره‌ی تأیید با ذکر تگ و ریپازیتوری
-- **commit فایل** — پنجره‌ی تأیید با نام فایل، شاخه و پیام
-- **بستن ایشو یا ساخت ایشو** — پنجره‌ی تأیید
+The AI assistant never writes anything without one of these.
 
-دستیار هوش مصنوعی هیچ‌وقت بدون یکی از این تأییدها چیزی نمی‌نویسد.
+## Reducing your exposure
 
-## کاهش سطح دسترسی
+Give the token the least it can do:
 
-کمترین دسترسی ممکن را به توکن بدهید:
+- Only the repositories you really work in
+- Skip the delete scope if you do not delete repositories
+- `Contents: Read-only` is enough if you only ever read
 
-- فقط ریپازیتوری‌هایی که واقعاً کار می‌کنید
-- اگر ریپازیتوری حذف نمی‌کنید، scope حذف را ندهید
-- برای فقط خواندن، `Contents: Read-only` کافی است
+## Reporting a problem
 
-## گزارش مشکل امنیتی
-
-اگر مشکلی پیدا کردید، به‌صورت خصوصی در مخزن گزارش دهید تا قبل از انتشار عمومی بررسی و رفع شود.
+If you find a security issue, report it privately on the repository so it can be
+fixed before it becomes public.

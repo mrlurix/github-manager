@@ -26,11 +26,11 @@ from ..theme import markdown_css
 from ..widgets import (
     Card,
     FlowWidget,
+    ScrollPage,
     button,
     chip,
     icon_button,
     label,
-    spacer,
     unescape_mnemonic,
 )
 from .base import Page
@@ -53,7 +53,16 @@ class ReadmePage(Page):
         self._task = None
         self._ask_commit_path = ""
 
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        # This page carries more controls than a 900px tall window can show, and
+        # a plain vertical layout answers a shortfall by clipping: the generation
+        # settings card is handed less than its own minimum and its controls are
+        # drawn outside it, so they simply vanish. A scroll area keeps every
+        # control reachable, and the editor still grows to fill a tall window.
+        self.scroll = ScrollPage(self)
+        outer.addWidget(self.scroll)
+        layout = self.scroll.column
         layout.setContentsMargins(26, 22, 26, 20)
         layout.setSpacing(14)
 
@@ -77,61 +86,59 @@ class ReadmePage(Page):
 
         # ------------------------------------------------------- repository bar
         repo_card = Card(flat=True)
-        row = QHBoxLayout()
-        row.setSpacing(10)
-        row.addWidget(label("Repository", ""))
+        row = FlowWidget(spacing=10)
+        row.add(label("Repository", ""))
         self.repo_combo = QComboBox()
-        self.repo_combo.setMinimumWidth(280)
+        self.repo_combo.setMinimumWidth(240)
         self.repo_combo.setEditable(False)
         self.repo_combo.currentTextChanged.connect(self._on_repo_changed)
-        row.addWidget(self.repo_combo)
+        row.add(self.repo_combo)
 
         pick = button("Choose…", variant="outline", icon="folder", on_click=self.pick_repo)
-        row.addWidget(pick)
-        row.addWidget(spacer(12))
-        row.addWidget(label("Branch", ""))
+        row.add(pick)
+        row.add(label("Branch", ""))
         self.branch_combo = QComboBox()
-        self.branch_combo.setMinimumWidth(140)
-        row.addWidget(self.branch_combo)
-        row.addWidget(spacer())
+        self.branch_combo.setMinimumWidth(130)
+        row.add(self.branch_combo)
         self.load_btn = button("Load existing", variant="ghost", icon="download", on_click=self.load_existing)
-        row.addWidget(self.load_btn)
+        row.add(self.load_btn)
         self.reload_btn = icon_button("refresh", tooltip="Reload repository list", on_click=self.reload_repos)
-        row.addWidget(self.reload_btn)
-        repo_card.add_layout(row)
+        row.add(self.reload_btn)
+        repo_card.add(row)
         layout.addWidget(repo_card)
 
         # ------------------------------------------------------------- options
         options = Card("Generation settings", "Everything here is fed to the AI prompt")
-        opts_row = QHBoxLayout()
-        opts_row.setSpacing(12)
+        # Six labelled controls in one row overflow on a narrow window and, in a
+        # plain QHBoxLayout, overlap instead of wrapping. A flow row keeps the
+        # labels attached to their controls and lets the group reflow.
+        opts_row = FlowWidget(spacing=12)
 
         self.tone = QComboBox()
         self.tone.addItems(TONES)
-        opts_row.addWidget(_field("Tone", self.tone))
+        opts_row.add(_field("Tone", self.tone))
 
         self.language = QComboBox()
         self.language.addItems(LANGUAGES)
-        opts_row.addWidget(_field("Language", self.language))
+        opts_row.add(_field("Language", self.language))
 
         self.audience = QComboBox()
         self.audience.addItems(AUDIENCES)
-        opts_row.addWidget(_field("Audience", self.audience))
+        opts_row.add(_field("Audience", self.audience))
 
         self.badges = QCheckBox("Badges")
         self.badges.setChecked(True)
-        opts_row.addWidget(_field("Extras", self.badges))
+        opts_row.add(_field("Extras", self.badges))
 
         self.improve_existing = QCheckBox("Improve current text")
         self.improve_existing.setChecked(True)
-        opts_row.addWidget(_field("Mode", self.improve_existing))
+        opts_row.add(_field("Mode", self.improve_existing))
 
         self.temperature = QComboBox()
         self.temperature.addItems(["Focused (0.3)", "Balanced (0.6)", "Creative (0.9)"])
         self.temperature.setCurrentIndex(1)
-        opts_row.addWidget(_field("Creativity", self.temperature))
-        opts_row.addWidget(spacer())
-        options.add_layout(opts_row)
+        opts_row.add(_field("Creativity", self.temperature))
+        options.add(opts_row)
 
         self.sections_flow = FlowWidget(spacing=7)
         for name in self.ctx.config.get("readme_sections", []):
@@ -144,6 +151,10 @@ class ReadmePage(Page):
         options.add_layout(all_row)
 
         self.notes = QLineEdit()
+        # A text input must never be squeezed into an unusable strip. The flow
+        # rows above grow when the window narrows; without a floor the vertical
+        # layout takes the shortfall out of this field instead.
+        self.notes.setMinimumHeight(36)
         self.notes.setPlaceholderText(
             "Extra instructions, e.g. 'include a Docker section and a CLI usage example'"
         )
@@ -152,46 +163,55 @@ class ReadmePage(Page):
 
         # -------------------------------------------------------------- editor
         self.editor = MarkdownEditor()
+        # A usable editor even when the window is short; it grows on taller ones.
+        self.editor.setMinimumHeight(240)
         layout.addWidget(self.editor, 1)
         self.editor.statsChanged.connect(lambda s: self.status.setText(s))
 
         # ------------------------------------------------------------- actions
+        # Ten fixed-width controls will not fit on one line at any realistic
+        # window size, and a plain QHBoxLayout does not wrap: the children keep
+        # their size hints and end up drawn on top of each other. Two flow rows
+        # keep the primary actions on the left and the secondary ones on the
+        # right, and each wraps onto the next line when the window is narrow.
         actions = QHBoxLayout()
         actions.setSpacing(8)
+        primary_row = FlowWidget(spacing=8)
         self.generate_btn = button(
             "Generate README", variant="primary", icon="wand", on_click=self.generate
         )
-        actions.addWidget(self.generate_btn)
+        primary_row.add(self.generate_btn)
         self.refine_btn = button("Refine", variant="outline", icon="sparkles", on_click=self.refine)
-        actions.addWidget(self.refine_btn)
+        primary_row.add(self.refine_btn)
         self.review_btn = button("Review", variant="outline", icon="shield-check", on_click=self.review)
-        actions.addWidget(self.review_btn)
-        actions.addWidget(spacer())
+        primary_row.add(self.review_btn)
 
         self.file_combo = QComboBox()
         self.file_combo.addItem("README.md", "")
         for kind in ai_tasks.GITHUB_FILE_KINDS:
             self.file_combo.addItem(kind, kind)
-        self.file_combo.setMinimumWidth(220)
-        actions.addWidget(self.file_combo)
+        self.file_combo.setMinimumWidth(200)
+        primary_row.add(self.file_combo)
         self.scaffold_btn = button(
             "Draft extra file", variant="outline", icon="code", on_click=self.draft_extra
         )
-        actions.addWidget(self.scaffold_btn)
+        primary_row.add(self.scaffold_btn)
+        actions.addWidget(primary_row, 1)
 
-        actions.addWidget(spacer())
+        secondary_row = FlowWidget(spacing=8)
         template_btn = button("Template", variant="ghost", icon="list", on_click=self.insert_template)
-        actions.addWidget(template_btn)
+        secondary_row.add(template_btn)
         copy_btn = button("Copy", variant="ghost", icon="copy", on_click=self.copy)
-        actions.addWidget(copy_btn)
+        secondary_row.add(copy_btn)
         save_local = button("Save .md", variant="ghost", icon="save", on_click=self.save_local)
-        actions.addWidget(save_local)
+        secondary_row.add(save_local)
         self.preview_btn = button("Preview", variant="ghost", icon="eye", on_click=self.toggle_preview)
-        actions.addWidget(self.preview_btn)
+        secondary_row.add(self.preview_btn)
         self.commit_btn = button(
             "Commit to GitHub", variant="primary", icon="upload", on_click=self.commit
         )
-        actions.addWidget(self.commit_btn)
+        secondary_row.add(self.commit_btn)
+        actions.addWidget(secondary_row)
         layout.addLayout(actions)
 
         self.review_view = MarkdownStreamView(css=markdown_css())

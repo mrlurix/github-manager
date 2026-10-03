@@ -27,11 +27,12 @@ from ..markdown import render_markdown
 from ..theme import markdown_css
 from ..widgets import (
     Card,
+    FlowWidget,
     PageHeader,
+    ScrollPage,
     button,
     icon_button,
     label,
-    spacer,
 )
 from .base import Page
 
@@ -47,7 +48,14 @@ class ReleasesPage(Page):
         self.commits_to_text: list[Any] = []
         self.releases_to_tags: list[str] = []
 
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        # Two stacked cards on the left and two on the right need more height
+        # than a short window has. Without a scroll area the splitter is given
+        # less than its minimum and the lists are drawn outside their cards.
+        self.scroll = ScrollPage(self)
+        outer.addWidget(self.scroll)
+        layout = self.scroll.column
         layout.setContentsMargins(26, 22, 26, 20)
         layout.setSpacing(14)
 
@@ -61,19 +69,17 @@ class ReleasesPage(Page):
         layout.addWidget(self.header)
 
         bar = Card(flat=True)
-        row = QHBoxLayout()
-        row.setSpacing(10)
+        row = FlowWidget(spacing=10)
         self.repo_combo = QComboBox()
-        self.repo_combo.setMinimumWidth(240)
+        self.repo_combo.setMinimumWidth(200)
         self.repo_combo.currentTextChanged.connect(self._on_repo_changed)
-        row.addWidget(self.repo_combo)
-        row.addWidget(button("Choose…", variant="outline", icon="folder", on_click=self.pick_repo))
-        row.addWidget(spacer(10))
-        row.addWidget(label("Commit convention", "dim"))
+        row.add(self.repo_combo)
+        row.add(button("Choose…", variant="outline", icon="folder", on_click=self.pick_repo))
+        row.add(label("Commit convention", "dim"))
         self.convention = QComboBox()
         self.convention.addItems(["Conventional Commits", "Plain imperative", "Angular style"])
-        row.addWidget(self.convention)
-        bar.add_layout(row)
+        row.add(self.convention)
+        bar.add(row)
         layout.addWidget(bar)
 
         self.split = QSplitter(Qt.Orientation.Horizontal)
@@ -86,6 +92,7 @@ class ReleasesPage(Page):
 
         commits_card = Card("Recent commits", "Used as the source for release notes")
         self.commits = QListWidget()
+        self.commits.setMinimumHeight(80)
         commits_card.add(self.commits)
         commits_card.add(
             button("Load commits", variant="ghost", icon="download", on_click=self.load_commits)
@@ -94,7 +101,7 @@ class ReleasesPage(Page):
 
         releases_card = Card("Releases", "Published versions on GitHub")
         self.releases = QListWidget()
-        self.releases.setMinimumHeight(120)
+        self.releases.setMinimumHeight(80)
         releases_card.add(self.releases)
         releases_card.add(
             button(

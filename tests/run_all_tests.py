@@ -21,6 +21,7 @@ SUITES = [
     "feature_test.py",
     "ai_flow_test.py",
     "layout_test.py",
+    "responsive_test.py",
 ]
 
 

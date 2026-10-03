@@ -92,7 +92,9 @@ class Sidebar(QFrame):
             btn.setIcon(icon_svg(icon, "#9aa5bb", 17))
             btn.setIconSize(QSize(17, 17))
             btn.setToolTip(f"{title}  (Ctrl+{index + 1})")
-            btn.clicked.connect(lambda _=False, i=index: self.navigate.emit(i))
+            # Page 0 is the welcome screen and has no sidebar entry, so the nav
+            # list is offset by one: button i drives page i + 1.
+            btn.clicked.connect(lambda _=False, i=index: self.navigate.emit(i + 1))
             self.group.addButton(btn, index)
             layout.addWidget(btn)
             self.buttons.append(btn)

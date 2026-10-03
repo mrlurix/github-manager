@@ -1,86 +1,95 @@
 ---
-title: نصب و راه‌اندازی
-description: دانلود GitHub Manager، ساخت توکن، اتصال اولیه و شروع کار در سه دقیقه.
+title: Getting started
+description: Download GitHub Manager, create a token, connect, and be writing READMEs in three minutes.
 ---
 
-## دانلود
+## Download
 
-از [صفحه‌ی انتشارها](https://github.com/mrlurix/github-manager/releases/latest) فایل `GitHubManager.exe` را بگیرید.
+Grab `GitHubManager.exe` from the
+[releases page](https://github.com/mrlurix/github-manager/releases/latest).
 
-- حجم: حدود ۶۳ مگابایت
-- یک فایل، بدون نصب‌کننده
-- روی ویندوز ۶۴ بیتی کار می‌کند
+- About 63 MB
+- A single file, no installer
+- Runs on 64-bit Windows
 
-فایل را در هر پوشه‌ای که دوست دارید بگذارید — مثلاً `C:\Tools` یا روی یک فلش. برنامه هیچ چیزی در Program Files نمی‌نویسد و نیازی به دسترسی مدیر ندارد.
+Put it wherever you like — `C:\Tools`, a desktop folder, a USB stick. Nothing is
+written to Program Files and no administrator rights are needed.
 
-> exe امضا نشده است. ممکن است SmartScreen یک هشدار «برنامه‌ی ناشناس» نشان دهد؛ روی **More info → Run anyway** بزنید. این محدودیت همه‌ی برنامه‌های بدون گواهی تجاری را دارد.
+> The exe is unsigned, so SmartScreen may warn that the publisher is unknown.
+> Choose **More info → Run anyway**. Every app without a commercial certificate
+> gets this.
 
-## ساخت توکن
+## Create a token
 
-برنامه به یک **Personal Access Token** نیاز دارد.
+The app needs a **Personal Access Token**.
 
-۱. به [github.com/settings/tokens](https://github.com/settings/tokens) بروید
-۲. **Generate new token → Fine-grained** را انتخاب کنید
-۳. فقط دسترسی لازم را بدهید:
-   - `Contents: Read and write` — برای commit کردن README و فایل‌ها
-   - `Issues: Read and write` — برای کار با ایشو
-   - `Pull requests: Read and write` — برای کار با PR
-   - `Metadata: Read-only` — که خودکار اضافه می‌شود
-۴. فقط ریپازیتوری‌هایی را انتخاب کنید که واقعاً می‌خواهید
-۵. توکن را بسازید و کپی کنید — **فقط یک بار نمایش داده می‌شود**
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
+2. Choose **Generate new token → Fine-grained**
+3. Grant only what the app actually uses:
+   - `Contents: Read and write` — to commit READMEs and other files
+   - `Issues: Read and write` — to work with issues
+   - `Pull requests: Read and write` — to work with pull requests
+   - `Metadata: Read-only` — added automatically
+4. Restrict it to the repositories you actually want to touch
+5. Generate and copy it — **it is shown only once**
 
-توکن‌های کلاسیک هم کار می‌کنند؛ در آن صورت scopeهای `repo` و `delete_repo` لازم است. `delete_repo` را فقط اگر واقعاً می‌خواهید ریپازیتوری حذف کنید اضافه کنید؛ بقیه‌ی برنامه بدون آن کار می‌کند.
+Classic tokens work too; they need the `repo` and `delete_repo` scopes. Skip
+`delete_repo` unless you intend to delete repositories — everything else works
+without it.
 
-## اتصال اولیه
+## First run
 
-۱. برنامه را باز کنید
-۲. روی **Connect GitHub** بزنید
-۳. توکن را بچسبانید و تأیید کنید
+1. Open the app
+2. Click **Connect GitHub**
+3. Paste the token and confirm
 
-توکن بلافاصله با **DPAPI ویندوز** رمزنگاری و در پوشه‌ی `data` کنار برنامه ذخیره می‌شود. کاربر دیگری روی همین سیستم نمی‌تواند آن را باز کند.
+The token is encrypted with **Windows DPAPI** immediately and stored in the
+`data` folder next to the executable. Another user on the same machine cannot
+decrypt it.
 
-اگر پوشه‌ی کنار برنامه قابل نوشتن نباشد — مثلاً داخل Program Files — برنامه خودکار از پوشه‌ی داده‌ی کاربر استفاده می‌کند.
+If that folder is not writable — inside Program Files, say — the app falls back
+to your user data folder automatically.
 
-## پیکربندی هوش مصنوعی
+## Configure the AI
 
-مرحله‌ی بعد، انتخاب یک سرویس است:
+Next step is picking a provider:
 
-۱. به **Settings → AI** بروید
-۲. یکی از ارائه‌دهنده‌ها را انتخاب کنید
-۳. اگر سرویس ابری است، کلید API را وارد کنید
-۴. روی **Test connection** بزنید
+1. Open **Settings → AI**
+2. Choose a provider
+3. Enter an API key if it is a cloud service
+4. Click **Test connection**
 
-اگر مدل محلی دارید، نوع `Ollama` را انتخاب کنید — در این حالت **کلید API لازم نیست** و کل برنامه آفلاین کار می‌کند.
+If you run a model locally, pick `Ollama` — **no API key is needed** and the
+whole app works offline.
 
-## شروع کار
+## Where to start
 
-سه مسیر پیشنهادی:
-
-| می‌خواهید… | از اینجا شروع کنید |
+| You want to… | Start here |
 | --- | --- |
-| README بنویسید | استودیوی README → انتخاب ریپازیتوری → **Generate README** |
-| ایشوها را مرتب کنید | ایشو و PR → **AI triage** |
-| ریلیز منتشر کنید | ریلیز و کامیت → **Load commits** → **Generate notes** |
-| سؤال بپرسید | **Ctrl+K** و مستقیم بپرسید |
+| Write a README | README Studio → pick a repository → **Generate README** |
+| Tidy up issues | Issues & PRs → **AI triage** |
+| Ship a release | Releases & commits → **Load commits** → **Generate notes** |
+| Ask a question | Press **Ctrl+K** and just ask |
 
-## به‌روزرسانی
+## Updating
 
-نسخه‌ی جدید را از صفحه‌ی انتشارها بگیرید و فایل exe را جایگزین کنید. پوشه‌ی `data` دست‌نخورده می‌ماند، پس توکن و تنظیمات شما حفظ می‌شود.
+Download the new exe from the releases page and replace the old one. The `data`
+folder is left alone, so your token and settings survive.
 
-## اگر چیزی کار نکرد
+## If something does not work
 
-| نشانه | علت محتمل | راه‌حل |
+| Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| «Invalid or expired token» | توکن منقضی یا scope ناقص | توکن تازه بسازید و دسترسی‌ها را بازبینی کنید |
-| «Not found, or the token lacks access» | دسترسی به آن ریپازیتوری ندارید | در ساخت توکن، ریپازیتوری را انتخاب کرده باشید |
-| «API rate limit exceeded» | سهمیه‌ی ساعتی تمام شده | پیام خطا زمان تقریبی ریست را نشان می‌دهد؛ صبر کنید |
-| «Access denied» | نوشتن روی ریپازیتوریِ محافظت‌شده | این محدودیت خود گیت‌هاب است |
-| دکمه‌های هوش مصنوعی غیرفعال‌اند | سرویس AI پیکربندی نشده | تنظیمات AI را کامل کنید |
-| برنامه باز نمی‌شود | آنتی‌ویروس یا ویندوز قدیمی | فایل را Unblock کنید یا در تنظیمات به‌روزرسانی بگذارید |
+| "Invalid or expired token" | Token expired or missing scopes | Create a new one and check the scopes |
+| "Not found, or the token lacks access" | No access to that repository | Make sure the repository is selected when creating the token |
+| "API rate limit exceeded" | Hourly quota spent | The error names roughly when it resets; wait |
+| "Access denied" | Writing to a protected repository | That is GitHub's own rule |
+| AI buttons are greyed out | No provider configured | Finish the AI settings |
+| The app will not open | Antivirus, or an old Windows build | Unblock the file, or update Windows |
 
-## اجرا از سورس
+## Running from source
 
-اگر می‌خواهید خودتان اجرا کنید یا تغییر دهید، به [ساخت از سورس](build.html) بروید.
+To run or modify it yourself, see [Building from source](build.html).
 
 ```bash
 git clone https://github.com/mrlurix/github-manager.git
@@ -89,4 +98,4 @@ pip install -r requirements.txt
 python main.py
 ```
 
-روی ویندوز می‌توانید از `run.bat` استفاده کنید.
+On Windows you can just run `run.bat`.
