@@ -334,8 +334,9 @@ def layout(
     toc: list[tuple[int, str, str]],
 ) -> str:
     nav_html = "".join(
-        f'<a class="nav-link{" is-active" if key == slug else ""}" href="{key}.html">'
-        f"{escape(label)}</a>"
+        f'<a class="nav-link{" is-active" if key == slug else ""}" href="{key}.html"'
+        + (' aria-current="page"' if key == slug else "")
+        + f">{escape(label)}</a>"
         for key, label in NAV
     )
     toc_html = ""
@@ -345,7 +346,11 @@ def layout(
             f'<a href="#{anchor}">{escape(text)}</a></li>'
             for level, text, anchor in toc
         )
-        toc_html = f'<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul>{items}</ul></nav>'
+        toc_html = (
+            f'<nav class="toc" aria-labelledby="toc-heading">'
+            f'<p class="toc-title" id="toc-heading">On this page</p>'
+            f"<ul>{items}</ul></nav>"
+        )
 
     return f"""<!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -358,10 +363,12 @@ def layout(
      turns a mistake in a markdown file into broken markup instead of a compromise.
      'unsafe-inline' is needed for style only, because markdown carries style
      attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://rsms.me; font-src 'self' https://rsms.me data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>{escape(title)} · GitHub Manager</title>
 <meta name="description" content="{escape(description)}">
+<link rel="preconnect" href="https://rsms.me/inter" crossorigin>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="{escape(title)} · GitHub Manager">
@@ -440,7 +447,15 @@ def layout(
 
 
 def front_matter(text: str) -> tuple[str, str, str]:
-    """Split optional ``---`` front matter into (title, description, body)."""
+    """Split optional ``---`` front matter into (title, description, body).
+
+    A leading BOM is stripped first. Without that, a file saved by a Windows
+    editor starts with ``\ufeff---`` rather than ``---``, the block is not
+    recognised as front matter, and it renders into the page as visible
+    content. That is a silent failure - the build still succeeds - so it is
+    worth handling rather than relying on every contributor saving without one.
+    """
+    text = text.lstrip("\ufeff")
     if not text.startswith("---"):
         return "", "", text
     end = text.find("\n---", 3)
@@ -507,9 +522,13 @@ def build() -> int:
         if not source.exists():
             print(f"  MISSING {source}")
             continue
-        title, description, body_md = front_matter(
-            source.read_text(encoding="utf-8")
-        )
+        raw_source = source.read_text(encoding="utf-8")
+        title, description, body_md = front_matter(raw_source)
+        if not title and raw_source.lstrip("\ufeff").startswith("---"):
+            raise SystemExit(
+                f"{source.name}: the front matter block was not parsed and would "
+                "render as page content."
+            )
         title = title or nav_title
         body_html, headings = render(body_md)
         ANCHORS[slug] = [anchor for _, _, anchor in headings]

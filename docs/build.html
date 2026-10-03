@@ -9,10 +9,12 @@
      turns a mistake in a markdown file into broken markup instead of a compromise.
      'unsafe-inline' is needed for style only, because markdown carries style
      attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://rsms.me; font-src 'self' https://rsms.me data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Building from source · GitHub Manager</title>
 <meta name="description" content="Run the app from source, run the tests, build the exe and build this documentation site.">
+<link rel="preconnect" href="https://rsms.me/inter" crossorigin>
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Building from source · GitHub Manager">
@@ -66,7 +68,7 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html" aria-current="page">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
       <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
@@ -309,7 +311,7 @@ a UI, and what allows the integration suite to drive the real client over real
 HTTP.</p>
 </blockquote>
 
-<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#running-from-source">Running from source</a></li><li class="toc-item toc-level-3"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#building-the-portable-exe">Building the portable exe</a></li><li class="toc-item toc-level-3"><a href="#options">Options</a></li><li class="toc-item toc-level-3"><a href="#what-the-build-script-does">What the build script does</a></li><li class="toc-item toc-level-2"><a href="#running-the-tests">Running the tests</a></li><li class="toc-item toc-level-3"><a href="#the-mock-github-server">The mock GitHub server</a></li><li class="toc-item toc-level-3"><a href="#keeping-the-tests-out-of-your-data">Keeping the tests out of your data</a></li><li class="toc-item toc-level-3"><a href="#development-tools">Development tools</a></li><li class="toc-item toc-level-2"><a href="#building-this-site">Building this site</a></li><li class="toc-item toc-level-3"><a href="#why-the-search-is-hand-written">Why the search is hand-written</a></li><li class="toc-item toc-level-2"><a href="#project-layout">Project layout</a></li></ul></nav>
+<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#running-from-source">Running from source</a></li><li class="toc-item toc-level-3"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#building-the-portable-exe">Building the portable exe</a></li><li class="toc-item toc-level-3"><a href="#options">Options</a></li><li class="toc-item toc-level-3"><a href="#what-the-build-script-does">What the build script does</a></li><li class="toc-item toc-level-2"><a href="#running-the-tests">Running the tests</a></li><li class="toc-item toc-level-3"><a href="#the-mock-github-server">The mock GitHub server</a></li><li class="toc-item toc-level-3"><a href="#keeping-the-tests-out-of-your-data">Keeping the tests out of your data</a></li><li class="toc-item toc-level-3"><a href="#development-tools">Development tools</a></li><li class="toc-item toc-level-2"><a href="#building-this-site">Building this site</a></li><li class="toc-item toc-level-3"><a href="#why-the-search-is-hand-written">Why the search is hand-written</a></li><li class="toc-item toc-level-2"><a href="#project-layout">Project layout</a></li></ul></nav>
     <footer class="page-foot">
       <p>Text and code released under the MIT licence.</p>
       <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>

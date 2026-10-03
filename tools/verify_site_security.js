@@ -105,11 +105,24 @@ if (fs.existsSync(outDir)) {
     check(name + " has no javascript: url", !/javascript\s*:/i.test(attrValues), attrValues.slice(0, 80));
     check(name + " has no data: url", !/data\s*:\s*text\/html/i.test(attrValues));
     check(name + " has no frame, object or form", !/<(iframe|object|embed|form|frame)\b/i.test(html));
-    // Assets must be same-origin. Hyperlinks to github.com are the point of the
-    // documentation, so only loaded resources are checked.
-    const assets = (html.match(/<(?:script|img|link|iframe|source)\b[^>]*>/gi) || []).join(" ");
+    // Assets must be same-origin, except the one webfont the pages pull in.
+    // Everything else loading remotely would be a tracking or injection surface,
+    // so the allowance is a literal list rather than "no http".
+    const assets = (html.match(/<(?:script|img|iframe|source)\b[^>]*>/gi) || []).join(" ");
     const remoteAssets = assets.match(/(?:src|href)\s*=\s*["']https?:[^"']*/gi) || [];
-    check(name + " loads no remote asset", remoteAssets.length === 0, remoteAssets.join(" | "));
+    check(name + " loads no remote script or image", remoteAssets.length === 0, remoteAssets.join(" | "));
+
+    const links = (html.match(/<link\b[^>]*>/gi) || []).join(" ");
+    const remoteLinks = (links.match(/href\s*=\s*["']https?:[^"']*/gi) || [])
+      .filter(h => !/rsms\.me/.test(h));
+    check(name + " loads no unexpected remote stylesheet", remoteLinks.length === 0, remoteLinks.join(" | "));
+
+    // The policy has to actually permit the webfont it loads.
+    const csp = (html.match(/Content-Security-Policy" content="([^"]+)"/) || [])[1] || "";
+    check(name + " the policy allows the webfont host",
+      /style-src[^;]*https:\/\/rsms\.me/.test(csp), csp.slice(0, 80));
+    check(name + " the policy still forbids inline script",
+      /script-src 'self'/.test(csp) && !/script-src[^;]*unsafe-inline/.test(csp));
     // Outbound links must not hand the opener window to the destination.
     const anchors = html.match(/<a\b[^>]*href\s*=\s*["']https?:[^>]*>/gi) || [];
     const unsafe = anchors.filter(a => !/rel\s*=\s*["'][^"']*noopener/i.test(a));
