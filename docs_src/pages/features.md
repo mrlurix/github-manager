@@ -72,12 +72,45 @@ one of three layouts: compact, comfortable or cards.
 
 | Action | Notes |
 | --- | --- |
-| Create | Name, description, homepage, topics, visibility, an initial README and a licence template |
-| Edit | Name, description, homepage, topics, default branch and archived state |
+| Create | Name, description, homepage, topics, visibility, an initial README and a licence template, plus any files you attach |
+| Edit | Name, description, homepage, topics, default branch and archived state, plus adding and deleting files |
+| Upload files | Commit one or more files from disk, to any folder and any branch |
 | Archive | Reversible and safe; nothing is deleted |
 | Delete | You must type the full repository name to confirm |
 | Fork | Creates the fork immediately |
 | Star | Adds or removes the star |
+
+### Uploading files
+
+Use **Upload files…** on a repository card, or the ⋮ menu beside it.
+
+- Pick one file or several; each row shows its size
+- **Folder** puts them all under a directory in the repository — change it and
+  the whole batch moves, while any path you edited by hand stays put
+- Each row is editable, so a file can be renamed or moved without leaving the dialog
+- Choose whether an existing file may be overwritten, or the upload stops
+- Commit message and branch are yours to set
+
+> GitHub commits one file per request, so a batch is a sequence. Each file is
+> confirmed as it lands, and a failure stops the rest rather than leaving you
+> guessing how far it got. Binary files are uploaded byte for byte.
+
+### Files in the create and edit dialogs
+
+The same picker is built into both, so a repository can be seeded or tidied
+without opening a second dialog.
+
+- **Create repository** — attach files while creating. They are committed
+  straight after the repository is made, since the API takes no file content in
+  the create call itself
+- **Edit repository** — the current files are listed with their sizes; tick one
+  to delete it, and add new files in the section below
+
+Deletions are applied before uploads, so a path that is removed and re-added
+somewhere else cannot be clobbered by the order the requests happen to land in.
+Marking the same path for both is refused rather than resolved silently.
+
+> An archived repository is read only, so the file section is not offered there.
 
 ### AI suggestions
 

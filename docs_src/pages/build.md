@@ -70,6 +70,7 @@ running on your own machine.
 | `ai_tasks_test.py` | Every AI task function and JSON parsing |
 | `security_test.py` | Token redaction, host allow-listing, path validation, HTML sanitising |
 | `integration_test.py` | The real client over real HTTP against `mock_github_server.py` |
+| `upload_test.py` | File uploads end to end, including binary and the batch dialog |
 | `smoke_test.py` | Every page builds and renders |
 | `feature_test.py` | Full user flows through the real widgets |
 | `ai_flow_test.py` | Streaming, refinement, the commit path and the scope lock |

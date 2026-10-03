@@ -164,12 +164,15 @@ def test_real_writes(server: MockGitHubServer) -> None:
     # README commit: create then update, which exercises the sha dance.
     result = client.commit_readme("octocat/hello-world", "# New\n\nBody.", "docs: update README")
     check("commit_readme creates the file", bool(result.get("commit")), str(result)[:80])
-    check("content is stored on the server", server.state.files["README.md"] == "# New\n\nBody.", server.state.files["README.md"])
+    check("content is stored on the server", server.state.text("README.md") == "# New\n\nBody.",
+          server.state.text("README.md"))
     client.commit_readme("octocat/hello-world", "# Newer", "docs: update README again")
-    check("a second commit overwrites it", server.state.files["README.md"] == "# Newer", server.state.files["README.md"])
+    check("a second commit overwrites it", server.state.text("README.md") == "# Newer",
+          server.state.text("README.md"))
 
     client.write_file("octocat/hello-world", "docs/extra.md", "extra content", "docs: add extra")
-    check("write_file creates a new path", server.state.files.get("docs/extra.md") == "extra content", "")
+    check("write_file creates a new path", server.state.text("docs/extra.md") == "extra content",
+          server.state.text("docs/extra.md"))
 
     branch = client.create_branch("octocat/hello-world", "feature/from-tests")
     check("create_branch returns the ref", branch["ref"] == "refs/heads/feature/from-tests", str(branch))
@@ -337,8 +340,8 @@ def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
     page.editor.set_text("# Integration\n\nWritten against a real socket.")
     auto_dialog(True, 80)
     page.commit()
-    ok = wait_for(lambda: "Integration" in server.state.files.get("README.md", ""), app)
-    check("commit through the UI reached the server", ok, server.state.files.get("README.md", "")[:60])
+    ok = wait_for(lambda: "Integration" in server.state.text("README.md"), app)
+    check("commit through the UI reached the server", ok, server.state.text("README.md")[:60])
 
     # Load existing content back over HTTP.
     page.load_existing()

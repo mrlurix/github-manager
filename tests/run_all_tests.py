@@ -17,6 +17,7 @@ SUITES = [
     "ai_tasks_test.py",
     "security_test.py",
     "integration_test.py",
+    "upload_test.py",
     "smoke_test.py",
     "feature_test.py",
     "ai_flow_test.py",

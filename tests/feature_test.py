@@ -17,7 +17,7 @@ from typing import Any
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable  # noqa: E402
 
 ensure_importable()
 
@@ -224,6 +224,29 @@ class RecordingGitHub:
 
         return list(TREE)
 
+    def list_files(self, full_name: str, branch: str = ""):
+        """Every file with a sha, the way the edit dialog needs to see them."""
+        return [
+            {"path": "README.md", "sha": "a" * 40, "size": 120},
+            {"path": "src/old.py", "sha": "b" * 40, "size": 2048},
+        ]
+
+    def get_file_meta(self, full_name: str, path: str, ref: str = ""):
+        for entry in self.list_files(full_name, ref):
+            if entry["path"] == path:
+                return entry
+        return None
+
+    def put_file(self, full_name: str, path: str, data: bytes, message: str,
+                 branch: str = "", *, overwrite: bool = True):
+        self._record("put_file", full_name=full_name, path=path, size=len(data),
+                     message=message, branch=branch, overwrite=overwrite)
+        return {"content": {"path": path}, "commit": {"sha": "d" * 40}}
+
+    def delete_file(self, full_name: str, path: str, message: str, sha: str, branch: str = ""):
+        self._record("delete_file", full_name=full_name, path=path, message=message,
+                     sha=sha, branch=branch)
+
     def get_file(self, full_name: str, path: str, ref: str = ""):
         from tests.smoke_test import TREE
 
@@ -417,7 +440,7 @@ def test_repository_lifecycle(app: QApplication) -> None:
     pump(app, 120)
     check("a failing edit does not raise", True)
 
-    window.close()
+    destroy(window)
 
 
 def test_readme_commit_and_extra_files(app: QApplication) -> None:
@@ -452,7 +475,7 @@ def test_readme_commit_and_extra_files(app: QApplication) -> None:
     pump(app, 200)
     check("drafting an extra file opened the review dialog", "CONTRIBUTING" in (kind or "") or bool(kind))
 
-    window.close()
+    destroy(window)
 
 
 def test_issues_flow(app: QApplication) -> None:
@@ -520,7 +543,7 @@ def test_issues_flow(app: QApplication) -> None:
     if created:
         check("issue body came from the AI", "Summary" in created[0]["body"], created[0]["body"][:40])
 
-    window.close()
+    destroy(window)
 
 
 def test_releases_flow(app: QApplication) -> None:
@@ -574,7 +597,7 @@ def test_releases_flow(app: QApplication) -> None:
     branches = gh.args_for("create_branch")
     check("branch creation reached the API", bool(branches), str(gh.mutating()))
 
-    window.close()
+    destroy(window)
 
 
 def test_account_flow(app: QApplication) -> None:
@@ -620,7 +643,7 @@ def test_account_flow(app: QApplication) -> None:
     if uploads:
         check("avatar sent as png", uploads[0]["mime"] == "image/png", str(uploads[0]))
 
-    window.close()
+    destroy(window)
 
 
 def test_avatar_rejects_bad_files(app: QApplication) -> None:
@@ -659,7 +682,7 @@ def test_avatar_rejects_bad_files(app: QApplication) -> None:
         pump(app, 100)
         check("rejects an empty file", "upload_avatar" not in gh.mutating(), str(gh.mutating()))
 
-    window.close()
+    destroy(window)
 
 
 def test_settings_flow(app: QApplication) -> None:
@@ -722,7 +745,7 @@ def test_settings_flow(app: QApplication) -> None:
     check("token erased", ctx.token == "")
     check("repos cache cleared", ctx.repos == [])
 
-    window.close()
+    destroy(window)
 
 
 def test_theme_and_scale(app: QApplication) -> None:
@@ -746,7 +769,7 @@ def test_theme_and_scale(app: QApplication) -> None:
     pump(app, 20)
     check("ui scale applied", "13pt" in QApplication.instance().styleSheet())
 
-    window.close()
+    destroy(window)
 
 
 def test_signout_and_gating(app: QApplication) -> None:
@@ -774,7 +797,7 @@ def test_signout_and_gating(app: QApplication) -> None:
     pump(app, 20)
     check("no token still blocks repositories", window._current == 0)
 
-    window.close()
+    destroy(window)
 
 
 def test_navigation_and_shortcuts(app: QApplication) -> None:
@@ -801,7 +824,7 @@ def test_navigation_and_shortcuts(app: QApplication) -> None:
     pump(app, 10)
     check("theme toggle flips the theme", ctx.config.get("theme") != theme_before)
 
-    window.close()
+    destroy(window)
 
 
 def test_repo_picker_validation(app: QApplication) -> None:
@@ -866,7 +889,7 @@ def test_invalid_repo_name_is_rejected_cleanly(app: QApplication) -> None:
     # normal case still goes through untouched.
     check("a valid name still commits", bool(sent), str(sent))
 
-    window.close()
+    destroy(window)
 
 
 def test_tag_suggestion(app: QApplication) -> None:
@@ -897,7 +920,7 @@ def test_tag_suggestion(app: QApplication) -> None:
     page._on_commits([])
     check("placeholder follows the releases", "v1.3.0" in page.tag_input.placeholderText(), page.tag_input.placeholderText())
 
-    window.close()
+    destroy(window)
 
 
 def test_sidebar_navigation_is_aligned(app: QApplication) -> None:
@@ -940,7 +963,7 @@ def test_sidebar_navigation_is_aligned(app: QApplication) -> None:
         opened = window.pages[window.stack.currentIndex()].title
         check(f"Ctrl+{index + 1} opens '{label}'", opened == label, f"opened '{opened}'")
 
-    window.close()
+    destroy(window)
 
 
 def main() -> int:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import weakref
 from collections.abc import Callable, Iterable
 from typing import Any
 
@@ -648,7 +649,25 @@ class FlowWidget(QWidget):
 class Toast(QFrame):
     """Transient notification anchored to the bottom right of its parent."""
 
-    _active: list["Toast"] = []
+    #: Weak references, not the widgets themselves. A toast is normally removed
+    #: by its timer, but if its parent window closes first the timer never fires
+    #: and the entry would stay here - holding the toast, which holds its parent,
+    #: which holds every page. A registry like that never empties, and the leak
+    #: is invisible until the window count grows.
+    _active: list["weakref.ReferenceType[Toast]"] = []
+
+    @classmethod
+    def _live(cls) -> list["Toast"]:
+        """The toasts that still exist, pruning the ones that do not."""
+        alive: list[Toast] = []
+        kept: list[weakref.ReferenceType[Toast]] = []
+        for ref in cls._active:
+            toast = ref()
+            if toast is not None:
+                alive.append(toast)
+                kept.append(ref)
+        cls._active = kept
+        return alive
 
     def __init__(self, parent: QWidget, message: str, kind: str = "info", msec: int = 3200) -> None:
         super().__init__(parent)
@@ -683,7 +702,7 @@ class Toast(QFrame):
         self._timer.timeout.connect(self.dismiss)
         self._timer.start(msec)
 
-        Toast._active.append(self)
+        Toast._active.append(weakref.ref(self))
         self._reposition()
         self.show()
         self.raise_()
@@ -701,13 +720,11 @@ class Toast(QFrame):
         parent = self.parentWidget()
         if not parent:
             return
-        for toast in list(Toast._active):
-            if toast is not self and toast.parentWidget() is parent:
-                toast._shift = True
         offset = 0
-        for toast in Toast._active:
-            if toast.parentWidget() is parent and toast is not self:
-                offset += toast.height() + 10
+        for toast in Toast._live():
+            if toast is self or toast.parentWidget() is not parent:
+                continue
+            offset += toast.height() + 10
         self.move(
             parent.width() - self.width() - 26,
             parent.height() - self.height() - 26 - offset,
@@ -722,9 +739,8 @@ class Toast(QFrame):
         self.dismiss()
 
     def dismiss(self) -> None:
-        if self not in Toast._active:
-            return
-        Toast._active.remove(self)
+        # Held weakly, so dropping the reference is enough to unregister.
+        Toast._active = [ref for ref in Toast._active if ref() is not None and ref() is not self]
         anim = QPropertyAnimation(self._effect, b"opacity", self)
         anim.setDuration(150)
         anim.setStartValue(1.0)

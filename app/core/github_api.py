@@ -680,6 +680,94 @@ class GitHubClient:
             payload["sha"] = sha
         return self.request("PUT", target, payload=payload)
 
+    def list_files(self, full_name: str, branch: str = "") -> list[dict[str, Any]]:
+        """Every file in a repository, with the sha a delete has to quote.
+
+        One request for the whole tree, unlike asking per file: deleting needs
+        each file's sha, and a repository of a few hundred files would otherwise
+        cost a few hundred round trips before the dialog could even open.
+        """
+        repo = self.get_repo(full_name)
+        ref = branch or repo.default_branch
+        raw = self.request(
+            "GET",
+            f"/repos/{validate_repo(full_name)}/git/trees/{ref}",
+            params={"recursive": "1"},
+        )
+        out: list[dict[str, Any]] = []
+        for item in raw.get("tree", []):
+            if item.get("type") != "blob":
+                continue
+            path = str(item.get("path") or "")
+            if not path:
+                continue
+            out.append(
+                {
+                    "path": path,
+                    "sha": str(item.get("sha") or ""),
+                    "size": int(item.get("size") or 0),
+                }
+            )
+        out.sort(key=lambda entry: entry["path"].lower())
+        return out
+
+    def get_file_meta(self, full_name: str, path: str, ref: str = "") -> dict[str, Any] | None:
+        """Metadata for one file, including the sha an update has to quote.
+
+        ``write_file`` needs that sha when the file already exists; without it
+        GitHub answers 422. Returns ``None`` when the file is not there, which is
+        the normal case for a first upload.
+        """
+        params = {"ref": ref} if ref else None
+        target = f"/repos/{validate_repo(full_name)}/contents/{validate_repo_path(path)}"
+        try:
+            raw = self.request("GET", target, params=params)
+        except GitHubError as exc:
+            if exc.status == 404:
+                return None
+            raise
+        return raw if isinstance(raw, dict) else None
+
+    def put_file(
+        self,
+        full_name: str,
+        path: str,
+        data: bytes,
+        message: str,
+        branch: str = "",
+        *,
+        overwrite: bool = True,
+    ) -> dict[str, Any]:
+        """Create or replace a file from raw bytes.
+
+        Binary safe, unlike :meth:`write_file`, which takes text. That matters
+        for an upload feature: a PNG cannot survive an encode/decode round trip
+        through str, so the bytes are encoded straight to base64.
+
+        The sha of an existing file is looked up and sent along, because GitHub
+        rejects an update that does not quote it. With ``overwrite`` off, an
+        existing path is an error instead.
+        """
+        repo = validate_repo(full_name)
+        clean = validate_repo_path(path)
+        sha = ""
+        existing = self.get_file_meta(repo, clean, branch)
+        if existing:
+            if not overwrite:
+                raise GitHubError(f"'{clean}' already exists in {repo}.", status=409)
+            sha = str(existing.get("sha") or "")
+        payload: dict[str, Any] = {
+            "message": message,
+            # GitHub wraps lines in the JSON body; the newline keeps that from
+            # growing the payload for anything but a very large file.
+            "content": base64.b64encode(data).decode(),
+        }
+        if branch:
+            payload["branch"] = branch
+        if sha:
+            payload["sha"] = sha
+        return self.request("PUT", f"/repos/{repo}/contents/{clean}", payload=payload)
+
     def delete_file(self, full_name: str, path: str, message: str, sha: str, branch: str = "") -> None:
         target = f"/repos/{validate_repo(full_name)}/contents/{validate_repo_path(path)}"
         payload: dict[str, Any] = {"message": message, "sha": sha}

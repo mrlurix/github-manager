@@ -60,7 +60,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link is-active" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.1.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.2.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -165,11 +165,15 @@ one of three layouts: compact, comfortable or cards.</p>
 <tbody>
 <tr>
 <td>Create</td>
-<td>Name, description, homepage, topics, visibility, an initial README and a licence template</td>
+<td>Name, description, homepage, topics, visibility, an initial README and a licence template, plus any files you attach</td>
 </tr>
 <tr>
 <td>Edit</td>
-<td>Name, description, homepage, topics, default branch and archived state</td>
+<td>Name, description, homepage, topics, default branch and archived state, plus adding and deleting files</td>
+</tr>
+<tr>
+<td>Upload files</td>
+<td>Commit one or more files from disk, to any folder and any branch</td>
 </tr>
 <tr>
 <td>Archive</td>
@@ -189,6 +193,37 @@ one of three layouts: compact, comfortable or cards.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="uploading-files">Uploading files</h3>
+<p>Use <strong>Upload files…</strong> on a repository card, or the ⋮ menu beside it.</p>
+<ul>
+<li>Pick one file or several; each row shows its size</li>
+<li><strong>Folder</strong> puts them all under a directory in the repository — change it and
+the whole batch moves, while any path you edited by hand stays put</li>
+<li>Each row is editable, so a file can be renamed or moved without leaving the dialog</li>
+<li>Choose whether an existing file may be overwritten, or the upload stops</li>
+<li>Commit message and branch are yours to set</li>
+</ul>
+<blockquote>
+<p>GitHub commits one file per request, so a batch is a sequence. Each file is
+confirmed as it lands, and a failure stops the rest rather than leaving you
+guessing how far it got. Binary files are uploaded byte for byte.</p>
+</blockquote>
+<h3 id="files-in-the-create-and-edit-dialogs">Files in the create and edit dialogs</h3>
+<p>The same picker is built into both, so a repository can be seeded or tidied
+without opening a second dialog.</p>
+<ul>
+<li><strong>Create repository</strong> — attach files while creating. They are committed
+straight after the repository is made, since the API takes no file content in
+the create call itself</li>
+<li><strong>Edit repository</strong> — the current files are listed with their sizes; tick one
+to delete it, and add new files in the section below</li>
+</ul>
+<p>Deletions are applied before uploads, so a path that is removed and re-added
+somewhere else cannot be clobbered by the order the requests happen to land in.
+Marking the same path for both is refused rather than resolved silently.</p>
+<blockquote>
+<p>An archived repository is read only, so the file section is not offered there.</p>
+</blockquote>
 <h3 id="ai-suggestions">AI suggestions</h3>
 <p>&quot;Describe with AI&quot; reads the whole repository and proposes a one-line
 description plus a set of topics. Nothing is sent to GitHub until you press
@@ -356,7 +391,7 @@ review your current README, write a <code>.gitignore</code>, and explain adding 
 <li><strong>No offline mode</strong> — nothing is cached, so the app will not show you stale repository data</li>
 </ul>
 
-<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
+<nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#uploading-files">Uploading files</a></li><li class="toc-item toc-level-3"><a href="#files-in-the-create-and-edit-dialogs">Files in the create and edit dialogs</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
     <footer class="page-foot">
       <p>Text and code released under the MIT licence.</p>
       <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>

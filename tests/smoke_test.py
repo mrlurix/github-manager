@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import sys
 import time
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable  # noqa: E402
 
 ensure_importable()
 
@@ -423,8 +424,35 @@ def run(fail_github: bool = False) -> int:
     repos_page.layout_combo.setCurrentText("Compact")
     app.processEvents()
 
+    # The upload dialog has to build for every repository state, including the
+    # one where the repository has no default branch known yet.
+    from app.ui.dialogs import UploadFileDialog
+
+    for branch in ("", "main"):
+        dlg = UploadFileDialog(None, "octocat/hello-world", default_branch=branch)
+        dlg.add_paths([])
+        dlg.queue.folder.setText("docs")
+        dlg.deleteLater()
+        app.processEvents()
+
+    # The create and edit dialogs must build for a repository that has no files
+    # yet, and for one that is archived and therefore read only.
+    from app.ui.dialogs import CreateRepoDialog, EditRepoDialog
+
+    CreateRepoDialog(None, "octocat").deleteLater()
+    app.processEvents()
+
+    EditRepoDialog(None, repos_page.repos[0], files=[]).deleteLater()
+    app.processEvents()
+    EditRepoDialog(
+        None,
+        replace(repos_page.repos[0], archived=True),
+        files=[],
+    ).deleteLater()
+    app.processEvents()
+
     print("SMOKE OK", "fail_github=" if fail_github else "", fail_github)
-    window.close()
+    destroy(window)
     return 0
 
 

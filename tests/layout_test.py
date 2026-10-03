@@ -14,7 +14,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable  # noqa: E402
 
 ensure_importable()
 
@@ -157,7 +157,7 @@ def main() -> int:
                 "; ".join(problems[:4]),
             )
 
-    window.close()
+    destroy(window)
     print(f"\n{len(PASSED)} passed, {len(FAILED)} failed")
     for name in FAILED:
         print("  failed:", name)

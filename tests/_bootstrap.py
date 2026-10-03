@@ -44,4 +44,44 @@ def ensure_importable() -> None:
             sys.path.insert(0, text)
 
 
+def destroy(widget: object) -> None:
+    """Close a window and release the C++ object behind it.
+
+    ``close()`` alone is not enough. The pages hold bound signal slots that point
+    back at the window, so the window, its pages and those connections form a
+    cycle that Python's collector will not break across the Qt wrappers. The
+    whole tree then stays alive: the next ``setStyleSheet`` has to restyle every
+    leftover widget, so each rebuild in a suite costs several times the first.
+    Dropping the C++ object is what actually frees it.
+
+    Harmless to call twice, and safe when the widget was never shown.
+    """
+    import gc
+
+    import shiboken6
+    from PySide6.QtWidgets import QApplication, QWidget
+
+    app = QApplication.instance()
+    if app is not None:
+        app.processEvents()
+
+    if isinstance(widget, QWidget):
+        try:
+            widget.close()
+        except RuntimeError:
+            return  # already deleted
+    try:
+        shiboken6.delete(widget)
+    except (RuntimeError, TypeError):
+        pass
+
+    del widget
+    gc.collect()
+    if app is not None:
+        # Two passes: deleting the parent posts deletes for its children.
+        app.processEvents()
+        app.processEvents()
+        gc.collect()
+
+
 ensure_importable()

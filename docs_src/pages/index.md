@@ -1,18 +1,18 @@
----
+﻿---
 title: Home
-description: GitHub Manager — a portable GitHub desktop client with an AI assistant that only ever works on GitHub.
+description: GitHub Manager â€” a portable GitHub desktop client with an AI assistant that only ever works on GitHub.
 ---
 
 <div class="hero">
   <h1>All of GitHub, in one desktop app</h1>
   <p>
     Write READMEs, manage repositories, work through issues and pull requests,
-    publish releases and write commit messages — with an AI assistant that does
+    publish releases and write commit messages â€” with an AI assistant that does
     the work and refuses anything outside GitHub before the request ever reaches
     the model.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.1.0</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.2.0</a>
     <a class="btn" href="features.html">Features</a>
     <a class="btn" href="install.html">Getting started</a>
   </div>
@@ -25,7 +25,7 @@ description: GitHub Manager — a portable GitHub desktop client with an AI assi
   </div>
   <div class="card">
     <h3>Repositories</h3>
-    <p>Create, edit, archive, delete, fork, star and change topics — all from inside the app, every write confirmed first.</p>
+    <p>Create, edit, archive, delete, fork, star and change topics â€” all from inside the app, every write confirmed first.</p>
   </div>
   <div class="card">
     <h3>Issues &amp; pull requests</h3>
@@ -58,12 +58,12 @@ out-of-scope reply instead.
 
 ## How it works
 
-1. **Connect** — create a Personal Access Token on GitHub and paste it in. The token is encrypted with Windows DPAPI.
-2. **Pick a model** — any OpenAI compatible endpoint: OpenAI, OpenRouter, Groq, Together, Ollama or LM Studio. A local model needs no API key.
-3. **Work** — generate a README, triage issues, publish a release. Every write shows a confirmation first.
+1. **Connect** â€” create a Personal Access Token on GitHub and paste it in. The token is encrypted with Windows DPAPI.
+2. **Pick a model** â€” any OpenAI compatible endpoint: OpenAI, OpenRouter, Groq, Together, Ollama or LM Studio. A local model needs no API key.
+3. **Work** â€” generate a README, triage issues, publish a release. Every write shows a confirmation first.
 
 ```text
-Connect  →  Pick a repository  →  Ask the AI  →  Review and approve  →  Commit to GitHub
+Connect  â†’  Pick a repository  â†’  Ask the AI  â†’  Review and approve  â†’  Commit to GitHub
 ```
 
 ## Requirements
@@ -71,14 +71,14 @@ Connect  →  Pick a repository  →  Ask the AI  →  Review and approve  →  
 | | |
 | --- | --- |
 | OS | 64-bit Windows (tested on 10 and 11) |
-| Python | not required — the exe is self-contained |
+| Python | not required â€” the exe is self-contained |
 | Disk | roughly 130 MB while running |
 | Network | GitHub, plus whichever AI provider you configure |
 
 ## Next
 
-- [Features](features.html) — every page of the app in detail
-- [Getting started](install.html) — download and first run
-- [AI](ai.html) — choosing a model and how the scope limit works
-- [Security](security.html) — tokens, path validation and HTML sanitising
-- [FAQ](faq.html) — the questions that come up most
+- [Features](features.html) â€” every page of the app in detail
+- [Getting started](install.html) â€” download and first run
+- [AI](ai.html) â€” choosing a model and how the scope limit works
+- [Security](security.html) â€” tokens, path validation and HTML sanitising
+- [FAQ](faq.html) â€” the questions that come up most

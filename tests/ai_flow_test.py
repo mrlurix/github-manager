@@ -14,7 +14,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable  # noqa: E402
 
 ensure_importable()
 
@@ -135,7 +135,7 @@ def test_readme_generation(app) -> None:
     pump(app)
     check("refine replaced the text", "Refined and clearer" in page.editor.text())
 
-    window.close()
+    destroy(window)
 
 
 def test_offtopic_answers_are_discarded(app) -> None:
@@ -152,7 +152,7 @@ def test_offtopic_answers_are_discarded(app) -> None:
     pump(app)
     check("off-topic README answer is dropped", page.editor.text().strip() == "", repr(page.editor.text()[:60]))
 
-    window.close()
+    destroy(window)
 
 
 def test_assistant_scope_lock(app) -> None:
@@ -189,7 +189,7 @@ def test_assistant_scope_lock(app) -> None:
     )
     check("history recorded the turn", len(page.history) == 2, str(page.history))
 
-    window.close()
+    destroy(window)
 
 
 def test_committing_a_readme(app) -> None:
@@ -231,7 +231,7 @@ def test_committing_a_readme(app) -> None:
         check("commit sends the editor content", "Committed by the test" in content)
         check("commit used the default message", message.startswith("docs: update"), message)
 
-    window.close()
+    destroy(window)
 
 
 def main() -> int:

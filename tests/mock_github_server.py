@@ -23,6 +23,7 @@ Usage::
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import re
 import threading
@@ -196,6 +197,44 @@ TREE = [
     {"path": "docs/guide.md", "type": "blob", "size": 900},
 ]
 
+
+def _blob_sha(data: bytes) -> str:
+    """A stable 40 hex character sha, the way git identifies a blob.
+
+    Deterministic so a test can assert on it, and content-derived so a sha
+    stops matching the moment the file changes - which is the whole reason a
+    delete has to quote one.
+    """
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def _live_tree(state: Any, ref: str) -> list[dict[str, Any]]:
+    """Build a tree from what the server actually holds.
+
+    Serving a fixed tree instead would hide two things that break in
+    production: a file uploaded in this session not showing up in the listing,
+    and an entry with no sha, which makes every delete fail with a 422.
+    """
+    blobs: dict[str, bytes] = dict(state.files)
+    for (branch, path), data in state.file_branches.items():
+        if not ref or branch == ref:
+            blobs[path] = data
+
+    entries: list[dict[str, Any]] = []
+    directories: set[str] = set()
+    for path, data in sorted(blobs.items()):
+        parts = path.split("/")
+        for depth in range(1, len(parts)):
+            directories.add("/".join(parts[:depth]))
+        entries.append(
+            {"path": path, "type": "blob", "size": len(data), "sha": _blob_sha(data)}
+        )
+    for directory in sorted(directories):
+        entries.append({"path": directory, "type": "tree", "sha": _blob_sha(directory.encode())})
+    # GitHub returns a recursive tree ordered by path.
+    entries.sort(key=lambda entry: entry["path"])
+    return entries
+
 README_TEXT = """# Hello World
 
 > A tiny demo repo.
@@ -233,6 +272,37 @@ def _content(path: str, text: str, sha: str = "deadbeef") -> dict[str, Any]:
     }
 
 
+def _is_text(data: bytes) -> bool:
+    """True when the bytes decode as UTF-8 without a replacement character."""
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    return True
+
+
+def _binary_content(path: str, data: bytes, sha: str = "c0ffee") -> dict[str, Any]:
+    """Contents response for a file that is not valid UTF-8.
+
+    GitHub base64-encodes every file, not just text ones, and sets the same
+    ``encoding``. Serving binary correctly matters because an upload feature has
+    to survive a PNG: the client encodes raw bytes, so anything that assumes a
+    text round trip would pass its own tests and break on a real image.
+    """
+    return {
+        "name": path.rsplit("/", 1)[-1],
+        "path": path,
+        "sha": sha,
+        "size": len(data),
+        "url": f"https://api.github.com/repos/octocat/hello-world/contents/{path}",
+        "html_url": f"https://github.com/octocat/hello-world/blob/main/{path}",
+        "git_url": f"https://api.github.com/repos/octocat/hello-world/git/blobs/{sha}",
+        "type": "file",
+        "content": base64.b64encode(data).decode("ascii"),
+        "encoding": "base64",
+    }
+
+
 def mock_repos(count: int) -> list[dict[str, Any]]:
     """Generate ``count`` synthetic repositories for pagination tests."""
     return [
@@ -257,12 +327,17 @@ class _State:
             repo["full_name"]: list(repo["topics"]) for repo in REPOS
         }
         self.user = dict(USER)
-        self.files: dict[str, str] = {
-            "README.md": README_TEXT,
-            "main.py": "def main():\n    print('hello')\n",
-            "requirements.txt": "requests\npygments\n",
-            ".github/workflows/ci.yml": "name: ci\non: [push]\n",
+        #: Stored as raw bytes, because that is what an upload sends and a binary file
+        #: cannot be held as str. Use :meth:`files.text` to read one back.
+        self.files: dict[str, bytes] = {
+            "README.md": README_TEXT.encode(),
+            "main.py": b"def main():\n    print('hello')\n",
+            "requirements.txt": b"requests\npygments\n",
+            ".github/workflows/ci.yml": b"name: ci\non: [push]\n",
         }
+        #: Branch-scoped files, checked before ``files``. The contents API is
+        #: per-branch, so a write to "side" must not be visible on the default.
+        self.file_branches: dict[tuple[str, str], bytes] = {}
         self.branches = ["main", "develop"]
         self.issues = [dict(item) for item in ISSUES]
         self.releases = [dict(item) for item in RELEASES]
@@ -270,6 +345,23 @@ class _State:
         self.requests: list[dict[str, Any]] = []
         #: Force a status code for the next N requests, to test error handling.
         self.fail_next: dict[str, Any] | None = None
+
+    def text(self, path: str, default: str = "") -> str:
+        """A stored file as text, including the branch-scoped copies.
+
+        Reading through this rather than indexing ``files`` directly keeps the
+        assertions readable and keeps the bytes/str split in one place.
+        """
+        branch = self.file_branches.get(("main", path))
+        if branch is None:
+            branch = self.file_branches.get(("side", path))
+        data = self.files.get(path) if branch is None else branch
+        if data is None:
+            return default
+        return data.decode("utf-8", "replace")
+
+    def has(self, path: str) -> bool:
+        return path in self.files or any(key[1] == path for key in self.file_branches)
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -582,52 +674,96 @@ class _Handler(BaseHTTPRequestHandler):
 
         match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/git/trees/(.+)", path)
         if match and method == "GET":
-            self._send(200, {"sha": "c" * 40, "tree": TREE, "truncated": False})
+            ref = match.group(3)
+            self._send(200, {"sha": "c" * 40, "tree": _live_tree(state, ref), "truncated": False})
             return
 
         match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/readme", path)
         if match and method == "GET":
             # GitHub has a dedicated endpoint for the rendered README; it
             # returns the same shape as any other contents response.
-            self._send(200, _content("README.md", state.files.get("README.md", README_TEXT)))
+            self._send(
+                200,
+                _content(
+                    "README.md",
+                    state.files.get("README.md", README_TEXT.encode()).decode(
+                        "utf-8", "replace"
+                    ),
+                ),
+            )
             return
 
         # ------------------------------------------------------------ contents
         match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/contents/(.+)", path)
         if match:
             target = match.group(3)
+            ref = (query.get("ref") or [""])[0] if isinstance(query.get("ref"), list) else query.get("ref", "")
+            body_branch = str(body.get("branch") or "") if isinstance(body, dict) else ""
+
+            def _lookup(branch: str = "") -> bytes | None:
+                # A branch write shadows the default branch, and only for the
+                # branch it named.
+                if branch:
+                    hit = state.file_branches.get((branch, target))
+                    if hit is not None:
+                        return hit
+                return state.files.get(target)
+
+            def _store(data: bytes, branch: str = "") -> None:
+                if branch:
+                    state.file_branches[(branch, target)] = data
+                else:
+                    state.files[target] = data
+
             if method == "GET":
-                text = state.files.get(target)
-                if text is None:
+                data = _lookup(ref)
+                if data is None:
                     self._error(404, "Not Found")
                     return
-                self._send(200, _content(target, text))
+                self._send(200, _content(target, data.decode("utf-8", "replace")) if _is_text(data) else _binary_content(target, data))
                 return
             if method == "PUT":
                 encoded = str(body.get("content") or "")
                 try:
-                    decoded = base64.b64decode(encoded).decode("utf-8")
+                    decoded = base64.b64decode(encoded, validate=True)
                 except Exception:
                     self._error(422, "Validation Failed", errors=[{"field": "content", "code": "invalid"}])
                     return
                 if not str(body.get("message") or "").strip():
                     self._error(422, "Validation Failed", errors=[{"field": "message", "code": "missing_field"}])
                     return
-                existed = target in state.files
+                existed = _lookup(body_branch) is not None
                 if existed and not body.get("sha"):
                     self._error(422, "sha wasn't supplied", errors=[{"field": "sha", "code": "invalid"}])
                     return
-                state.files[target] = decoded
+                _store(decoded, body_branch)
+                payload = (
+                    _content(target, decoded.decode("utf-8"))
+                    if _is_text(decoded)
+                    else _binary_content(target, decoded)
+                )
                 self._send(
                     200 if existed else 201,
                     {
-                        "content": _content(target, decoded),
+                        "content": payload,
                         "commit": {"sha": "d" * 40, "message": body.get("message")},
                     },
                 )
                 return
             if method == "DELETE":
-                state.files.pop(target, None)
+                current = _lookup(body_branch)
+                if current is None:
+                    self._error(404, "Not Found")
+                    return
+                quoted = str(body.get("sha") or "")
+                if quoted and quoted != _blob_sha(current):
+                    self._error(422, "sha does not match",
+                                errors=[{"field": "sha", "code": "invalid"}])
+                    return
+                if body_branch:
+                    state.file_branches.pop((body_branch, target), None)
+                else:
+                    state.files.pop(target, None)
                 self._send(204)
                 return
 

@@ -271,7 +271,55 @@ def test_content_endpoints_validate() -> None:
     except GitHubError:
         check("commit_readme validates the repo", True)
 
+    # The upload path takes a path from an editable list row, which is exactly
+    # the kind of value that must not be trusted.
+    for bad in ("../../escape.txt", "a/../../escape.txt", "", "  "):
+        try:
+            client.put_file("octocat/hello", bad, b"x", "msg")
+            check(f"put_file blocks path {bad!r}", False, "no error raised")
+        except GitHubError:
+            check(f"put_file blocks path {bad!r}", True)
+
+    try:
+        client.put_file("octocat/../evil", "a.txt", b"x", "msg")
+        check("put_file validates the repo", False, "no error raised")
+    except GitHubError:
+        check("put_file validates the repo", True)
+
     check("nothing was sent to the API", not sent, str(sent))
+
+    # A path is validated before the sha lookup, so a traversal attempt cannot
+    # even read another path's metadata first.
+    check("put_file rejects before any request", not sent, str(sent))
+
+
+def test_upload_dialog_validates_paths() -> None:
+    """The dialog must refuse a bad path rather than let the API see it."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QApplication
+
+    app = QApplication.instance() or QApplication([])
+    from app.ui.dialogs import UploadFileDialog
+
+    with tempfile.TemporaryDirectory() as tmp:
+        good = Path(tmp) / "ok.txt"
+        good.write_text("fine", encoding="utf-8")
+        dlg = UploadFileDialog(None, "octocat/hello", default_branch="main")
+        dlg.add_paths([str(good)])
+        dlg.queue.list.item(0).setText("../escape.txt  ·  4 B")
+        dlg.message.setText("chore: x")
+        message = dlg.validate()
+        check("the dialog rejects a traversal path", "Invalid file path" in message, message)
+
+        dlg.queue.list.item(0).setText("ok.txt  ·  4 B")
+        dlg.message.setText("")
+        check("the dialog requires a commit message", "message" in dlg.validate().lower(),
+              dlg.validate())
+        dlg.message.setText("chore: x")
+        check("a valid selection passes", dlg.validate() == "", dlg.validate())
+
+    dlg.deleteLater()
+    app.processEvents()
 
 
 # ---------------------------------------------------------------- secrets
@@ -531,6 +579,7 @@ def main() -> int:
     test_path_validation()
     test_branch_validation()
     test_content_endpoints_validate()
+    test_upload_dialog_validates_paths()
     test_secret_storage()
     test_worker_lifetime()
     test_prompt_injection_resistance()

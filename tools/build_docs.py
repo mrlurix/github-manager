@@ -38,7 +38,7 @@ EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
 #: Kept in step with app/config.py. Only used for the visible download label, so
 #: a mismatch is cosmetic, but it is still wrong to show a stale version.
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
 NAV = [

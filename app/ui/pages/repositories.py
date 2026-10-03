@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import webbrowser
+from pathlib import Path
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal
@@ -28,6 +29,7 @@ from ..dialogs import (
     EditRepoDialog,
     PromptDialog,
     RepoPickerDialog,
+    UploadFileDialog,
     confirm,
 )
 from ..widgets import (
@@ -61,6 +63,7 @@ class RepoCard(QFrame):
     archiveToggled = Signal(str, bool)
     openBrowser = Signal(str)
     forkRequested = Signal(str)
+    uploadRequested = Signal(str)
 
     def __init__(self, repo: RepoSummary, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -98,6 +101,7 @@ class RepoCard(QFrame):
         more = icon_button("list", tooltip="More actions")
         menu = QMenu(more)
         menu.addAction("Edit settings…").triggered.connect(self._edit)
+        menu.addAction("Upload files…").triggered.connect(self._upload)
         menu.addAction("Open in README Studio").triggered.connect(self._open_readme)
         menu.addAction("Copy clone URL").triggered.connect(self._copy_clone)
         menu.addSeparator()
@@ -161,6 +165,11 @@ class RepoCard(QFrame):
         bottom.addWidget(
             button("README", variant="ghost", icon="book", on_click=self._open_readme)
         )
+        # Icon rather than a labelled button: three ghost buttons in a row do not
+        # fit a narrow card, and this row already has to wrap.
+        bottom.addWidget(
+            icon_button("upload", tooltip="Upload files to this repository", on_click=self._upload)
+        )
         bottom.addWidget(button("Edit", variant="ghost", icon="edit", on_click=self._edit))
         bottom_row = QWidget()
         bottom_row.setLayout(bottom)
@@ -172,6 +181,9 @@ class RepoCard(QFrame):
 
     def _edit(self) -> None:
         self.editRequested.emit(self.repo.full_name)
+
+    def _upload(self) -> None:
+        self.uploadRequested.emit(self.repo.full_name)
 
     def _open_browser(self) -> None:
         self.openBrowser.emit(self.repo.full_name)
@@ -320,6 +332,7 @@ class ReposPage(Page):
             card.archiveToggled.connect(self.toggle_archive)
             card.openBrowser.connect(self.open_in_browser)
             card.forkRequested.connect(self.fork_repo)
+            card.uploadRequested.connect(self.upload_files)
             self.cards[repo.full_name] = card
             self.grid.addWidget(card, index // columns, index % columns)
         self.grid.setRowStretch(self.grid.rowCount(), 1)
@@ -367,15 +380,201 @@ class ReposPage(Page):
         repo = self.ctx.find_repo(full_name)
         if not repo:
             return
-        dlg = EditRepoDialog(self, repo)
+        # The dialog needs the current file list to offer deletions, and that
+        # list costs a network call. An archived repository is read only, so
+        # there is nothing to list and the fetch would only fail.
+        if repo.archived:
+            self._open_edit_dialog(full_name, repo, [])
+            return
+        self.notify("Loading files…")
+        workers.run(
+            "repo-edit-files",
+            lambda: self.ctx.github.list_files(full_name),
+            on_result=lambda files: self._open_edit_dialog(full_name, repo, files),
+            on_error=lambda message: self.notify(message, "error"),
+        )
+
+    def _open_edit_dialog(
+        self, full_name: str, repo: Any, files: list[dict[str, Any]]
+    ) -> None:
+        dlg = EditRepoDialog(self, repo, files=files)
         if not dlg.exec():
             return
+
+        problem = dlg.validate_files()
+        if problem:
+            self.notify(problem, "warning")
+            return
+
         values = dlg.values()
         self.notify("Updating repository settings…")
-
         workers.run(
             "repo-edit",
             lambda: self.ctx.github.update_repo(full_name, **values),
+            on_result=lambda updated: self._after_file_changes(dlg, full_name, updated),
+            on_error=lambda message: self.notify(message, "error"),
+        )
+
+    def _after_file_changes(self, dlg: Any, full_name: str, repo: RepoSummary) -> None:
+        """Apply the file changes once the settings update has landed."""
+        deletions = dlg.deletions()
+        additions = dlg.additions()
+        if not deletions and not additions:
+            self._after_update(repo)
+            return
+
+        message = dlg.file_message()
+        branch = repo.default_branch
+        # Deletions first, deliberately. A delete has to quote the sha the file
+        # currently has, so removing before uploading keeps a path that is
+        # deleted and re-added at a new destination from being clobbered by the
+        # order the requests happen to land in.
+        todo: list[tuple[str, str, str | None]] = [
+            (str(entry.get("path") or ""), "", str(entry.get("sha") or "")) for entry in deletions
+        ]
+        todo += [(target, source, None) for source, target in additions]
+        self._apply_file_changes(full_name, todo, message, branch, 0)
+
+    def _apply_file_changes(
+        self,
+        full_name: str,
+        pending: list[tuple[str, str, str | None]],
+        message: str,
+        branch: str,
+        done: int,
+    ) -> None:
+        """Run one file change, then queue the next.
+
+        GitHub takes one file per request, so a batch is a sequence. Reporting
+        each step as it lands is what makes a long change legible, and stopping
+        on the first failure leaves the repository in a state the user can see
+        rather than one they have to guess at.
+        """
+        if not pending:
+            noun = "change" if done == 1 else "changes"
+            self.notify(f"Applied {done} file {noun} to {full_name}.", "success")
+            self._refresh_repo(full_name)
+            return
+
+        path, source, sha = pending[0]
+        rest = pending[1:]
+
+        if sha is not None:
+            if not path or not sha:
+                # A delete with nothing to quote cannot succeed, so say which
+                # file was skipped and carry on with the rest.
+                self.notify(f"Skipped {path or 'a file'}: the server gave no sha.", "error")
+                self._apply_file_changes(full_name, rest, message, branch, done)
+                return
+            self.notify(f"Deleting {path}…")
+
+            def delete_task() -> Any:
+                return self.ctx.github.delete_file(full_name, path, message, sha, branch)
+
+            workers.run(
+                "repo-file-delete",
+                delete_task,
+                on_result=lambda _r: self._apply_file_changes(
+                    full_name, rest, message, branch, done + 1
+                ),
+                on_error=lambda problem: self.notify(f"{path}: {problem}", "error"),
+            )
+            return
+
+        try:
+            data = Path(source).read_bytes()
+        except OSError as exc:
+            self.notify(f"Could not read {Path(path).name}: {exc}", "error")
+            self._apply_file_changes(full_name, rest, message, branch, done)
+            return
+
+        self.notify(f"Uploading {path}…")
+
+        def upload_task() -> Any:
+            return self.ctx.github.put_file(full_name, path, data, message, branch)
+
+        workers.run(
+            "repo-file-put",
+            upload_task,
+            on_result=lambda _r: self._apply_file_changes(full_name, rest, message, branch, done + 1),
+            on_error=lambda problem: self.notify(f"{path}: {problem}", "error"),
+        )
+
+    def upload_files(self, full_name: str) -> None:
+        """Commit one or more files from disk into a repository."""
+        repo = self.ctx.find_repo(full_name)
+        dlg = UploadFileDialog(
+            self,
+            full_name,
+            default_branch=(repo.default_branch if repo else ""),
+        )
+        if not dlg.exec():
+            return
+        problem = dlg.validate()
+        if problem:
+            self.notify(problem, "warning")
+            return
+
+        selections = dlg.items()
+        message = dlg.commit_message()
+        branch = dlg.target_branch()
+        overwrite = dlg.allow_overwrite()
+        self.notify(f"Uploading {len(selections)} file(s) to {full_name}…")
+        self._run_upload(full_name, selections, message, branch, overwrite, [])
+
+    def _run_upload(
+        self,
+        full_name: str,
+        pending: list[tuple[str, str]],
+        message: str,
+        branch: str,
+        overwrite: bool,
+        done: list[str],
+    ) -> None:
+        """Upload one file, then queue the next.
+
+        GitHub's contents API commits a single file per request, so a batch has
+        to be a sequence. Chaining through the worker thread keeps the UI
+        responsive and reports each file as it lands, instead of leaving the user
+        watching one spinner for a long upload with no feedback.
+        """
+        if not pending:
+            count = len(done)
+            plural = "file" if count == 1 else "files"
+            self.notify(f"Uploaded {count} {plural} to {full_name}.", "success")
+            self._refresh_repo(full_name)
+            return
+
+        source, target = pending[0]
+        try:
+            data = Path(source).read_bytes()
+        except OSError as exc:
+            self.notify(f"Could not read {Path(source).name}: {exc}", "error")
+            return
+
+        def task() -> Any:
+            return self.ctx.github.put_file(
+                full_name, target, data, message, branch, overwrite=overwrite
+            )
+
+        workers.run(
+            "repo-upload",
+            task,
+            on_result=lambda _r: (
+                done.append(target),
+                self.notify(f"{target} uploaded.", "success"),
+                self._run_upload(
+                    full_name, pending[1:], message, branch, overwrite, done
+                ),
+            ),
+            on_error=lambda problem: self.notify(f"{target}: {problem}", "error"),
+        )
+
+    def _refresh_repo(self, full_name: str) -> None:
+        """Pull one repository's current state so the card stops lying."""
+        workers.run(
+            "repo-refresh-one",
+            lambda: self.ctx.github.get_repo(full_name),
             on_result=self._after_update,
             on_error=lambda message: self.notify(message, "error"),
         )
@@ -446,13 +645,37 @@ class ReposPage(Page):
         if not values["name"]:
             self.notify("Repository name is required.", "warning")
             return
+        problem = dlg.validate_files()
+        if problem:
+            self.notify(problem, "warning")
+            return
+        # The API takes no file content in the create call, so the chosen files
+        # are a second step. Keep them: the repository is still worth creating if
+        # a later upload fails, and the user is told which files did not land.
+        files = dlg.files()
         self.notify(f"Creating {values['name']}…")
 
         workers.run(
             "repo-create",
             lambda: self.ctx.github.create_repo(**values),
-            on_result=self._after_create,
+            on_result=lambda repo: self._after_create_with_files(repo, files),
             on_error=lambda message: self.notify(message, "error"),
+        )
+
+    def _after_create_with_files(self, repo: RepoSummary, files: list[tuple[str, str]]) -> None:
+        self._after_create(repo)
+        if not files:
+            return
+        message = f"docs: add {len(files)} initial file(s)".replace(
+            "1 initial file(s)", "the initial file"
+        )
+        self.notify(f"Committing {len(files)} file(s) to {repo.full_name}…")
+        self._apply_file_changes(
+            repo.full_name,
+            [(target, source, None) for source, target in files],
+            message,
+            repo.default_branch or "main",
+            0,
         )
 
     # ------------------------------------------------------------ AI assists
