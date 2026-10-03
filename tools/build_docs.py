@@ -36,6 +36,10 @@ RELEASES_URL = f"{REPO_URL}/releases/latest"
 # link keeps working after the next release. Hardcoding a tag here would 404.
 EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
+#: Kept in step with app/config.py. Only used for the visible download label, so
+#: a mismatch is cosmetic, but it is still wrong to show a stale version.
+APP_VERSION = "1.1.0"
+
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
 NAV = [
     ("index", "Home"),
@@ -274,7 +278,7 @@ def layout(
   <aside class="sidebar" id="sidebar">
     <nav class="nav">{nav_html}</nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="{EXE_URL}">Download 1.0.0</a>
+      <a class="btn btn-primary" href="{EXE_URL}">Download {APP_VERSION}</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>

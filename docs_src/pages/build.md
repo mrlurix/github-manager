@@ -60,7 +60,9 @@ Installing [UPX](https://github.com/upx/upx) shrinks it further.
 python tests/run_all_tests.py
 ```
 
-Nine suites, over 600 checks. None of them reach the internet or need a token.
+Nine suites, around 780 checks. None of them reach the GitHub API or need a token:
+the only network traffic is to `tests/mock_github_server.py`, a real HTTP server
+running on your own machine.
 
 | Suite | What it covers |
 | --- | --- |
@@ -103,8 +105,7 @@ ruff check app                       # static checks
 bandit -r app                        # security scan
 node tools/verify_search.js          # test this site's search engine
 python tools/screenshot.py shots     # screenshots of every page
-python tools/build_docs.py           # build this site
-python tools/deploy_site.py          # build and push the site
+python tools/build_docs.py           # build this site (commit docs/ to publish)
 ```
 
 ## Building this site
@@ -129,14 +130,16 @@ not exist.
 
 ### Why the search is hand-written
 
-The content is English, but a generic index still breaks on the things this text
-contains: the ZWNJ in words like "mil‑ro", Arabic yeh and kaf that render
-identically to English letters in a mixed-language document, and stray non-ASCII
-punctuation.
+The content is English, but a generic index still breaks on what technical prose
+actually contains: `Ctrl+N` against `ctrl n`, a curly apostrophe against a
+straight one, and an accented letter that an ASCII `\w` class would cut out of
+the middle of a word. Arabic text appears too, wherever a Persian README is
+discussed.
 
 Both sides — the Python index builder and the browser — apply the same
-normalisation, so a query typed loosely still finds the right page. This is
-covered by `tools/verify_search.js`.
+normalisation, and they have to agree step for step or a query silently stops
+matching text that is visibly right in front of you. That contract is what
+`tools/verify_search.js` checks, alongside the ranking and snippet behaviour.
 
 ## Project layout
 

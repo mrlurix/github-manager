@@ -12,7 +12,7 @@ description: GitHub Manager — a portable GitHub desktop client with an AI assi
     the model.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.0.0</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.1.0</a>
     <a class="btn" href="features.html">Features</a>
     <a class="btn" href="install.html">Getting started</a>
   </div>

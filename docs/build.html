@@ -60,7 +60,7 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.0.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe">Download 1.1.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
@@ -139,7 +139,9 @@ launch with <code>Failed to load Python DLL</code> and no clue at build time.</p
 <h2 id="running-the-tests">Running the tests</h2>
 <pre><code class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>Nine suites, over 600 checks. None of them reach the internet or need a token.</p>
+<p>Nine suites, around 780 checks. None of them reach the GitHub API or need a token:
+the only network traffic is to <code>tests/mock_github_server.py</code>, a real HTTP server
+running on your own machine.</p>
 <table>
 <thead>
 <tr>
@@ -209,8 +211,7 @@ encrypted you would never find out.</p>
 bandit -r app                        # security scan
 node tools/verify_search.js          # test this site's search engine
 python tools/screenshot.py shots     # screenshots of every page
-python tools/build_docs.py           # build this site
-python tools/deploy_site.py          # build and push the site
+python tools/build_docs.py           # build this site (commit docs/ to publish)
 </code></pre>
 <h2 id="building-this-site">Building this site</h2>
 <pre><code class="language-bash">python tools/build_docs.py
@@ -250,13 +251,15 @@ npm and no other build step is involved.</p>
 <p>The build also verifies that no page links to a page or heading anchor that does
 not exist.</p>
 <h3 id="why-the-search-is-hand-written">Why the search is hand-written</h3>
-<p>The content is English, but a generic index still breaks on the things this text
-contains: the ZWNJ in words like &quot;mil‑ro&quot;, Arabic yeh and kaf that render
-identically to English letters in a mixed-language document, and stray non-ASCII
-punctuation.</p>
+<p>The content is English, but a generic index still breaks on what technical prose
+actually contains: <code>Ctrl+N</code> against <code>ctrl n</code>, a curly apostrophe against a
+straight one, and an accented letter that an ASCII <code>\w</code> class would cut out of
+the middle of a word. Arabic text appears too, wherever a Persian README is
+discussed.</p>
 <p>Both sides — the Python index builder and the browser — apply the same
-normalisation, so a query typed loosely still finds the right page. This is
-covered by <code>tools/verify_search.js</code>.</p>
+normalisation, and they have to agree step for step or a query silently stops
+matching text that is visibly right in front of you. That contract is what
+<code>tools/verify_search.js</code> checks, alongside the ranking and snippet behaviour.</p>
 <h2 id="project-layout">Project layout</h2>
 <pre><code class="language-text">app/
   config.py              portable paths and settings
