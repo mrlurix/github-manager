@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import destroy, ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable, page_of  # noqa: E402
 
 ensure_importable()
 
@@ -385,6 +385,11 @@ def run(fail_github: bool = False) -> int:
 
     window = MainWindow(ctx)
     window.show()
+    # Looked up by class rather than index: a new page shifts every slot after it,
+    # and the failure lands somewhere unrelated to the cause.
+    from app.ui.pages.issues import IssuesPage
+    from app.ui.pages.releases import ReleasesPage
+    from app.ui.pages.repositories import ReposPage
     for index in range(len(window.pages)):
         window.goto(index)
         app.processEvents()
@@ -400,7 +405,7 @@ def run(fail_github: bool = False) -> int:
     assert "Hello World" in readme.editor.preview.toPlainText() or True
 
     # issues page detail rendering
-    issues = window.pages[4]
+    issues = page_of(window, IssuesPage)
     issues.refresh()
     for _ in range(60):
         app.processEvents()
@@ -409,13 +414,13 @@ def run(fail_github: bool = False) -> int:
     app.processEvents()
 
     # releases page
-    releases = window.pages[5]
+    releases = page_of(window, ReleasesPage)
     releases._on_commits(COMMITS)
     releases._on_releases(RELEASES)
     app.processEvents()
 
     # repositories page filters
-    repos_page = window.pages[3]
+    repos_page = page_of(window, ReposPage)
     repos_page.search.setText("secret")
     app.processEvents()
     repos_page.search.setText("")

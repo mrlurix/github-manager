@@ -3,7 +3,7 @@ title: Features
 description: A complete tour of GitHub Manager — README Studio, repositories, issues and pull requests, releases, account and settings.
 ---
 
-The app has nine pages. This one covers each of them.
+The app has ten pages. This one covers each of them.
 
 ## Map of the app
 
@@ -13,6 +13,7 @@ The app has nine pages. This one covers each of them.
 | Dashboard | Account overview, recent activity and shortcuts |
 | README Studio | Write and commit READMEs and the supporting files |
 | Repositories | Full management of your repositories |
+| Repository | What is inside one repository: files, branches, tags, collaborators, webhooks |
 | Issues & PRs | Work through issues and pull requests |
 | Releases & commits | Release notes, commit messages, branch names |
 | AI Assistant | Free-form chat, scoped strictly to GitHub |
@@ -117,6 +118,53 @@ Marking the same path for both is refused rather than resolved silently.
 "Describe with AI" reads the whole repository and proposes a one-line
 description plus a set of topics. Nothing is sent to GitHub until you press
 Apply.
+
+---
+
+## Repository
+
+The Repositories page manages *your* repositories — creating them, editing their
+settings, archiving them. This page looks *inside* a single one. Pick a
+repository and a branch at the top, and everything below follows that choice.
+
+### Files
+
+- The tree is built from the real paths on the selected branch, folders nested
+  as they are in the repository
+- **Filter by path** narrows it as you type, so a large repository stays navigable
+- Selecting a file reads it from GitHub and shows the contents beside the tree
+- **Upload** sends you to the same upload dialog used everywhere else, so a file
+  added here behaves exactly like one added from a repository card
+
+### Branches
+
+- Every branch on the repository, with the one you are currently viewing marked
+- Type a name and **Create** — it is branched from whatever branch you have
+  selected, not from the repository default, which is usually what you want when
+  you are working in a feature branch
+- Double-clicking a branch switches the whole page to it
+
+### Tags
+
+Every tag with the commit it points at, newest first by name. The commit is
+shortened to twelve characters, which is enough to identify it in any Git
+client.
+
+### Collaborators
+
+- Each person with the highest permission they actually hold — `admin`, `maintain`,
+  `write`, `triage` or `read`
+- Add someone by username and pick their level
+- Removing someone asks first, because access is lost the moment it is applied
+
+### Webhooks
+
+Read-only, and said so on the tab. Each hook is listed with the events it fires
+on, and its target URL is in the tooltip. Hooks are created on GitHub rather
+than here, since a misconfigured one fires at someone else's server.
+
+> Every list on this page is loaded on its own, when you switch to the tab that
+> needs it. Opening the page costs one request, not five.
 
 ---
 
@@ -235,7 +283,7 @@ review your current README, write a `.gitignore`, and explain adding a LICENSE.
 
 | Key | Action |
 | --- | --- |
-| `Ctrl+1` … `Ctrl+7` | Jump to a page |
+| `Ctrl+1` … `Ctrl+9` | Jump to a page, in the order shown in the sidebar |
 | `Ctrl+K` | AI Assistant |
 | `Ctrl+,` | Settings |
 | `Ctrl+R` | Refresh the current page |
@@ -253,4 +301,5 @@ Stated plainly, so you are not looking for it:
 - **No GitHub Enterprise setting in the UI** — the client can be pointed at another host, but there is no field for it yet
 - **No SSH key or API key management** — creating a token needs re-authentication in a browser, so it is deliberately left out
 - **No domain-level analytics** — GitHub traffic graphs are not shown
+- **No webhooks are created or edited** — the Repository page lists them, but a hook you add here would start firing at a server you may not control
 - **No offline mode** — nothing is cached, so the app will not show you stale repository data

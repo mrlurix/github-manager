@@ -23,6 +23,7 @@ SUITES = [
     "ai_flow_test.py",
     "layout_test.py",
     "responsive_test.py",
+    "repo_admin_test.py",
 ]
 
 

@@ -11,7 +11,7 @@ description: GitHub Manager — a portable GitHub desktop client with an AI assi
     is ever sent.
   </p>
   <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.3.0</a>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.4.0</a>
     <a class="btn" href="install.html">Getting started</a>
     <a class="btn" href="features.html">See all features</a>
   </div>
@@ -25,6 +25,10 @@ description: GitHub Manager — a portable GitHub desktop client with an AI assi
   <div class="card">
     <h3>Repositories</h3>
     <p>Create, edit, archive, fork, star, and add or remove files without leaving the app.</p>
+  </div>
+  <div class="card">
+    <h3>Inside a repository</h3>
+    <p>Browse files, create branches, read tags, manage collaborators and inspect webhooks.</p>
   </div>
   <div class="card">
     <h3>Issues &amp; PRs</h3>

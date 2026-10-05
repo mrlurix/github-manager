@@ -171,7 +171,7 @@ app/
     editor.py            split editor with live preview
     widgets.py           cards, badges, toasts, flow layout, icons
     workers.py           background tasks with streaming support
-    pages/               the nine pages
+    pages/               the ten pages
 tests/
 tools/
 docs_src/                site source

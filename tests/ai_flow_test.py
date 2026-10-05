@@ -14,9 +14,12 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import destroy, ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable, open_page  # noqa: E402
 
 ensure_importable()
+
+from app.ui.pages.assistant import AssistantPage  # noqa: E402
+from app.ui.pages.readme import ReadmePage  # noqa: E402
 
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
@@ -106,9 +109,8 @@ def build_app(app):
 
 def test_readme_generation(app) -> None:
     ctx, window = build_app(app)
-    window.goto(2)  # README Studio
+    page = open_page(window, ReadmePage)
     pump(app, 30)
-    page = window.pages[2]
 
     page.repo_combo.setCurrentText("octocat/hello-world")
     pump(app, 20)
@@ -140,9 +142,8 @@ def test_readme_generation(app) -> None:
 
 def test_offtopic_answers_are_discarded(app) -> None:
     ctx, window = build_app(app)
-    window.goto(2)
+    page = open_page(window, ReadmePage)
     pump(app, 30)
-    page = window.pages[2]
     page.repo_combo.setCurrentText("octocat/hello-world")
     pump(app, 20)
 
@@ -157,8 +158,7 @@ def test_offtopic_answers_are_discarded(app) -> None:
 
 def test_assistant_scope_lock(app) -> None:
     ctx, window = build_app(app)
-    page = window.pages[6]  # AI Assistant
-    window.goto(6)
+    page = open_page(window, AssistantPage)
     pump(app, 20)
 
     before = ctx._stub_ai.calls  # type: ignore[attr-defined]
@@ -198,9 +198,8 @@ def test_committing_a_readme(app) -> None:
     from PySide6.QtWidgets import QApplication, QDialog
 
     ctx, window = build_app(app)
-    window.goto(2)
+    page = open_page(window, ReadmePage)
     pump(app, 30)
-    page = window.pages[2]
     page.repo_combo.setCurrentText("octocat/hello-world")
     pump(app, 20)
 

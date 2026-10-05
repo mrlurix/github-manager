@@ -30,6 +30,7 @@ from PySide6.QtWidgets import (  # noqa: E402
     QApplication,
     QCheckBox,
     QComboBox,
+    QHeaderView,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -223,6 +224,11 @@ def audit_clipped_vertically(page: QWidget) -> list[str]:
                 continue
         else:
             needed = widget.minimumSizeHint().height()
+        # QHeaderView reports its parent's minimum, not its own height, so a
+        # perfectly normal 34px header looks like it "needs 68". The header is
+        # laid out by the table, not by us.
+        if isinstance(widget, QHeaderView):
+            continue
         # 4px of slack: borders and rounding routinely cost a pixel.
         if needed > 0 and widget.height() < needed - 4:
             problems.append(

@@ -863,6 +863,41 @@ class GitHubClient:
     def list_hooks(self, full_name: str) -> list[dict[str, Any]]:
         return self._paginate(self, f"/repos/{full_name}/hooks", max_items=100)
 
+    def list_tags(self, full_name: str) -> list[dict[str, Any]]:
+        """Tags with the commit each one points at.
+
+        The git refs endpoint is used rather than the releases list because a
+        tag and a release are different things: a repository can carry tags that
+        were never published, and those are the ones that matter when working out
+        where a commit sits.
+        """
+        repo = validate_repo(full_name)
+        out: list[dict[str, Any]] = []
+        raw = self.request(
+            "GET",
+            f"/repos/{repo}/git/matching-refs/tags/",
+            params={"per_page": 100},
+        )
+        if not isinstance(raw, list):
+            return out
+        for item in raw:
+            # GitHub returns the full ref, e.g. "refs/tags/v1.0.0". The requested
+            # prefix is echoed back too, so a tag really called "v1" would come
+            # back as "refs/tags/v1" - taking only the last segment is correct.
+            ref = str(item.get("ref") or "")
+            name = ref.rsplit("/", 1)[-1] if ref else ""
+            if not name:
+                continue
+            out.append(
+                {
+                    "name": name,
+                    "ref": ref,
+                    "sha": str((item.get("object") or {}).get("sha") or ""),
+                }
+            )
+        out.sort(key=lambda entry: str(entry["name"]).lower(), reverse=True)
+        return out
+
     # ------------------------------------------------------- issues / pulls
     def list_issues(self, full_name: str, state: str = "open", per_repo: int = 60) -> list[IssueItem]:
         raw = self._paginate(

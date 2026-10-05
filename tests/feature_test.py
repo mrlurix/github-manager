@@ -17,9 +17,17 @@ from typing import Any
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import destroy, ensure_importable  # noqa: E402
+from _bootstrap import destroy, ensure_importable, open_page, page_of  # noqa: E402
 
 ensure_importable()
+
+from app.ui.pages.readme import ReadmePage  # noqa: E402
+from app.ui.pages.repositories import ReposPage  # noqa: E402
+from app.ui.pages.issues import IssuesPage  # noqa: E402
+from app.ui.pages.releases import ReleasesPage  # noqa: E402
+from app.ui.pages.assistant import AssistantPage  # noqa: E402
+from app.ui.pages.account import AccountPage  # noqa: E402
+from app.ui.pages.settings_page import SettingsPage  # noqa: E402
 
 from PySide6.QtCore import QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication, QDialog  # noqa: E402
@@ -380,9 +388,8 @@ def stub(ctx: Any) -> StubAI:
 def test_repository_lifecycle(app: QApplication) -> None:
     """Create, edit and delete a repository through the real dialogs."""
     ctx, window, _ = setup(app)
-    window.goto(3)  # Repositories
+    page = open_page(window, ReposPage)
     pump(app, 40)
-    page = window.pages[3]
     gh = ctx.github
     gh.calls.clear()
 
@@ -445,9 +452,8 @@ def test_repository_lifecycle(app: QApplication) -> None:
 
 def test_readme_commit_and_extra_files(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    window.goto(2)  # README Studio
+    page = open_page(window, ReadmePage)
     pump(app, 40)
-    page = window.pages[2]
     gh = ctx.github
     gh.calls.clear()
 
@@ -480,9 +486,8 @@ def test_readme_commit_and_extra_files(app: QApplication) -> None:
 
 def test_issues_flow(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    window.goto(4)  # Issues
+    page = open_page(window, IssuesPage)
     pump(app, 40)
-    page = window.pages[4]
     gh = ctx.github
     gh.calls.clear()
 
@@ -548,9 +553,9 @@ def test_issues_flow(app: QApplication) -> None:
 
 def test_releases_flow(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    window.goto(5)  # Releases
+    page = page_of(window, ReleasesPage)
+    window.goto(list(window.pages).index(page))
     pump(app, 40)
-    page = window.pages[5]
     gh = ctx.github
     gh.calls.clear()
 
@@ -602,9 +607,8 @@ def test_releases_flow(app: QApplication) -> None:
 
 def test_account_flow(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    window.goto(7)  # Account
+    page = open_page(window, AccountPage)
     pump(app, 60)
-    page = window.pages[7]
     gh = ctx.github
     gh.calls.clear()
 
@@ -649,9 +653,8 @@ def test_account_flow(app: QApplication) -> None:
 def test_avatar_rejects_bad_files(app: QApplication) -> None:
     """Oversized or unsupported avatars must be refused before uploading."""
     ctx, window, _ = setup(app)
-    window.goto(7)
+    page = open_page(window, AccountPage)
     pump(app, 40)
-    page = window.pages[7]
     gh = ctx.github
     gh.calls.clear()
 
@@ -687,9 +690,8 @@ def test_avatar_rejects_bad_files(app: QApplication) -> None:
 
 def test_settings_flow(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    window.goto(8)  # Settings
+    page = open_page(window, SettingsPage)
     pump(app, 40)
-    page = window.pages[8]
 
     page.theme.setCurrentText("light")
     pump(app, 20)
@@ -777,7 +779,7 @@ def test_signout_and_gating(app: QApplication) -> None:
     ctx, window, _ = setup(app)
 
     auto_dialog(True, 90)
-    page = window.pages[7]
+    page = open_page(window, AccountPage)
     page.sign_out()
     pump(app, 80)
     check("sign out clears the token", not ctx.signed_in)
@@ -787,13 +789,13 @@ def test_signout_and_gating(app: QApplication) -> None:
         window.sidebar.footer_meta.text(),
     )
 
-    window.goto(2)
+    open_page(window, ReadmePage)
     pump(app, 30)
     check("navigation falls back to welcome", window._current == 0, str(window._current))
 
     # AI buttons warn instead of crashing when no provider is configured.
     ctx.config.save(ai_base_url="", ai_model="")
-    window.goto(3)
+    open_page(window, ReposPage)
     pump(app, 20)
     check("no token still blocks repositories", window._current == 0)
 
@@ -808,7 +810,7 @@ def test_navigation_and_shortcuts(app: QApplication) -> None:
         pump(app, 10)
         check(f"page {index} becomes visible", window.stack.currentIndex() == index)
 
-    window.goto(6)
+    open_page(window, AssistantPage)
     pump(app, 10)
     check("assistant page reachable", type(window.pages[window._current]).__name__ == "AssistantPage")
 
@@ -865,9 +867,8 @@ def test_invalid_repo_name_is_rejected_cleanly(app: QApplication) -> None:
 
     # Through the client: no request may be sent for a bad name.
     ctx, window, _ = setup(app)
-    window.goto(2)  # README Studio
+    page = open_page(window, ReadmePage)
     pump(app, 40)
-    page = window.pages[2]
     sent: list[str] = []
     page.ctx.github.calls.clear()
 
@@ -897,7 +898,7 @@ def test_tag_suggestion(app: QApplication) -> None:
     from tests.smoke_test import ReleaseItem
 
     ctx, window, _ = setup(app)
-    page = window.pages[5]
+    page = open_page(window, ReleasesPage)
 
     cases = [
         (["v1.2.0"], "v1.3.0"),

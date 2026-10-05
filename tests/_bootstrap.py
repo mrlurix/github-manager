@@ -35,6 +35,29 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 SANDBOX.mkdir(parents=True, exist_ok=True)
 
 
+def page_of(window: object, page_cls: type) -> object:
+    """Find a page by its class instead of by its position in the stack.
+
+    Indexing ``window.pages[n]`` breaks the moment a page is inserted, and it
+    breaks silently: the test keeps running against whichever page took that
+    slot and fails somewhere unrelated, or passes for the wrong reason.
+    """
+    for page in getattr(window, "pages", ()):
+        if isinstance(page, page_cls):
+            return page
+    raise AssertionError(f"{page_cls.__name__} is not in the window's page stack")
+
+
+def open_page(window: object, page_cls: type) -> object:
+    """:func:`page_of`, but also selects it, the way a user would arrive."""
+    page = page_of(window, page_cls)
+    goto = getattr(window, "goto", None)
+    if callable(goto):
+        index = list(getattr(window, "pages", ())).index(page)
+        goto(index)
+    return page
+
+
 def ensure_importable() -> None:
     """Put the project root and the tests folder on ``sys.path``."""
     root = Path(__file__).resolve().parents[1]

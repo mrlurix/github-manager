@@ -19,9 +19,15 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _bootstrap import ensure_importable  # noqa: E402
+from _bootstrap import ensure_importable, open_page  # noqa: E402
 
 ensure_importable()
+
+from app.ui.pages.readme import ReadmePage  # noqa: E402
+from app.ui.pages.repositories import ReposPage  # noqa: E402
+from app.ui.pages.issues import IssuesPage  # noqa: E402
+from app.ui.pages.releases import ReleasesPage  # noqa: E402
+from app.ui.pages.account import AccountPage  # noqa: E402
 
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
@@ -331,9 +337,8 @@ def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
     check("repos came from HTTP", len(ctx.repos) == 3, str(len(ctx.repos)))
     check("GET /user was really sent", any("GET /user" in p for p in server.paths()), "")
 
-    window.goto(2)  # README Studio
+    page = open_page(window, ReadmePage)
     pump(app, 40)
-    page = window.pages[2]
     check("readme page picked a repo", wait_for(lambda: bool(page.repo), app), page.repo)
     check("branches loaded over HTTP", wait_for(lambda: page.branch_combo.count() >= 2, app), str(page.branch_combo.count()))
 
@@ -348,9 +353,8 @@ def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
     ok = wait_for(lambda: "Integration" in page.editor.text(), app)
     check("load existing rendered back into the editor", ok, page.editor.text()[:50])
 
-    window.goto(4)  # Issues
+    issues = open_page(window, IssuesPage)
     pump(app, 40)
-    issues = window.pages[4]
     check("issues loaded over HTTP", wait_for(lambda: issues.list.count() > 0, app), str(issues.list.count()))
     issues.list.setCurrentRow(0)
     pump(app, 60)
@@ -387,9 +391,8 @@ def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
         f"expected #{number}, server {[(i['number'], i['state']) for i in server.state.issues]}",
     )
 
-    window.goto(5)  # Releases
+    releases = open_page(window, ReleasesPage)
     pump(app, 40)
-    releases = window.pages[5]
     check("commits loaded over HTTP", wait_for(lambda: releases.commits.count() > 0, app), str(releases.commits.count()))
     check("releases loaded over HTTP", wait_for(lambda: releases.releases.count() > 1, app), str(releases.releases.count()))
     check("tag suggestion uses real tags", releases.suggest_tag() == "v1.3.0", releases.suggest_tag())
@@ -407,17 +410,15 @@ def test_full_ui_over_http(server: MockGitHubServer, app: QApplication) -> None:
         str([r["tag_name"] for r in server.state.releases]),
     )
 
-    window.goto(7)  # Account
+    account = open_page(window, AccountPage)
     pump(app, 60)
-    account = window.pages[7]
     check("profile page hydrated from HTTP", wait_for(lambda: account.fields["name"].text() != "", app), account.fields["name"].text())
     account.fields["name"].setText("Renamed By Test")
     account.save_profile()
     check("profile save persisted", wait_for(lambda: server.state.user.get("name") == "Renamed By Test", app), str(server.state.user.get("name")))
 
-    window.goto(3)  # Repositories
+    repos_page = open_page(window, ReposPage)
     pump(app, 40)
-    repos_page = window.pages[3]
     check("repository cards rendered from HTTP", wait_for(lambda: len(repos_page.repos) == 3, app), str(len(repos_page.repos)))
 
     auto_dialog(True, 90, picker="ui-created-repo")

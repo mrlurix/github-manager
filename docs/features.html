@@ -70,13 +70,13 @@
   <aside class="sidebar" id="sidebar">
     <nav class="nav"><a class="nav-link" href="index.html">Home</a><p class="nav-caption">Start here</p><a class="nav-link is-active" href="features.html" aria-current="page">Features</a><a class="nav-link" href="install.html">Getting started</a><p class="nav-caption">What the app can do</p><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><p class="nav-caption">How the assistant works</p><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.4.0</a>
       <p class="muted">One exe file · no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
-<p>The app has nine pages. This one covers each of them.</p>
+<p>The app has ten pages. This one covers each of them.</p>
 <h2 id="map-of-the-app">Map of the app</h2>
 <table>
 <thead>
@@ -101,6 +101,10 @@
 <tr>
 <td>Repositories</td>
 <td>Full management of your repositories</td>
+</tr>
+<tr>
+<td>Repository</td>
+<td>What is inside one repository: files, branches, tags, collaborators, webhooks</td>
 </tr>
 <tr>
 <td>Issues &amp; PRs</td>
@@ -239,6 +243,47 @@ Marking the same path for both is refused rather than resolved silently.</p>
 description plus a set of topics. Nothing is sent to GitHub until you press
 Apply.</p>
 <hr>
+<h2 id="repository">Repository</h2>
+<p>The Repositories page manages <em>your</em> repositories — creating them, editing their
+settings, archiving them. This page looks <em>inside</em> a single one. Pick a
+repository and a branch at the top, and everything below follows that choice.</p>
+<h3 id="files">Files</h3>
+<ul>
+<li>The tree is built from the real paths on the selected branch, folders nested
+as they are in the repository</li>
+<li><strong>Filter by path</strong> narrows it as you type, so a large repository stays navigable</li>
+<li>Selecting a file reads it from GitHub and shows the contents beside the tree</li>
+<li><strong>Upload</strong> sends you to the same upload dialog used everywhere else, so a file
+added here behaves exactly like one added from a repository card</li>
+</ul>
+<h3 id="branches">Branches</h3>
+<ul>
+<li>Every branch on the repository, with the one you are currently viewing marked</li>
+<li>Type a name and <strong>Create</strong> — it is branched from whatever branch you have
+selected, not from the repository default, which is usually what you want when
+you are working in a feature branch</li>
+<li>Double-clicking a branch switches the whole page to it</li>
+</ul>
+<h3 id="tags">Tags</h3>
+<p>Every tag with the commit it points at, newest first by name. The commit is
+shortened to twelve characters, which is enough to identify it in any Git
+client.</p>
+<h3 id="collaborators">Collaborators</h3>
+<ul>
+<li>Each person with the highest permission they actually hold — <code>admin</code>, <code>maintain</code>,
+<code>write</code>, <code>triage</code> or <code>read</code></li>
+<li>Add someone by username and pick their level</li>
+<li>Removing someone asks first, because access is lost the moment it is applied</li>
+</ul>
+<h3 id="webhooks">Webhooks</h3>
+<p>Read-only, and said so on the tab. Each hook is listed with the events it fires
+on, and its target URL is in the tooltip. Hooks are created on GitHub rather
+than here, since a misconfigured one fires at someone else's server.</p>
+<blockquote>
+<p>Every list on this page is loaded on its own, when you switch to the tab that
+needs it. Opening the page costs one request, not five.</p>
+</blockquote>
+<hr>
 <h2 id="issues-pull-requests">Issues &amp; pull requests</h2>
 <h3 id="list-and-detail">List and detail</h3>
 <ul>
@@ -358,8 +403,8 @@ review your current README, write a <code>.gitignore</code>, and explain adding 
 </thead>
 <tbody>
 <tr>
-<td><code>Ctrl+1</code> … <code>Ctrl+7</code></td>
-<td>Jump to a page</td>
+<td><code>Ctrl+1</code> … <code>Ctrl+9</code></td>
+<td>Jump to a page, in the order shown in the sidebar</td>
 </tr>
 <tr>
 <td><code>Ctrl+K</code></td>
@@ -398,10 +443,11 @@ review your current README, write a <code>.gitignore</code>, and explain adding 
 <li><strong>No GitHub Enterprise setting in the UI</strong> — the client can be pointed at another host, but there is no field for it yet</li>
 <li><strong>No SSH key or API key management</strong> — creating a token needs re-authentication in a browser, so it is deliberately left out</li>
 <li><strong>No domain-level analytics</strong> — GitHub traffic graphs are not shown</li>
+<li><strong>No webhooks are created or edited</strong> — the Repository page lists them, but a hook you add here would start firing at a server you may not control</li>
 <li><strong>No offline mode</strong> — nothing is cached, so the app will not show you stale repository data</li>
 </ul>
 
-<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#uploading-files">Uploading files</a></li><li class="toc-item toc-level-3"><a href="#files-in-the-create-and-edit-dialogs">Files in the create and edit dialogs</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
+<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#uploading-files">Uploading files</a></li><li class="toc-item toc-level-3"><a href="#files-in-the-create-and-edit-dialogs">Files in the create and edit dialogs</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#repository">Repository</a></li><li class="toc-item toc-level-3"><a href="#files">Files</a></li><li class="toc-item toc-level-3"><a href="#branches">Branches</a></li><li class="toc-item toc-level-3"><a href="#tags">Tags</a></li><li class="toc-item toc-level-3"><a href="#collaborators">Collaborators</a></li><li class="toc-item toc-level-3"><a href="#webhooks">Webhooks</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
     <footer class="page-foot">
       <nav class="foot-nav" aria-label="Footer">
         <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a>
@@ -409,7 +455,7 @@ review your current README, write a <code>.gitignore</code>, and explain adding 
         <a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
         <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
       </nav>
-      <p class="muted-foot">GitHub Manager 1.3.0 &middot; portable Windows client</p>
+      <p class="muted-foot">GitHub Manager 1.4.0 &middot; portable Windows client</p>
     </footer>
   </main>
 </div>

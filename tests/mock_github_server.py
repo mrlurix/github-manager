@@ -339,6 +339,20 @@ class _State:
         #: per-branch, so a write to "side" must not be visible on the default.
         self.file_branches: dict[tuple[str, str], bytes] = {}
         self.branches = ["main", "develop"]
+        self.tags = ["v1.2.0", "v1.1.0", "v1.0.0"]
+        self.collaborators: list[dict[str, Any]] = [
+            {"login": "octocat", "permissions": {"admin": True, "push": True, "pull": True}},
+            {"login": "hubot", "permissions": {"push": True, "pull": True}},
+        ]
+        self.hooks: list[dict[str, Any]] = [
+            {
+                "id": 1,
+                "name": "web",
+                "active": True,
+                "events": ["push", "pull_request"],
+                "config": {"url": "https://example.invalid/hook"},
+            }
+        ]
         self.issues = [dict(item) for item in ISSUES]
         self.releases = [dict(item) for item in RELEASES]
         self.comments: dict[int, list[dict[str, Any]]] = {}
@@ -670,6 +684,65 @@ class _Handler(BaseHTTPRequestHandler):
                 self._error(404, "Not Found")
                 return
             self._send(200, {"ref": f"refs/heads/{name}", "object": {"sha": "a" * 40}})
+            return
+
+        match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/git/matching-refs/(tags/?.*)", path)
+        if match and method == "GET":
+            # Group 3 is the requested prefix, e.g. "tags/". GitHub returns full
+            # refs as "refs/tags/<name>", so the prefix is rebuilt, not echoed.
+            prefix = "refs/" + (match.group(3) or "tags/")
+            self._send(
+                200,
+                [
+                    {
+                        "ref": f"{prefix}{name}",
+                        "object": {"sha": (chr(97 + index % 6) * 40), "type": "commit"},
+                    }
+                    for index, name in enumerate(state.tags)
+                    if f"{prefix}{name}".startswith(prefix)
+                ],
+            )
+            return
+
+        match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/collaborators", path)
+        if match and method == "GET":
+            self._send(200, list(state.collaborators))
+            return
+
+        match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/collaborators/([^/]+)", path)
+        if match:
+            login = match.group(3)
+            if method == "PUT":
+                state.collaborators = [
+                    person
+                    for person in state.collaborators
+                    if str(person.get("login")) != login
+                ]
+                permissions = {
+                    name: True
+                    for name in ("read",) + ((str(body.get("permission")),) if body.get("permission") else ())
+                }
+                state.collaborators.append(
+                    {"login": login, "permissions": permissions, "role_name": login}
+                )
+                self._send(201, {"login": login, "permissions": permissions})
+                return
+            if method == "DELETE":
+                before = len(state.collaborators)
+                state.collaborators = [
+                    person
+                    for person in state.collaborators
+                    if str(person.get("login")) != login
+                ]
+                if len(state.collaborators) == before:
+                    self._error(404, "Not Found")
+                    return
+                self._send(204)
+                return
+
+        match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/hooks", path)
+        if match and method == "GET":
+            self._send(200, list(state.hooks))
             return
 
         match = re.fullmatch(r"/repos/([^/]+)/([^/]+)/git/trees/(.+)", path)

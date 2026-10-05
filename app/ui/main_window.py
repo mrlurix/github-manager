@@ -28,6 +28,7 @@ from .pages.dashboard import DashboardPage
 from .pages.issues import IssuesPage
 from .pages.readme import ReadmePage
 from .pages.releases import ReleasesPage
+from .pages.repo_admin import RepoAdminPage
 from .pages.repositories import ReposPage
 from .pages.settings_page import SettingsPage
 from .pages.welcome import WelcomePage
@@ -46,6 +47,7 @@ NAV_ITEMS = [
     ("Dashboard", "home"),
     ("README Studio", "book"),
     ("Repositories", "folder"),
+    ("Repository", "archive"),
     ("Issues & PRs", "issue"),
     ("Releases & commits", "release"),
     ("AI Assistant", "sparkles"),
@@ -214,6 +216,7 @@ class MainWindow(QMainWindow):
             DashboardPage,
             ReadmePage,
             ReposPage,
+            RepoAdminPage,
             IssuesPage,
             ReleasesPage,
             AssistantPage,
@@ -242,7 +245,7 @@ class MainWindow(QMainWindow):
     def _install_shortcuts(self) -> None:
         from .widgets import shortcut
 
-        for index in range(1, 8):
+        for index in range(1, len(NAV_ITEMS) + 1):
             shortcut(self, f"Ctrl+{index}", lambda i=index: self.goto(i))
         shortcut(self, "Ctrl+K", lambda: self.goto(self._index_of(AssistantPage)))
         shortcut(self, "Ctrl+,", lambda: self.goto(self._index_of(SettingsPage)))
@@ -311,6 +314,18 @@ class MainWindow(QMainWindow):
         self.goto(self._index_of(ReposPage))
         page = self.pages[self._index_of(ReposPage)]
         QTimer.singleShot(120, page.create_repo)
+
+    def focus_repos(self, repo_name: str = "") -> None:
+        """Open the upload dialog for a repository.
+
+        File management is split across two pages on purpose: this one is where
+        settings and one-off actions live, the Repository page is where you
+        browse what is inside. Adding a file is an action, not a mode, so it
+        belongs where the actions are.
+        """
+        page = self.pages[self._index_of(ReposPage)]
+        self.goto(self._index_of(ReposPage))
+        QTimer.singleShot(120, lambda: page.upload_files(repo_name))
 
     def toggle_sidebar(self) -> None:
         width = self.sidebar.width()
