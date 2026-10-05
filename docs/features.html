@@ -31,10 +31,10 @@
 
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
-        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
+        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
       </svg>
-      <span>GitHub Manager</span>
+      <span>GitHub&nbsp;Manager</span>
     </a>
 
     <div class="search" role="search">
@@ -68,7 +68,7 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link is-active" href="features.html" aria-current="page">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><p class="nav-caption">Start here</p><a class="nav-link is-active" href="features.html" aria-current="page">Features</a><a class="nav-link" href="install.html">Getting started</a><p class="nav-caption">What the app can do</p><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><p class="nav-caption">How the assistant works</p><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
       <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
@@ -403,8 +403,13 @@ review your current README, write a <code>.gitignore</code>, and explain adding 
 
 <nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#map-of-the-app">Map of the app</a></li><li class="toc-item toc-level-2"><a href="#readme-studio">README Studio</a></li><li class="toc-item toc-level-3"><a href="#generation-settings">Generation settings</a></li><li class="toc-item toc-level-3"><a href="#the-output">The output</a></li><li class="toc-item toc-level-3"><a href="#refine-and-review">Refine and review</a></li><li class="toc-item toc-level-3"><a href="#writing-to-github">Writing to GitHub</a></li><li class="toc-item toc-level-2"><a href="#repositories">Repositories</a></li><li class="toc-item toc-level-3"><a href="#the-list">The list</a></li><li class="toc-item toc-level-3"><a href="#actions">Actions</a></li><li class="toc-item toc-level-3"><a href="#uploading-files">Uploading files</a></li><li class="toc-item toc-level-3"><a href="#files-in-the-create-and-edit-dialogs">Files in the create and edit dialogs</a></li><li class="toc-item toc-level-3"><a href="#ai-suggestions">AI suggestions</a></li><li class="toc-item toc-level-2"><a href="#issues-pull-requests">Issues &amp; pull requests</a></li><li class="toc-item toc-level-3"><a href="#list-and-detail">List and detail</a></li><li class="toc-item toc-level-3"><a href="#actions-2">Actions</a></li><li class="toc-item toc-level-2"><a href="#releases-commits">Releases &amp; commits</a></li><li class="toc-item toc-level-3"><a href="#lists">Lists</a></li><li class="toc-item toc-level-3"><a href="#release-notes">Release notes</a></li><li class="toc-item toc-level-3"><a href="#commit-messages-and-branch-names">Commit messages and branch names</a></li><li class="toc-item toc-level-2"><a href="#ai-assistant">AI Assistant</a></li><li class="toc-item toc-level-3"><a href="#scoped-to-github">Scoped to GitHub</a></li><li class="toc-item toc-level-3"><a href="#repository-context">Repository context</a></li><li class="toc-item toc-level-3"><a href="#streaming">Streaming</a></li><li class="toc-item toc-level-3"><a href="#shortcuts">Shortcuts</a></li><li class="toc-item toc-level-2"><a href="#account">Account</a></li><li class="toc-item toc-level-2"><a href="#settings">Settings</a></li><li class="toc-item toc-level-3"><a href="#appearance">Appearance</a></li><li class="toc-item toc-level-3"><a href="#ai">AI</a></li><li class="toc-item toc-level-3"><a href="#data">Data</a></li><li class="toc-item toc-level-2"><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li><li class="toc-item toc-level-2"><a href="#what-is-not-here">What is not here</a></li></ul></nav>
     <footer class="page-foot">
-      <p>Text and code released under the MIT licence.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
+      <nav class="foot-nav" aria-label="Footer">
+        <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+        <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
+      </nav>
+      <p class="muted-foot">GitHub Manager 1.3.0 &middot; portable Windows client</p>
     </footer>
   </main>
 </div>

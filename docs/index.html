@@ -31,10 +31,10 @@
 
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
-        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
+        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
       </svg>
-      <span>GitHub Manager</span>
+      <span>GitHub&nbsp;Manager</span>
     </a>
 
     <div class="search" role="search">
@@ -68,7 +68,7 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link is-active" href="index.html" aria-current="page">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
+    <nav class="nav"><a class="nav-link is-active" href="index.html" aria-current="page">Home</a><p class="nav-caption">Start here</p><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><p class="nav-caption">What the app can do</p><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><p class="nav-caption">How the assistant works</p><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
       <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
@@ -77,66 +77,69 @@
 
   <main id="main" class="content">
 <div class="hero">
-  <h1>All of GitHub, in one desktop app</h1>
+  <h1>Your GitHub, as a desktop app</h1>
   <p>
-    Write READMEs, manage repositories, work through issues and pull requests,
-    publish releases and write commit messages — with an AI assistant that does
-    the work and refuses anything outside GitHub before the request ever reaches
-    the model.
+    One portable exe that does the work GitHub's website makes you do by hand —
+    with an AI assistant that refuses anything outside GitHub before the request
+    is ever sent.
   </p>
   <div class="hero-actions">
     <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
     <a class="btn" href="install.html" target="_blank" rel="noopener noreferrer">Getting started</a>
-    <a class="btn" href="features.html" target="_blank" rel="noopener noreferrer">Features</a>
+    <a class="btn" href="features.html" target="_blank" rel="noopener noreferrer">See all features</a>
   </div>
 </div>
 <div class="cards">
   <div class="card">
     <h3>README Studio</h3>
-    <p>Builds a complete README from the real repository contents, refines it on request, and commits it once you approve.</p>
+    <p>A complete README generated from the real repository, refined on request, committed once you approve.</p>
   </div>
   <div class="card">
     <h3>Repositories</h3>
-    <p>Create, edit, archive, delete, fork, star and change topics — including adding and removing files.</p>
+    <p>Create, edit, archive, fork, star, and add or remove files without leaving the app.</p>
   </div>
   <div class="card">
-    <h3>Issues &amp; pull requests</h3>
-    <p>Draft an issue, triage a whole queue at once, reply to review comments, close or reopen anything.</p>
+    <h3>Issues &amp; PRs</h3>
+    <p>Draft issues, triage an entire queue, reply to review comments, close and reopen.</p>
   </div>
   <div class="card">
-    <h3>Releases &amp; commits</h3>
-    <p>Turns a raw commit list into release notes, writes Conventional Commit messages, suggests branch names.</p>
+    <h3>Releases</h3>
+    <p>Raw commits turned into release notes, with Conventional Commit messages and branch names.</p>
   </div>
   <div class="card">
-    <h3>Scoped to GitHub</h3>
-    <p>Off-topic requests are refused before they are sent to the model, not after the answer comes back.</p>
+    <h3>Scoping</h3>
+    <p>Off-topic requests are blocked before they reach the model, not after the answer arrives.</p>
   </div>
   <div class="card">
-    <h3>Portable</h3>
-    <p>One exe file. No installer, no Python, no admin rights. Works fully offline with a local model.</p>
+    <h3>Privacy</h3>
+    <p>Token encrypted with Windows DPAPI. Works fully offline with a local model.</p>
   </div>
 </div>
+<h2 id="the-idea">The idea</h2>
+<p>GitHub's website is good at showing you things and bad at doing them. Every
+change means navigating somewhere, finding the right form, and confirming an
+action you already decided on. This app inverts that: you say what you want, and
+it asks you to confirm the one thing that matters.</p>
 <h2 id="how-it-works">How it works</h2>
-<p>Four steps, and you can stop after any of them.</p>
 <ol>
-<li><strong>Connect.</strong> Create a Personal Access Token on GitHub and paste it in. It is
-encrypted with Windows DPAPI and stored only next to the executable.</li>
-<li><strong>Pick a model.</strong> Any OpenAI compatible endpoint — OpenAI, OpenRouter, Groq,
-Together, Ollama or LM Studio. A local model needs no API key at all.</li>
-<li><strong>Ask for the work.</strong> Generate a README, triage a queue, draft release notes.</li>
-<li><strong>Review and approve.</strong> Every write to GitHub is confirmed first. Nothing is
-committed, published or deleted without you seeing exactly what will happen.</li>
+<li><strong>Connect.</strong> Create a <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">&gt;personal access token</a>
+and paste it in. It is encrypted with Windows DPAPI and stored only beside
+the executable.</li>
+<li><strong>Choose a model.</strong> Any OpenAI compatible endpoint — OpenAI, OpenRouter,
+Groq, Together, Ollama, or LM Studio. A local model needs no API key at all.</li>
+<li><strong>Ask for the work.</strong> Generate a README, triage issues, draft release notes.</li>
+<li><strong>Approve and commit.</strong> Every write to GitHub is confirmed first.</li>
 </ol>
-<pre><code class="language-text">Connect → Pick a repository → Ask the AI → Review and approve → Commit to GitHub
+<pre><code class="language-text">Connect → Choose a repository → Ask the AI → Review and approve → Commit
 </code></pre>
 <h2 id="what-it-will-not-do">What it will not do</h2>
-<p>The assistant is deliberately limited to GitHub. It will not answer questions
-about recipes, medical advice, law, or share prices. If a request falls outside
-that domain it is blocked before it reaches the model, and you get an
-out-of-scope reply rather than an answer that happens to be wrong.</p>
-<p><span class="pill pill-ok">Scope is enforced before the request is sent</span>
-<span class="pill">Works offline with a local model</span>
-<span class="pill">Nothing leaves the machine without your say-so</span></p>
+<p>The assistant is deliberately scoped to GitHub. It will not answer questions
+about recipes, medical advice, law, or share prices. A request outside that
+domain is refused before it reaches the model, so you get a clear answer rather
+than a plausible wrong one.</p>
+<p><span class="pill pill-ok">Scope enforced before the request is sent</span>
+<span class="pill">Runs offline with a local model</span>
+<span class="pill">No telemetry, no analytics</span></p>
 <h2 id="requirements">Requirements</h2>
 <table>
 <thead>
@@ -190,7 +193,7 @@ out-of-scope reply rather than an answer that happens to be wrong.</p>
 <td><a href="security.html" target="_blank" rel="noopener noreferrer">Security</a></td>
 </tr>
 <tr>
-<td>Build the exe or the site yourself</td>
+<td>Build the exe or this site yourself</td>
 <td><a href="build.html" target="_blank" rel="noopener noreferrer">Building from source</a></td>
 </tr>
 <tr>
@@ -200,10 +203,15 @@ out-of-scope reply rather than an answer that happens to be wrong.</p>
 </tbody>
 </table>
 
-<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#how-it-works">How it works</a></li><li class="toc-item toc-level-2"><a href="#what-it-will-not-do">What it will not do</a></li><li class="toc-item toc-level-2"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#where-to-go-next">Where to go next</a></li></ul></nav>
+<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#the-idea">The idea</a></li><li class="toc-item toc-level-2"><a href="#how-it-works">How it works</a></li><li class="toc-item toc-level-2"><a href="#what-it-will-not-do">What it will not do</a></li><li class="toc-item toc-level-2"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#where-to-go-next">Where to go next</a></li></ul></nav>
     <footer class="page-foot">
-      <p>Text and code released under the MIT licence.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
+      <nav class="foot-nav" aria-label="Footer">
+        <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+        <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
+      </nav>
+      <p class="muted-foot">GitHub Manager 1.3.0 &middot; portable Windows client</p>
     </footer>
   </main>
 </div>

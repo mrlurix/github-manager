@@ -4,73 +4,77 @@ description: GitHub Manager — a portable GitHub desktop client with an AI assi
 ---
 
 <div class="hero">
-  <h1>All of GitHub, in one desktop app</h1>
+  <h1>Your GitHub, as a desktop app</h1>
   <p>
-    Write READMEs, manage repositories, work through issues and pull requests,
-    publish releases and write commit messages — with an AI assistant that does
-    the work and refuses anything outside GitHub before the request ever reaches
-    the model.
+    One portable exe that does the work GitHub's website makes you do by hand —
+    with an AI assistant that refuses anything outside GitHub before the request
+    is ever sent.
   </p>
   <div class="hero-actions">
     <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.3.0</a>
     <a class="btn" href="install.html">Getting started</a>
-    <a class="btn" href="features.html">Features</a>
+    <a class="btn" href="features.html">See all features</a>
   </div>
 </div>
 
 <div class="cards">
   <div class="card">
     <h3>README Studio</h3>
-    <p>Builds a complete README from the real repository contents, refines it on request, and commits it once you approve.</p>
+    <p>A complete README generated from the real repository, refined on request, committed once you approve.</p>
   </div>
   <div class="card">
     <h3>Repositories</h3>
-    <p>Create, edit, archive, delete, fork, star and change topics — including adding and removing files.</p>
+    <p>Create, edit, archive, fork, star, and add or remove files without leaving the app.</p>
   </div>
   <div class="card">
-    <h3>Issues &amp; pull requests</h3>
-    <p>Draft an issue, triage a whole queue at once, reply to review comments, close or reopen anything.</p>
+    <h3>Issues &amp; PRs</h3>
+    <p>Draft issues, triage an entire queue, reply to review comments, close and reopen.</p>
   </div>
   <div class="card">
-    <h3>Releases &amp; commits</h3>
-    <p>Turns a raw commit list into release notes, writes Conventional Commit messages, suggests branch names.</p>
+    <h3>Releases</h3>
+    <p>Raw commits turned into release notes, with Conventional Commit messages and branch names.</p>
   </div>
   <div class="card">
-    <h3>Scoped to GitHub</h3>
-    <p>Off-topic requests are refused before they are sent to the model, not after the answer comes back.</p>
+    <h3>Scoping</h3>
+    <p>Off-topic requests are blocked before they reach the model, not after the answer arrives.</p>
   </div>
   <div class="card">
-    <h3>Portable</h3>
-    <p>One exe file. No installer, no Python, no admin rights. Works fully offline with a local model.</p>
+    <h3>Privacy</h3>
+    <p>Token encrypted with Windows DPAPI. Works fully offline with a local model.</p>
   </div>
 </div>
 
+## The idea
+
+GitHub's website is good at showing you things and bad at doing them. Every
+change means navigating somewhere, finding the right form, and confirming an
+action you already decided on. This app inverts that: you say what you want, and
+it asks you to confirm the one thing that matters.
+
 ## How it works
 
-Four steps, and you can stop after any of them.
-
-1. **Connect.** Create a Personal Access Token on GitHub and paste it in. It is
-   encrypted with Windows DPAPI and stored only next to the executable.
-2. **Pick a model.** Any OpenAI compatible endpoint — OpenAI, OpenRouter, Groq,
-   Together, Ollama or LM Studio. A local model needs no API key at all.
-3. **Ask for the work.** Generate a README, triage a queue, draft release notes.
-4. **Review and approve.** Every write to GitHub is confirmed first. Nothing is
-   committed, published or deleted without you seeing exactly what will happen.
+1. **Connect.** Create a [personal access token](https://github.com/settings/tokens)
+   and paste it in. It is encrypted with Windows DPAPI and stored only beside
+   the executable.
+2. **Choose a model.** Any OpenAI compatible endpoint — OpenAI, OpenRouter,
+   Groq, Together, Ollama, or LM Studio. A local model needs no API key at all.
+3. **Ask for the work.** Generate a README, triage issues, draft release notes.
+4. **Approve and commit.** Every write to GitHub is confirmed first.
 
 ```text
-Connect → Pick a repository → Ask the AI → Review and approve → Commit to GitHub
+Connect → Choose a repository → Ask the AI → Review and approve → Commit
 ```
 
 ## What it will not do
 
-The assistant is deliberately limited to GitHub. It will not answer questions
-about recipes, medical advice, law, or share prices. If a request falls outside
-that domain it is blocked before it reaches the model, and you get an
-out-of-scope reply rather than an answer that happens to be wrong.
+The assistant is deliberately scoped to GitHub. It will not answer questions
+about recipes, medical advice, law, or share prices. A request outside that
+domain is refused before it reaches the model, so you get a clear answer rather
+than a plausible wrong one.
 
-<span class="pill pill-ok">Scope is enforced before the request is sent</span>
-<span class="pill">Works offline with a local model</span>
-<span class="pill">Nothing leaves the machine without your say-so</span>
+<span class="pill pill-ok">Scope enforced before the request is sent</span>
+<span class="pill">Runs offline with a local model</span>
+<span class="pill">No telemetry, no analytics</span>
 
 ## Requirements
 
@@ -89,5 +93,5 @@ out-of-scope reply rather than an answer that happens to be wrong.
 | Download it and connect a token | [Getting started](install.html) |
 | Choose a model, or run one locally | [AI](ai.html) |
 | Know how your token and files are handled | [Security](security.html) |
-| Build the exe or the site yourself | [Building from source](build.html) |
+| Build the exe or this site yourself | [Building from source](build.html) |
 | Look up something specific | [FAQ](faq.html) |

@@ -42,14 +42,16 @@ EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 APP_VERSION = "1.3.0"
 
 #: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
+#: Grouped so the sidebar reads as sections rather than one flat list, which is
+#: what makes a ten-item set scannable.
 NAV = [
-    ("index", "Home"),
-    ("features", "Features"),
-    ("install", "Getting started"),
-    ("ai", "AI"),
-    ("security", "Security"),
-    ("build", "Building from source"),
-    ("faq", "FAQ"),
+    ("index", "Home", "Start here"),
+    ("features", "Features", "What the app can do"),
+    ("install", "Getting started", None),
+    ("ai", "AI", "How the assistant works"),
+    ("security", "Security", None),
+    ("build", "Building from source", None),
+    ("faq", "FAQ", "Answers and troubleshooting"),
 ]
 
 #: Heading anchors per page, filled in during the build so the link checker
@@ -333,12 +335,21 @@ def layout(
     body: str,
     toc: list[tuple[int, str, str]],
 ) -> str:
-    nav_html = "".join(
-        f'<a class="nav-link{" is-active" if key == slug else ""}" href="{key}.html"'
-        + (' aria-current="page"' if key == slug else "")
-        + f">{escape(label)}</a>"
-        for key, label in NAV
-    )
+    nav_parts: list[str] = []
+    caption = None
+    for key, label, _blurb in NAV:
+        if _blurb:
+            if caption:
+                nav_parts.append(f'<p class="nav-caption">{escape(caption)}</p>')
+            caption = _blurb
+        active = key == slug
+        nav_parts.append(
+            f'<a class="nav-link{" is-active" if active else ""}" href="{key}.html"'
+            + (' aria-current="page"' if active else "")
+            + f">{escape(label)}</a>"
+        )
+    nav_html = "".join(nav_parts)
+
     toc_html = ""
     if toc:
         items = "".join(
@@ -385,10 +396,10 @@ def layout(
 
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
-        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
+        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
       </svg>
-      <span>GitHub Manager</span>
+      <span>GitHub&nbsp;Manager</span>
     </a>
 
     <div class="search" role="search">
@@ -433,8 +444,13 @@ def layout(
 {body}
 {toc_html}
     <footer class="page-foot">
-      <p>Text and code released under the MIT licence.</p>
-      <p><a href="{REPO_URL}" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="{RELEASES_URL}" target="_blank" rel="noopener noreferrer">Releases</a></p>
+      <nav class="foot-nav" aria-label="Footer">
+        <a href="{RELEASES_URL}" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="{REPO_URL}" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="{REPO_URL}/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+        <a href="{REPO_URL}/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
+      </nav>
+      <p class="muted-foot">GitHub Manager {APP_VERSION} &middot; portable Windows client</p>
     </footer>
   </main>
 </div>
@@ -483,7 +499,7 @@ def check_internal_links() -> int:
     or renaming a slug and leaving the old hrefs behind.
     """
     broken: list[str] = []
-    pages = {slug for slug, _ in NAV}
+    pages = {slug for slug, _label, _blurb in NAV}
     known_targets = {f"{slug}.html" for slug in pages} | {
         f"{slug}.html#{anchor}" for slug in pages for anchor in ANCHORS.get(slug, ())
     }
@@ -517,7 +533,7 @@ def build() -> int:
 
     index: list[dict[str, object]] = []
 
-    for slug, nav_title in NAV:
+    for slug, nav_title, _blurb in NAV:
         source = pages_dir / f"{slug}.md"
         if not source.exists():
             print(f"  MISSING {source}")

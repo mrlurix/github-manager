@@ -31,10 +31,10 @@
 
     <a class="brand" href="index.html">
       <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="9" r="2.6"/>
-        <path d="M6 8.6v6.8M8.4 7.2h4.2a4 4 0 0 1 4 1.4"/>
+        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
+        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
       </svg>
-      <span>GitHub Manager</span>
+      <span>GitHub&nbsp;Manager</span>
     </a>
 
     <div class="search" role="search">
@@ -68,7 +68,7 @@
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html" aria-current="page">Building from source</a><a class="nav-link" href="faq.html">FAQ</a></nav>
+    <nav class="nav"><a class="nav-link" href="index.html">Home</a><p class="nav-caption">Start here</p><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><p class="nav-caption">What the app can do</p><a class="nav-link" href="ai.html">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link is-active" href="build.html" aria-current="page">Building from source</a><p class="nav-caption">How the assistant works</p><a class="nav-link" href="faq.html">FAQ</a></nav>
     <div class="sidebar-foot">
       <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.3.0</a>
       <p class="muted">One exe file · no Python needed</p>
@@ -313,8 +313,13 @@ HTTP.</p>
 
 <nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#running-from-source">Running from source</a></li><li class="toc-item toc-level-3"><a href="#requirements">Requirements</a></li><li class="toc-item toc-level-2"><a href="#building-the-portable-exe">Building the portable exe</a></li><li class="toc-item toc-level-3"><a href="#options">Options</a></li><li class="toc-item toc-level-3"><a href="#what-the-build-script-does">What the build script does</a></li><li class="toc-item toc-level-2"><a href="#running-the-tests">Running the tests</a></li><li class="toc-item toc-level-3"><a href="#the-mock-github-server">The mock GitHub server</a></li><li class="toc-item toc-level-3"><a href="#keeping-the-tests-out-of-your-data">Keeping the tests out of your data</a></li><li class="toc-item toc-level-3"><a href="#development-tools">Development tools</a></li><li class="toc-item toc-level-2"><a href="#building-this-site">Building this site</a></li><li class="toc-item toc-level-3"><a href="#why-the-search-is-hand-written">Why the search is hand-written</a></li><li class="toc-item toc-level-2"><a href="#project-layout">Project layout</a></li></ul></nav>
     <footer class="page-foot">
-      <p>Text and code released under the MIT licence.</p>
-      <p><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a> · <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a></p>
+      <nav class="foot-nav" aria-label="Footer">
+        <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a>
+        <a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+        <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
+      </nav>
+      <p class="muted-foot">GitHub Manager 1.3.0 &middot; portable Windows client</p>
     </footer>
   </main>
 </div>
