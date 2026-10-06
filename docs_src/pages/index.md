@@ -1,101 +1,201 @@
 ---
-title: Home
-description: GitHub Manager — a portable GitHub desktop client with an AI assistant that only ever works on GitHub.
+title: GitHub Manager
+description: A portable GitHub client for Windows, with an AI assistant that only ever works on GitHub.
 ---
 
+<div class="marketing">
+
 <div class="hero">
-  <h1>Your GitHub, as a desktop app</h1>
-  <p>
-    One portable exe that does the work GitHub's website makes you do by hand —
-    with an AI assistant that refuses anything outside GitHub before the request
-    is ever sent.
+  <p class="eyebrow"><b>v1.4.0</b> · Windows · one portable file</p>
+  <h1>GitHub, as a desktop app</h1>
+  <p class="lede">
+    A single exe that does the work the website makes you do by hand — with an
+    assistant that refuses anything outside GitHub before the request is sent.
   </p>
-  <div class="hero-actions">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download 1.4.0</a>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download for Windows</a>
     <a class="btn" href="install.html">Getting started</a>
-    <a class="btn" href="features.html">See all features</a>
+  </div>
+  <p class="hero-note">63 MB · no installer · no Python</p>
+</div>
+
+<div class="shot">
+  <div class="shot-bar">
+    <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
+    <span class="shot-title">GitHub Manager — mrlurix / github-manager</span>
+  </div>
+  <div class="shot-body">
+    <div class="shot-nav">
+      <i>Dashboard</i>
+      <i>README Studio</i>
+      <i>Repositories</i>
+      <i class="on">Repository</i>
+      <i>Issues &amp; PRs</i>
+      <i>Releases</i>
+      <i>AI Assistant</i>
+      <i>Account</i>
+      <i>Settings</i>
+    </div>
+    <div class="shot-main">
+      <div class="shot-row">
+        <span class="shot-h">Repository</span>
+        <span class="shot-p">mrlurix/github-manager</span>
+      </div>
+      <div class="shot-chips">
+        <span class="shot-chip on">Files</span>
+        <span class="shot-chip">Branches</span>
+        <span class="shot-chip">Tags</span>
+        <span class="shot-chip">Collaborators</span>
+        <span class="shot-chip">Webhooks</span>
+      </div>
+      <div class="shot-split">
+        <div class="shot-pane">
+          <b>docs_src</b><br>
+          pages<br>
+          assets<br>
+          <b>tools</b><br>
+          build_docs.py<br>
+          verify_search.js
+        </div>
+        <div class="shot-pane">
+          <b>app</b><br>
+          core/github_api.py<br>
+          ui/pages/repo_admin.py<br>
+          <em>10 pages, one executable</em>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="cards">
-  <div class="card">
-    <h3>README Studio</h3>
-    <p>A complete README generated from the real repository, refined on request, committed once you approve.</p>
+<section class="section">
+  <div class="bento">
+    <div>
+      <h3>README Studio</h3>
+      <p>A README written from the real repository — its tree, its languages, its topics — refined on request and committed once you approve.</p>
+    </div>
+    <div>
+      <h3>Repositories</h3>
+      <p>Create, edit, archive, fork and star, with files attached at creation and removable afterwards.</p>
+    </div>
+    <div>
+      <h3>Inside one</h3>
+      <p>Browse the file tree, create branches, read tags, set collaborator permissions, inspect webhooks.</p>
+    </div>
+    <div>
+      <h3>Issues &amp; PRs</h3>
+      <p>Draft an issue, triage a whole queue at once, reply to review comments, close and reopen.</p>
+    </div>
+    <div>
+      <h3>Releases</h3>
+      <p>Raw commits turned into release notes, with Conventional Commit messages and branch names.</p>
+    </div>
+    <div>
+      <h3>Scoping</h3>
+      <p>Off-topic requests are refused before they reach the model, not after the answer comes back.</p>
+    </div>
   </div>
-  <div class="card">
-    <h3>Repositories</h3>
-    <p>Create, edit, archive, fork, star, and add or remove files without leaving the app.</p>
+</section>
+
+<section class="section section-rule">
+  <div class="section-head">
+    <p class="eyebrow">How it works</p>
+    <h2>Four steps, then you never touch the website again</h2>
+    <p>
+      The token decides what it can reach. Nothing else about your account is
+      touched, and every write is confirmed before it happens.
+    </p>
   </div>
-  <div class="card">
-    <h3>Inside a repository</h3>
-    <p>Browse files, create branches, read tags, manage collaborators and inspect webhooks.</p>
+  <div class="steps">
+    <div class="step">
+      <div>
+        <h3>Connect a token</h3>
+        <p>A fine-grained personal access token. Encrypted with Windows DPAPI the moment you paste it, and readable by nothing but this app on your account.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div>
+        <h3>Point it at a model</h3>
+        <p>Any OpenAI-compatible endpoint — OpenAI, OpenRouter, Groq, Together, Ollama, LM Studio. A local model needs no key and the app works offline.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div>
+        <h3>Ask for the work</h3>
+        <p>Write a README, triage the issue queue, turn forty commits into release notes. The model sees the repository, not a guess about it.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div>
+        <h3>Review, then commit</h3>
+        <p>Every write shows you the file, the branch and the message first. Nothing lands on GitHub that you have not seen.</p>
+      </div>
+    </div>
   </div>
-  <div class="card">
-    <h3>Issues &amp; PRs</h3>
-    <p>Draft issues, triage an entire queue, reply to review comments, close and reopen.</p>
+</section>
+
+<section class="section section-rule">
+  <div class="section-head">
+    <p class="eyebrow">The assistant's boundary</p>
+    <h2>It will not answer anything that is not about GitHub</h2>
+    <p>
+      Not a preference — an enforcement. The request is classified before it is
+      sent, so a question about recipes or share prices never costs you a token
+      and never comes back with a confident wrong answer.
+    </p>
   </div>
-  <div class="card">
-    <h3>Releases</h3>
-    <p>Raw commits turned into release notes, with Conventional Commit messages and branch names.</p>
+  <div class="bento">
+    <div>
+      <span class="bento-num">LAYER 01</span>
+      <h3>Before the request</h3>
+      <p>The prompt is classified on your machine. Off-topic and it is dropped there.</p>
+    </div>
+    <div>
+      <span class="bento-num">LAYER 02</span>
+      <h3>In the system prompt</h3>
+      <p>The model is told the boundary in the same words every time, so it does not drift.</p>
+    </div>
+    <div>
+      <span class="bento-num">LAYER 03</span>
+      <h3>On the answer</h3>
+      <p>What comes back is checked too. A refusal is shown as a refusal, not as a blank.</p>
+    </div>
   </div>
-  <div class="card">
-    <h3>Scoping</h3>
-    <p>Off-topic requests are blocked before they reach the model, not after the answer arrives.</p>
+</section>
+
+<section class="section section-rule">
+  <div class="facts">
+    <div class="fact"><b>63 MB</b><span>One file, no installer, no runtime</span></div>
+    <div class="fact"><b>10</b><span>Pages covering the whole of GitHub</span></div>
+    <div class="fact"><b>0</b><span>Telemetry, analytics or crash reporting</span></div>
+    <div class="fact"><b>2</b><span>Hosts it will ever talk to: GitHub and your model</span></div>
   </div>
-  <div class="card">
-    <h3>Privacy</h3>
-    <p>Token encrypted with Windows DPAPI. Works fully offline with a local model.</p>
+</section>
+
+<section class="section section-rule">
+  <div class="section-head">
+    <p class="eyebrow">What it will not do</p>
+    <h2>Said plainly, so you are not looking for it</h2>
+    <p>
+      The scope limit is a feature. These limits are the same kind of thing —
+      stated rather than discovered.
+    </p>
   </div>
+  <div class="callout">
+    <p>
+      <span class="pill pill-ok">Scope enforced before sending</span>
+      <span class="pill">Runs offline with a local model</span>
+      <span class="pill">No telemetry</span>
+    </p>
+    <p>
+      It will not manage SSH keys, create OAuth apps, or edit webhooks — a hook
+      you added here would start firing at a server you do not control.
+    </p>
+  </div>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download for Windows</a>
+    <a class="btn" href="features.html">Read the features</a>
+  </div>
+</section>
+
 </div>
-
-## The idea
-
-GitHub's website is good at showing you things and bad at doing them. Every
-change means navigating somewhere, finding the right form, and confirming an
-action you already decided on. This app inverts that: you say what you want, and
-it asks you to confirm the one thing that matters.
-
-## How it works
-
-1. **Connect.** Create a [personal access token](https://github.com/settings/tokens)
-   and paste it in. It is encrypted with Windows DPAPI and stored only beside
-   the executable.
-2. **Choose a model.** Any OpenAI compatible endpoint — OpenAI, OpenRouter,
-   Groq, Together, Ollama, or LM Studio. A local model needs no API key at all.
-3. **Ask for the work.** Generate a README, triage issues, draft release notes.
-4. **Approve and commit.** Every write to GitHub is confirmed first.
-
-```text
-Connect → Choose a repository → Ask the AI → Review and approve → Commit
-```
-
-## What it will not do
-
-The assistant is deliberately scoped to GitHub. It will not answer questions
-about recipes, medical advice, law, or share prices. A request outside that
-domain is refused before it reaches the model, so you get a clear answer rather
-than a plausible wrong one.
-
-<span class="pill pill-ok">Scope enforced before the request is sent</span>
-<span class="pill">Runs offline with a local model</span>
-<span class="pill">No telemetry, no analytics</span>
-
-## Requirements
-
-| | |
-| --- | --- |
-| OS | 64-bit Windows, tested on 10 and 11 |
-| Python | not required — the exe is self-contained |
-| Disk | roughly 130 MB while running |
-| Network | GitHub, plus whichever AI provider you configure |
-
-## Where to go next
-
-| If you want to | Read |
-| --- | --- |
-| See every page of the app | [Features](features.html) |
-| Download it and connect a token | [Getting started](install.html) |
-| Choose a model, or run one locally | [AI](ai.html) |
-| Know how your token and files are handled | [Security](security.html) |
-| Build the exe or this site yourself | [Building from source](build.html) |
-| Look up something specific | [FAQ](faq.html) |

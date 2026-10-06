@@ -7,18 +7,24 @@
      policy travels with the document. It refuses inline script and event handler
      attributes even if something slipped past the body sanitiser, which is what
      turns a mistake in a markdown file into broken markup instead of a compromise.
-     'unsafe-inline' is needed for style only, because markdown carries style
+     The fonts are self-hosted, so nothing on this page reaches a third party:
+     'unsafe-inline' is there for style only, because markdown carries style
      attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://rsms.me; font-src 'self' https://rsms.me data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>AI · GitHub Manager</title>
 <meta name="description" content="Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.">
-<link rel="preconnect" href="https://rsms.me/inter" crossorigin>
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<link rel="canonical" href="https://mrlurix.github.io/github-manager/ai.html">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website">
 <meta property="og:title" content="AI · GitHub Manager">
 <meta property="og:description" content="Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.">
+<meta property="og:image" content="https://opengraph.githubassets.com/1/github-manager">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -30,33 +36,38 @@
     </button>
 
     <a class="brand" href="index.html">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
-        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
-      </svg>
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7.5A5.5 5.5 0 0 1 16 11.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/><path d="M21 18h-7.5A5.5 5.5 0 0 1 8 12.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/><circle cx="3" cy="6" r="2.6" fill="currentColor"/><circle cx="21" cy="12" r="2.6" fill="currentColor"/><circle cx="3" cy="18" r="2.6" fill="currentColor"/><path d="M12.6 3.2 16.8 12l-4.2 8.8L8.4 12z" fill="currentColor" opacity="0.92"/></svg>
       <span>GitHub&nbsp;Manager</span>
     </a>
 
-    <div class="search" role="search">
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
-      </svg>
-      <input id="searchInput" type="search" placeholder="Search the docs…"
-             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
-      <kbd class="hint" id="searchHint">Ctrl K</kbd>
-      <div class="results" id="searchResults" hidden></div>
-    </div>
+    <nav class="top-nav" aria-label="Sections"></nav>
 
-    <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
+    <div class="tools">
+      <button class="search-icon-button" id="searchToggle" aria-label="Search" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+        </svg>
+      </button>
+      <div class="search" role="search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="Search"
+               autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
+        <div class="results" id="searchResults" hidden></div>
+      </div>
+
+      <button class="icon-btn" id="themeToggle" aria-label="Switch between dark and light">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="4.5"/>
+          <circle cx="12" cy="12" r="4.2"/>
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
         </svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
         </svg>
       </button>
+
+      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download</a>
       <a class="icon-btn" href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
@@ -67,20 +78,21 @@
 </header>
 
 <div class="shell">
-  <aside class="sidebar" id="sidebar">
-    <nav class="nav"><a class="nav-link" href="index.html">Home</a><p class="nav-caption">Start here</p><a class="nav-link" href="features.html">Features</a><a class="nav-link" href="install.html">Getting started</a><p class="nav-caption">What the app can do</p><a class="nav-link is-active" href="ai.html" aria-current="page">AI</a><a class="nav-link" href="security.html">Security</a><a class="nav-link" href="build.html">Building from source</a><p class="nav-caption">How the assistant works</p><a class="nav-link" href="faq.html">FAQ</a></nav>
-    <div class="sidebar-foot">
-      <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.4.0</a>
-      <p class="muted">One exe file · no Python needed</p>
+<aside class="rail" id="rail">
+    <nav class="rail-nav" aria-label="Documentation"><a class="rail-link" href="index.html">Home</a><a class="rail-link" href="features.html">Features</a><a class="rail-link" href="install.html">Getting started</a><p class="rail-caption">How it works</p><a class="rail-link is-active" href="ai.html" aria-current="page">AI</a><a class="rail-link" href="security.html">Security</a><p class="rail-caption">Reference</p><a class="rail-link" href="build.html">Building from source</a><a class="rail-link" href="faq.html">FAQ</a></nav>
+    <div class="rail-foot">
+      <a class="btn" href="https://github.com/mrlurix/github-manager/releases/latest/download/GitHubManager.exe" target="_blank" rel="noopener noreferrer">Download 1.4.0</a>
+      <p>63 MB &middot; no Python needed</p>
     </div>
   </aside>
 
   <main id="main" class="content">
+<header class="doc-head"><h1>AI</h1><p>Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.</p></header>
 <p>Every AI feature in the app goes through one thin layer. That layer builds a
 prompt, sends it, and hands back the answer. So you can swap in any
 OpenAI-compatible service and everything keeps working.</p>
 <h2 id="supported-providers">Supported providers</h2>
-<table>
+<div class="scroll-x"><table>
 <thead>
 <tr>
 <th>Provider</th>
@@ -125,7 +137,7 @@ OpenAI-compatible service and everything keeps working.</p>
 <td>depends on the service</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="a-local-model-for-fully-offline-use">A local model for fully offline use</h2>
 <p>If nothing should leave your machine, this is the way.</p>
 <h3 id="ollama">Ollama</h3>
@@ -151,7 +163,7 @@ GitHub usually makes it weaker than the large hosted ones. For structured work
 like writing a README it is entirely adequate.</p>
 </blockquote>
 <h2 id="suggested-settings">Suggested settings</h2>
-<table>
+<div class="scroll-x"><table>
 <thead>
 <tr>
 <th>Setting</th>
@@ -181,7 +193,7 @@ like writing a README it is entirely adequate.</p>
 <td>You see the answer immediately</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>For structured output such as JSON, drop the temperature to 0.2–0.4 so results
 stay consistent.</p>
 <h2 id="the-limits-on-the-assistant">The limits on the assistant</h2>
@@ -235,7 +247,7 @@ the <code>data</code> folder.</p>
 the logic testable on its own — and what lets the integration suite drive the
 real client over real HTTP.</p>
 <h2 id="when-it-does-not-work">When it does not work</h2>
-<table>
+<div class="scroll-x"><table>
 <thead>
 <tr>
 <th>Symptom</th>
@@ -264,20 +276,31 @@ real client over real HTTP.</p>
 <td>Raise the timeout in Settings</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 
-<nav class="toc" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#supported-providers">Supported providers</a></li><li class="toc-item toc-level-2"><a href="#a-local-model-for-fully-offline-use">A local model for fully offline use</a></li><li class="toc-item toc-level-3"><a href="#ollama">Ollama</a></li><li class="toc-item toc-level-3"><a href="#lm-studio">LM Studio</a></li><li class="toc-item toc-level-2"><a href="#suggested-settings">Suggested settings</a></li><li class="toc-item toc-level-2"><a href="#the-limits-on-the-assistant">The limits on the assistant</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-do">What it will do</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-not-do">What it will not do</a></li><li class="toc-item toc-level-3"><a href="#how-the-limit-is-enforced">How the limit is enforced</a></li><li class="toc-item toc-level-2"><a href="#what-is-sent-to-the-model">What is sent to the model</a></li><li class="toc-item toc-level-2"><a href="#when-it-does-not-work">When it does not work</a></li></ul></nav>
-    <footer class="page-foot">
-      <nav class="foot-nav" aria-label="Footer">
-        <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a>
-        <a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a>
-        <a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
-        <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
-      </nav>
-      <p class="muted-foot">GitHub Manager 1.4.0 &middot; portable Windows client</p>
-    </footer>
+<details class="toc-inline"><summary>On this page</summary><nav class="toc" aria-label="On this page"><ul><li class="toc-item toc-level-2"><a href="#supported-providers">Supported providers</a></li><li class="toc-item toc-level-2"><a href="#a-local-model-for-fully-offline-use">A local model for fully offline use</a></li><li class="toc-item toc-level-3"><a href="#ollama">Ollama</a></li><li class="toc-item toc-level-3"><a href="#lm-studio">LM Studio</a></li><li class="toc-item toc-level-2"><a href="#suggested-settings">Suggested settings</a></li><li class="toc-item toc-level-2"><a href="#the-limits-on-the-assistant">The limits on the assistant</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-do">What it will do</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-not-do">What it will not do</a></li><li class="toc-item toc-level-3"><a href="#how-the-limit-is-enforced">How the limit is enforced</a></li><li class="toc-item toc-level-2"><a href="#what-is-sent-to-the-model">What is sent to the model</a></li><li class="toc-item toc-level-2"><a href="#when-it-does-not-work">When it does not work</a></li></ul></nav></details>
   </main>
+
+  <nav class="toc toc-rail" aria-labelledby="toc-heading"><p class="toc-title" id="toc-heading">On this page</p><ul><li class="toc-item toc-level-2"><a href="#supported-providers">Supported providers</a></li><li class="toc-item toc-level-2"><a href="#a-local-model-for-fully-offline-use">A local model for fully offline use</a></li><li class="toc-item toc-level-3"><a href="#ollama">Ollama</a></li><li class="toc-item toc-level-3"><a href="#lm-studio">LM Studio</a></li><li class="toc-item toc-level-2"><a href="#suggested-settings">Suggested settings</a></li><li class="toc-item toc-level-2"><a href="#the-limits-on-the-assistant">The limits on the assistant</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-do">What it will do</a></li><li class="toc-item toc-level-3"><a href="#what-it-will-not-do">What it will not do</a></li><li class="toc-item toc-level-3"><a href="#how-the-limit-is-enforced">How the limit is enforced</a></li><li class="toc-item toc-level-2"><a href="#what-is-sent-to-the-model">What is sent to the model</a></li><li class="toc-item toc-level-2"><a href="#when-it-does-not-work">When it does not work</a></li></ul></nav>
 </div>
+
+<footer class="site-foot">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7.5A5.5 5.5 0 0 1 16 11.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/><path d="M21 18h-7.5A5.5 5.5 0 0 1 8 12.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/><circle cx="3" cy="6" r="2.6" fill="currentColor"/><circle cx="21" cy="12" r="2.6" fill="currentColor"/><circle cx="3" cy="18" r="2.6" fill="currentColor"/><path d="M12.6 3.2 16.8 12l-4.2 8.8L8.4 12z" fill="currentColor" opacity="0.92"/></svg>
+        <span>GitHub&nbsp;Manager</span>
+      </a>
+      <p>A portable GitHub client with an assistant that only works on GitHub.</p>
+    </div>
+    <div class="foot-col"><h4>Documentation</h4><a href="features.html">Features</a><a href="install.html">Getting started</a><a href="ai.html">AI</a><a href="faq.html">FAQ</a></div><div class="foot-col"><h4>Project</h4><a href="https://github.com/mrlurix/github-manager" target="_blank" rel="noopener noreferrer">Repository</a><a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://github.com/mrlurix/github-manager/issues" target="_blank" rel="noopener noreferrer">Report an issue</a><a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Licence</a></div>
+  </div>
+  <div class="foot-base">
+    <span>GitHub Manager 1.4.0</span>
+    <span>Windows &middot; MIT licence</span>
+    <span>No telemetry</span>
+  </div>
+</footer>
 
 <script src="assets/search.js"></script>
 <script src="assets/app.js"></script>

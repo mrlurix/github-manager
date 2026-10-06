@@ -1,9 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8b7cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <rect width="24" height="24" rx="6" fill="#8b7cff" stroke="none"/>
-  <g stroke="#ffffff" stroke-width="1.9">
-    <circle cx="8" cy="7.5" r="2.1"/>
-    <circle cx="8" cy="16.5" r="2.1"/>
-    <circle cx="16.5" cy="10" r="2.1"/>
-    <path d="M8 9.6v4.8M10 8h3.2a3.2 3.2 0 0 1 3.2 1.7"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- The mark is a commit graph: three nodes and the path between them. Drawn
+       with fills rather than strokes so it stays crisp at 16px. -->
+  <path d="M3 6h7.5A5.5 5.5 0 0 1 16 11.5v0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M21 18h-7.5A5.5 5.5 0 0 1 8 12.5v0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="3" cy="6" r="2.6" fill="currentColor"/>
+  <circle cx="21" cy="12" r="2.6" fill="currentColor"/>
+  <circle cx="3" cy="18" r="2.6" fill="currentColor"/>
+  <path d="M12.6 3.2 16.8 12l-4.2 8.8L8.4 12z" fill="currentColor" opacity="0.92"/>
 </svg>

@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "docs_src"
 OUT = ROOT / "docs"
 
+SITE_URL = "https://mrlurix.github.io/github-manager"
 REPO_URL = "https://github.com/mrlurix/github-manager"
 RELEASES_URL = f"{REPO_URL}/releases/latest"
 # "/releases/latest/download/<name>" follows whatever the newest tag is, so the
@@ -41,18 +42,22 @@ EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 #: a mismatch is cosmetic, but it is still wrong to show a stale version.
 APP_VERSION = "1.4.0"
 
-#: Ordered navigation. Each entry maps to ``docs_src/pages/<slug>.md``.
-#: Grouped so the sidebar reads as sections rather than one flat list, which is
-#: what makes a ten-item set scannable.
-NAV = [
-    ("index", "Home", "Start here"),
-    ("features", "Features", "What the app can do"),
-    ("install", "Getting started", None),
-    ("ai", "AI", "How the assistant works"),
-    ("security", "Security", None),
-    ("build", "Building from source", None),
-    ("faq", "FAQ", "Answers and troubleshooting"),
+#: Ordered navigation, grouped so the sidebar reads as sections rather than one
+#: flat list. Each caption introduces the group beneath it.
+#:
+#: Grouping is written out rather than inferred from a per-page blurb. Inferred
+#: grouping looks tidier and gets it wrong in a way nobody notices: a caption
+#: placed before the page that owns it describes the page above, and the last
+#: caption in the list is never emitted at all, because nothing follows it.
+NAV: list[tuple[str, list[tuple[str, str]]]] = [
+    ("", [("index", "Home"), ("features", "Features"), ("install", "Getting started")]),
+    ("How it works", [("ai", "AI"), ("security", "Security")]),
+    ("Reference", [("build", "Building from source"), ("faq", "FAQ")]),
 ]
+
+#: Flat view of :data:`NAV`, which is what the search index and the link checker
+#: want. Derived rather than maintained separately, so the two cannot disagree.
+PAGES: list[tuple[str, str]] = [entry for _caption, group in NAV for entry in group]
 
 #: Heading anchors per page, filled in during the build so the link checker
 #: knows which ``page.html#anchor`` targets actually exist.
@@ -160,12 +165,13 @@ _md.enable(["table", "strikethrough"])
 
 _slug_counts: dict[str, int] = {}
 
-#: Tags the documentation is allowed to use. The hero and card grid need div,
-#: span and their class attributes; everything else is ordinary prose markup.
+#: Tags the documentation is allowed to use. The hero, the mock-up window and the
+#: bento grid need div, span, section and their class attributes; everything else
+#: is ordinary prose markup.
 _ALLOWED_TAGS = frozenset(
     """a abbr b blockquote br caption cite code dd del div dl dt em figcaption figure h1
-    h2 h3 h4 h5 h6 hr i img ins kbd li mark ol p pre q s samp small span strong sub sup
-    summary details table tbody td tfoot th thead tr u ul var""".split()
+    h2 h3 h4 h5 h6 hr i img ins kbd li mark ol p pre q s samp section small span strong sub
+    sup summary details table tbody td tfoot th thead tr u ul var""".split()
 )
 _ALLOWED_ATTRS = frozenset(
     """href src alt title id class colspan rowspan scope align width height target rel
@@ -303,6 +309,7 @@ def render(markdown_text: str) -> tuple[str, list[str]]:
             headings.append((level, title, anchor))
 
     html = _md.renderer.render(tokens, _md.options, {})
+    html = _wrap_tables(html)
     # markdown-it escapes code blocks; external links get the usual treatment.
     html = re.sub(
         r'<a href="(https?://[^"]+)"',
@@ -313,6 +320,24 @@ def render(markdown_text: str) -> tuple[str, list[str]]:
 
 
 _TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _wrap_tables(html: str) -> str:
+    """Put every table inside a scroll container.
+
+    The usual shortcut is ``table { display: block; overflow-x: auto }``, and it
+    is wrong in a way that is easy to miss: the element stops being a table box,
+    so the rows are laid out in an anonymous table sized to their content rather
+    than to the element's width. The header row's background then stops at the
+    last column while the table's own border keeps running to the edge, which
+    reads as a panel that failed to paint.
+
+    Scrolling has to live on a wrapper, so one is added here rather than asked
+    of the markdown.
+    """
+    return html.replace("<table>", '<div class="scroll-x"><table>').replace(
+        "</table>", "</table></div>"
+    )
 
 
 def to_text(html: str) -> str:
@@ -328,6 +353,225 @@ def to_text(html: str) -> str:
 
 
 # -------------------------------------------------------------------- layout
+#: The brand mark, inline so it inherits colour and needs no second request. A
+#: commit graph: two nodes joined by one path, for a client that commits.
+MARK = (
+    '<path d="M3 6h7.5A5.5 5.5 0 0 1 16 11.5" stroke="currentColor" stroke-width="1.9" '
+    'stroke-linecap="round" fill="none"/>'
+    '<path d="M21 18h-7.5A5.5 5.5 0 0 1 8 12.5" stroke="currentColor" '
+    'stroke-width="1.9" stroke-linecap="round" fill="none"/>'
+    '<circle cx="3" cy="6" r="2.6" fill="currentColor"/>'
+    '<circle cx="21" cy="12" r="2.6" fill="currentColor"/>'
+    '<circle cx="3" cy="18" r="2.6" fill="currentColor"/>'
+    '<path d="M12.6 3.2 16.8 12l-4.2 8.8L8.4 12z" fill="currentColor" opacity="0.92"/>'
+)
+
+#: Footer columns. Every href here is checked by check_internal_links, so a typo
+#: fails the build rather than shipping a dead link.
+FOOT_COLUMNS = [
+    (
+        "Documentation",
+        [
+            ("Features", "features.html"),
+            ("Getting started", "install.html"),
+            ("AI", "ai.html"),
+            ("FAQ", "faq.html"),
+        ],
+    ),
+    (
+        "Project",
+        [
+            ("Repository", REPO_URL),
+            ("Releases", RELEASES_URL),
+            ("Report an issue", f"{REPO_URL}/issues"),
+            ("Licence", f"{REPO_URL}/blob/main/LICENSE"),
+        ],
+    ),
+]
+
+_EXTERNAL = (REPO_URL, RELEASES_URL, "https://github.com", "https://github.com/mrlurix")
+
+
+def _target(href: str) -> str:
+    """Open a link in a new tab only when it leaves the site.
+
+    An in-site link that opens a new tab loses the back button, which is a real
+    cost for no gain. An external one needs ``rel="noopener"`` so the destination
+    does not inherit ``window.opener``.
+    """
+    if href.startswith(_EXTERNAL):
+        return ' target="_blank" rel="noopener noreferrer"'
+    return ""
+
+
+def _head(title: str, description: str, canonical: str) -> str:
+    return f"""<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Pages are served straight from this folder with no header of our own, so the
+     policy travels with the document. It refuses inline script and event handler
+     attributes even if something slipped past the body sanitiser, which is what
+     turns a mistake in a markdown file into broken markup instead of a compromise.
+     The fonts are self-hosted, so nothing on this page reaches a third party:
+     'unsafe-inline' is there for style only, because markdown carries style
+     attributes. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>{escape(title)}</title>
+<meta name="description" content="{escape(description)}">
+<link rel="canonical" href="{escape(canonical)}">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:title" content="{escape(title)}">
+<meta property="og:description" content="{escape(description)}">
+<meta property="og:image" content="https://opengraph.githubassets.com/1/github-manager">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">"""
+
+
+def _header(slug: str) -> str:
+    """The bar. The landing page keeps the section links visible at every width;
+    a doc page hides them behind the menu button, because the rail already lists
+    the same destinations."""
+    wide = slug == "index"
+    top_links = (
+        "".join(
+            f'<a href="{key}.html">{escape(label)}</a>'
+            for key, label in PAGES
+            if key not in {"index", "build"}
+        )
+        if wide
+        else ""
+    )
+    return f"""<header class="site-header">
+  <div class="bar">
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{MARK}</svg>
+      <span>GitHub&nbsp;Manager</span>
+    </a>
+
+    <nav class="top-nav" aria-label="Sections">{top_links}</nav>
+
+    <div class="tools">
+      <button class="search-icon-button" id="searchToggle" aria-label="Search" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+        </svg>
+      </button>
+      <div class="search" role="search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="Search"
+               autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
+        <div class="results" id="searchResults" hidden></div>
+      </div>
+
+      <button class="icon-btn" id="themeToggle" aria-label="Switch between dark and light">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
+        </svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
+        </svg>
+      </button>
+
+      <a class="btn btn-primary" href="{EXE_URL}"{_target(EXE_URL)}>Download</a>
+      <a class="icon-btn" href="{REPO_URL}"{_target(REPO_URL)} aria-label="Repository on GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>"""
+
+
+def _footer() -> str:
+    columns = "".join(
+        '<div class="foot-col">'
+        f'<h4>{escape(heading)}</h4>'
+        + "".join(
+            f'<a href="{href}"{_target(href)}>{escape(label)}</a>'
+            for label, href in links
+        )
+        + "</div>"
+        for heading, links in FOOT_COLUMNS
+    )
+    return f"""<footer class="site-foot">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{MARK}</svg>
+        <span>GitHub&nbsp;Manager</span>
+      </a>
+      <p>A portable GitHub client with an assistant that only works on GitHub.</p>
+    </div>
+    {columns}
+  </div>
+  <div class="foot-base">
+    <span>GitHub Manager {APP_VERSION}</span>
+    <span>Windows &middot; MIT licence</span>
+    <span>No telemetry</span>
+  </div>
+</footer>"""
+
+
+def _rail(slug: str) -> str:
+    parts: list[str] = []
+    for caption, group in NAV:
+        if caption:
+            parts.append(f'<p class="rail-caption">{escape(caption)}</p>')
+        for key, label in group:
+            active = key == slug
+            parts.append(
+                f'<a class="rail-link{" is-active" if active else ""}" href="{key}.html"'
+                + (' aria-current="page"' if active else "")
+                + f">{escape(label)}</a>"
+            )
+    return f"""<aside class="rail" id="rail">
+    <nav class="rail-nav" aria-label="Documentation">{''.join(parts)}</nav>
+    <div class="rail-foot">
+      <a class="btn" href="{EXE_URL}"{_target(EXE_URL)}>Download {APP_VERSION}</a>
+      <p>63 MB &middot; no Python needed</p>
+    </div>
+  </aside>"""
+
+
+def _toc(toc: list[tuple[int, str, str]]) -> tuple[str, str]:
+    """The heading list, twice.
+
+    Once as a sticky right rail, once as a disclosure in the flow. The rail is
+    hidden below 1180px where there is no room for a third column, and a reader
+    on a narrow screen would otherwise lose the ability to jump at all.
+    """
+    if not toc:
+        return "", ""
+    items = "".join(
+        f'<li class="toc-item toc-level-{level}"><a href="#{anchor}">{escape(text)}</a></li>'
+        for level, text, anchor in toc
+    )
+    rail = (
+        '<nav class="toc toc-rail" aria-labelledby="toc-heading">'
+        '<p class="toc-title" id="toc-heading">On this page</p>'
+        f"<ul>{items}</ul></nav>"
+    )
+    inline = (
+        '<details class="toc-inline">'
+        "<summary>On this page</summary>"
+        f'<nav class="toc" aria-label="On this page"><ul>{items}</ul></nav>'
+        "</details>"
+    )
+    return rail, inline
+
+
 def layout(
     slug: str,
     title: str,
@@ -335,125 +579,78 @@ def layout(
     body: str,
     toc: list[tuple[int, str, str]],
 ) -> str:
-    nav_parts: list[str] = []
-    caption = None
-    for key, label, _blurb in NAV:
-        if _blurb:
-            if caption:
-                nav_parts.append(f'<p class="nav-caption">{escape(caption)}</p>')
-            caption = _blurb
-        active = key == slug
-        nav_parts.append(
-            f'<a class="nav-link{" is-active" if active else ""}" href="{key}.html"'
-            + (' aria-current="page"' if active else "")
-            + f">{escape(label)}</a>"
-        )
-    nav_html = "".join(nav_parts)
+    """Render a documentation page: rail, prose, right-hand heading list.
 
-    toc_html = ""
-    if toc:
-        items = "".join(
-            f'<li class="toc-item toc-level-{level}">'
-            f'<a href="#{anchor}">{escape(text)}</a></li>'
-            for level, text, anchor in toc
-        )
-        toc_html = (
-            f'<nav class="toc" aria-labelledby="toc-heading">'
-            f'<p class="toc-title" id="toc-heading">On this page</p>'
-            f"<ul>{items}</ul></nav>"
-        )
-
+    The title and description from the front matter become the page's ``h1``
+    and standfirst here rather than in the markdown. One source of truth: a
+    page cannot end up with a ``<title>`` that disagrees with its heading.
+    """
+    rail_toc, inline_toc = _toc(toc)
+    head_title = title if slug == "index" else f"{title} · GitHub Manager"
+    doc_head = (
+        f'<header class="doc-head"><h1>{escape(title)}</h1>'
+        f"<p>{escape(description)}</p></header>"
+        if title
+        else ""
+    )
     return f"""<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Pages are served straight from this folder with no header of our own, so the
-     policy travels with the document. It refuses inline script and event handler
-     attributes even if something slipped past the body sanitiser, which is what
-     turns a mistake in a markdown file into broken markup instead of a compromise.
-     'unsafe-inline' is needed for style only, because markdown carries style
-     attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://rsms.me; font-src 'self' https://rsms.me data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<title>{escape(title)} · GitHub Manager</title>
-<meta name="description" content="{escape(description)}">
-<link rel="preconnect" href="https://rsms.me/inter" crossorigin>
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-<link rel="stylesheet" href="assets/style.css">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="{escape(title)} · GitHub Manager">
-<meta property="og:description" content="{escape(description)}">
+{_head(head_title, description, f"{SITE_URL}/{slug}.html")}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<header class="site-header">
-  <div class="bar">
-    <button class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    </button>
-
-    <a class="brand" href="index.html">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="12" r="2.4"/>
-        <path d="M6 7.4v9.2M8.4 6.1h4.6a4.6 4.6 0 0 1 4.6 4.6v-.3M15.6 17.9h-4.6A4.6 4.6 0 0 1 6.4 13.3v-.3"/>
-      </svg>
-      <span>GitHub&nbsp;Manager</span>
-    </a>
-
-    <div class="search" role="search">
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
-      </svg>
-      <input id="searchInput" type="search" placeholder="Search the docs…"
-             autocomplete="off" aria-label="Search the documentation" aria-controls="searchResults">
-      <kbd class="hint" id="searchHint">Ctrl K</kbd>
-      <div class="results" id="searchResults" hidden></div>
-    </div>
-
-    <div class="actions">
-      <button class="icon-btn" id="themeToggle" aria-label="Switch theme">
-        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="4.5"/>
-          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
-        </svg>
-        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>
-        </svg>
-      </button>
-      <a class="icon-btn" href="{REPO_URL}" target="_blank" rel="noopener noreferrer" aria-label="Repository on GitHub">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.6 2.8 5.5 3.1 5.5 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>
-        </svg>
-      </a>
-    </div>
-  </div>
-</header>
+{_header(slug)}
 
 <div class="shell">
-  <aside class="sidebar" id="sidebar">
-    <nav class="nav">{nav_html}</nav>
-    <div class="sidebar-foot">
-      <a class="btn btn-primary" href="{EXE_URL}" target="_blank" rel="noopener noreferrer">Download {APP_VERSION}</a>
-      <p class="muted">One exe file · no Python needed</p>
-    </div>
-  </aside>
+{_rail(slug)}
 
   <main id="main" class="content">
+{doc_head}
 {body}
-{toc_html}
-    <footer class="page-foot">
-      <nav class="foot-nav" aria-label="Footer">
-        <a href="{RELEASES_URL}" target="_blank" rel="noopener noreferrer">Releases</a>
-        <a href="{REPO_URL}" target="_blank" rel="noopener noreferrer">Repository</a>
-        <a href="{REPO_URL}/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
-        <a href="{REPO_URL}/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>
-      </nav>
-      <p class="muted-foot">GitHub Manager {APP_VERSION} &middot; portable Windows client</p>
-    </footer>
+{inline_toc}
   </main>
+
+  {rail_toc}
 </div>
+
+{_footer()}
+
+<script src="assets/search.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
+"""
+
+
+def marketing_layout(
+    slug: str,
+    title: str,
+    description: str,
+    body: str,
+) -> str:
+    """Render the landing page: one centred column, no rails.
+
+    The grid field behind the hero is what carries the structure on a page that
+    has no sidebar to divide the width, so it is applied to the body here rather
+    than to a section the markdown would have to know about.
+    """
+    return f"""<!DOCTYPE html>
+<html lang="en" dir="ltr" class="gridfield">
+<head>
+{_head(title, description, f"{SITE_URL}/")}
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+{_header(slug)}
+
+<main id="main">
+{body}
+</main>
+
+{_footer()}
 
 <script src="assets/search.js"></script>
 <script src="assets/app.js"></script>
@@ -499,9 +696,17 @@ def check_internal_links() -> int:
     or renaming a slug and leaving the old hrefs behind.
     """
     broken: list[str] = []
-    pages = {slug for slug, _label, _blurb in NAV}
+    pages = {slug for slug, _label in PAGES}
     known_targets = {f"{slug}.html" for slug in pages} | {
         f"{slug}.html#{anchor}" for slug in pages for anchor in ANCHORS.get(slug, ())
+    }
+    # The self-hosted webfonts are linked with crossorigin, which adds no query
+    # string but does mean the checker has to know they exist.
+    assets = {
+        "assets/style.css",
+        "assets/favicon.svg",
+        "assets/fonts/Geist-Variable.woff2",
+        "assets/fonts/GeistMono-Variable.woff2",
     }
 
     for path in sorted(OUT.glob("*.html")):
@@ -509,7 +714,7 @@ def check_internal_links() -> int:
         for href in re.findall(r'href="([^"]+)"', text):
             if href.startswith(("http://", "https://", "mailto:", "#")):
                 continue
-            if href in known_targets or href in {"assets/style.css", "assets/favicon.svg"}:
+            if href in known_targets or href in assets:
                 continue
             broken.append(f"{path.name} -> {href}")
 
@@ -533,7 +738,7 @@ def build() -> int:
 
     index: list[dict[str, object]] = []
 
-    for slug, nav_title, _blurb in NAV:
+    for slug, nav_title in PAGES:
         source = pages_dir / f"{slug}.md"
         if not source.exists():
             print(f"  MISSING {source}")
@@ -549,7 +754,9 @@ def build() -> int:
         body_html, headings = render(body_md)
         ANCHORS[slug] = [anchor for _, _, anchor in headings]
 
-        # Index every heading as its own searchable entry.
+        # Index every heading as its own searchable entry. The landing page has no
+        # rail and no heading list of its own, but it still needs to be findable,
+        # so its own sections are indexed too.
         page_text = to_text(body_html)
         index.append(
             {
@@ -574,10 +781,16 @@ def build() -> int:
                 }
             )
 
-        (OUT / f"{slug}.html").write_text(
-            layout(slug, title, description, body_html, headings),
-            encoding="utf-8",
+        # The landing page is a different shape from the documentation, so it is
+        # rendered by a different template rather than carrying a class in the
+        # markdown that turns into a layout branch.
+        write = marketing_layout if slug == "index" else layout
+        arguments = (
+            (slug, title, description, body_html)
+            if slug == "index"
+            else (slug, title, description, body_html, headings)
         )
+        (OUT / f"{slug}.html").write_text(write(*arguments), encoding="utf-8")
         print(f"  built {slug}.html  ({len(body_html):,} bytes, {len(headings)} headings)")
 
     index.sort(key=lambda item: (str(item["page"]), str(item["title"])))

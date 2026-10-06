@@ -112,17 +112,30 @@ if (fs.existsSync(outDir)) {
     const remoteAssets = assets.match(/(?:src|href)\s*=\s*["']https?:[^"']*/gi) || [];
     check(name + " loads no remote script or image", remoteAssets.length === 0, remoteAssets.join(" | "));
 
-    const links = (html.match(/<link\b[^>]*>/gi) || []).join(" ");
-    const remoteLinks = (links.match(/href\s*=\s*["']https?:[^"']*/gi) || [])
-      .filter(h => !/rsms\.me/.test(h));
-    check(name + " loads no unexpected remote stylesheet", remoteLinks.length === 0, remoteLinks.join(" | "));
+    // Stylesheets specifically. A <link> also carries rel=canonical and rel=icon,
+    // and those legitimately point at absolute URLs, so scanning every link href
+    // would report the canonical URL as though it were a remote stylesheet.
+    const stylesheets = html.match(/<link\b[^>]*rel\s*=\s*["']?stylesheet["']?[^>]*>/gi) || [];
+    const remoteSheets = stylesheets
+      .map(l => (l.match(/href\s*=\s*["']https?:[^"']*/i) || [])[0])
+      .filter(Boolean);
+    check(name + " loads no remote stylesheet", remoteSheets.length === 0, remoteSheets.join(" | "));
+    check(name + " has a local stylesheet",
+      stylesheets.some(l => /href\s*=\s*["']assets\/style\.css["']/i.test(l)),
+      stylesheets.join(" | "));
 
-    // The policy has to actually permit the webfont it loads.
+    // The fonts are self-hosted, so the policy must allow exactly one source for
+    // them. A remote font host here would be a third party tracking readers.
     const csp = (html.match(/Content-Security-Policy" content="([^"]+)"/) || [])[1] || "";
-    check(name + " the policy allows the webfont host",
-      /style-src[^;]*https:\/\/rsms\.me/.test(csp), csp.slice(0, 80));
+    const fontSrc = ((csp.match(/font-src([^;]*)/) || [])[1] || "").trim();
+    check(name + " fonts are same-origin only",
+      fontSrc === "'self'", fontSrc);
+    check(name + " no remote host is allowed anywhere in the policy",
+      !/https?:\/\//.test(csp), csp);
     check(name + " the policy still forbids inline script",
       /script-src 'self'/.test(csp) && !/script-src[^;]*unsafe-inline/.test(csp));
+    check(name + " the policy still forbids framing and plugins",
+      /frame-ancestors 'none'/.test(csp) && /object-src 'none'/.test(csp), csp);
     // Outbound links must not hand the opener window to the destination.
     const anchors = html.match(/<a\b[^>]*href\s*=\s*["']https?:[^>]*>/gi) || [];
     const unsafe = anchors.filter(a => !/rel\s*=\s*["'][^"']*noopener/i.test(a));

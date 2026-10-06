@@ -60,7 +60,7 @@ Installing [UPX](https://github.com/upx/upx) shrinks it further.
 python tests/run_all_tests.py
 ```
 
-Ten suites, around 950 checks. None of them reach the GitHub API or need a token:
+Eleven suites, around 1100 checks. None of them reach the GitHub API or need a token:
 the only network traffic is to `tests/mock_github_server.py`, a real HTTP server
 running on your own machine.
 
@@ -76,16 +76,40 @@ running on your own machine.
 | `ai_flow_test.py` | Streaming, refinement, the commit path and the scope lock |
 | `layout_test.py` | Every page at several window sizes |
 | `responsive_test.py` | No overlapping or clipped controls from 900×560 to 2560×1440 |
+| `repo_admin_test.py` | The Repository page, driven against the mock server |
+
+### The site's own checks
+
+The site is verified separately, because a broken layout or a policy that stopped
+matching is not something any app test can see:
 
 ```bash
-node tools/verify_site_security.js     # check the generated site and its script
+node tools/verify_site_security.js   # the generated pages and the client script
+node tools/verify_search.js          # the search normaliser, ranking and snippets
+node tools/verify_layout.js          # the design, in a real browser
 ```
 
-`tests/security_test.py` covers the HTML sanitiser, URL allow-listing, path and
-ref validation, secret redaction, plaintext transport and the AI prompt fence.
-The site check covers the generated pages: each one must carry a
-Content-Security-Policy, load no remote asset, keep outbound links on
-`noopener`, and contain no inline script or event handler.
+`verify_site_security.js` covers the generated pages: each must carry a
+Content-Security-Policy with no remote host anywhere in it, load no remote
+stylesheet, script or image, keep outbound links on `noopener`, and contain no
+inline script or event handler. It also runs the real `safeHref` and `escapeHtml`
+out of `app.js` rather than stubs — a test against a stub only proves the stub is
+safe.
+
+`verify_layout.js` needs puppeteer, which it loads if it is there and skips the
+browser checks if it is not:
+
+```bash
+npm install --no-save puppeteer
+```
+
+It serves `docs/` and drives a real browser: no page may scroll sideways at any
+width from 380px to 1920px, the drawer must open and close, the search must
+return results even when the reader types faster than the index loads, the fonts
+must be the ones the stylesheet asks for, and table rows must fill their table.
+The last one is a regression test: `display:block` on a table — the usual way to
+make one scroll — stops the rows filling its width, and the header row's
+background then stops at the last column.
 
 ### The mock GitHub server
 
@@ -132,12 +156,24 @@ npm and no other build step is involved.
 | --- | --- |
 | `docs_src/pages/*.md` | the pages |
 | `docs_src/assets/style.css` | layout, light and dark themes |
+| `docs_src/assets/fonts/` | Geist and Geist Mono, served from here rather than a CDN |
 | `docs_src/assets/search.js` | the search engine |
-| `docs_src/assets/app.js` | theme, mobile menu, wiring up the search |
+| `docs_src/assets/app.js` | theme, drawer, search overlay |
 | `docs/` | the generated output, committed to the repository |
 
 The build also verifies that no page links to a page or heading anchor that does
 not exist.
+
+### Why the fonts are committed
+
+Geist is the typeface Vercel ships, and it is the reason the type on this site
+looks the way it does. It is committed rather than pulled from a font CDN because
+a CDN is a third party that learns who reads the page and from where, and the
+Content-Security-Policy can be written to allow exactly one origin for fonts. Two
+files, about 115 KB together.
+
+If they are ever replaced, keep `font-src 'self'` and nothing else. The security
+check fails if a remote host appears anywhere in the policy.
 
 ### Why the search is hand-written
 
