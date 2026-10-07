@@ -75,6 +75,7 @@
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>
 
 <div class="shell">
@@ -88,11 +89,11 @@
 
   <main id="main" class="content">
 <header class="doc-head"><h1>AI</h1><p>Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.</p></header>
-<p>Every AI feature in the app goes through one thin layer. That layer builds a
+<p data-reveal data-stagger="1">Every AI feature in the app goes through one thin layer. That layer builds a
 prompt, sends it, and hands back the answer. So you can swap in any
 OpenAI-compatible service and everything keeps working.</p>
-<h2 id="supported-providers">Supported providers</h2>
-<div class="scroll-x"><table>
+<h2 id="supported-providers" data-reveal>Supported providers</h2>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Provider</th>
@@ -138,32 +139,32 @@ OpenAI-compatible service and everything keeps working.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="a-local-model-for-fully-offline-use">A local model for fully offline use</h2>
-<p>If nothing should leave your machine, this is the way.</p>
-<h3 id="ollama">Ollama</h3>
-<pre><code class="language-bash">ollama pull llama3.1
+<h2 id="a-local-model-for-fully-offline-use" data-reveal>A local model for fully offline use</h2>
+<p data-reveal data-stagger="1">If nothing should leave your machine, this is the way.</p>
+<h3 id="ollama" data-reveal>Ollama</h3>
+<pre><code data-reveal data-stagger="1" class="language-bash">ollama pull llama3.1
 ollama pull qwen2.5
 </code></pre>
-<p>Then in the app:</p>
-<ol>
+<p data-reveal data-stagger="1">Then in the app:</p>
+<ol data-reveal data-stagger="1">
 <li>Set the provider to <strong>Ollama</strong></li>
 <li>Use the model name exactly as you pulled it, for example <code>llama3.1</code></li>
 <li>Leave the API key <strong>empty</strong></li>
 <li>Click <strong>Test connection</strong></li>
 </ol>
-<h3 id="lm-studio">LM Studio</h3>
-<ol>
+<h3 id="lm-studio" data-reveal>LM Studio</h3>
+<ol data-reveal data-stagger="1">
 <li>Download a model in LM Studio and load it</li>
 <li>Start the local server</li>
 <li>Set the provider to <strong>LM Studio</strong> and click <strong>Test connection</strong></li>
 </ol>
-<blockquote>
-<p>A local model still knows plenty of general things, but being scoped to
+<blockquote data-reveal data-stagger="1">
+<p data-reveal data-stagger="1">A local model still knows plenty of general things, but being scoped to
 GitHub usually makes it weaker than the large hosted ones. For structured work
 like writing a README it is entirely adequate.</p>
 </blockquote>
-<h2 id="suggested-settings">Suggested settings</h2>
-<div class="scroll-x"><table>
+<h2 id="suggested-settings" data-reveal>Suggested settings</h2>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Setting</th>
@@ -194,13 +195,13 @@ like writing a README it is entirely adequate.</p>
 </tr>
 </tbody>
 </table></div>
-<p>For structured output such as JSON, drop the temperature to 0.2–0.4 so results
+<p data-reveal data-stagger="1">For structured output such as JSON, drop the temperature to 0.2–0.4 so results
 stay consistent.</p>
-<h2 id="the-limits-on-the-assistant">The limits on the assistant</h2>
-<p>This is a feature, not a restriction the app could not overcome. The assistant is
+<h2 id="the-limits-on-the-assistant" data-reveal>The limits on the assistant</h2>
+<p data-reveal data-stagger="1">This is a feature, not a restriction the app could not overcome. The assistant is
 <strong>deliberately</strong> limited to GitHub.</p>
-<h3 id="what-it-will-do">What it will do</h3>
-<ul>
+<h3 id="what-it-will-do" data-reveal>What it will do</h3>
+<ul data-reveal data-stagger="1">
 <li>Write and improve READMEs, profile READMEs and documentation</li>
 <li>Repository settings, topics, visibility, releases and tags</li>
 <li>Issues and pull requests: drafting, triage, review replies</li>
@@ -208,32 +209,32 @@ stay consistent.</p>
 <li>GitHub Actions workflows, <code>.gitignore</code>, licences, security and tokens</li>
 <li>Read code and suggest a project structure</li>
 </ul>
-<h3 id="what-it-will-not-do">What it will not do</h3>
-<ul>
+<h3 id="what-it-will-not-do" data-reveal>What it will not do</h3>
+<ul data-reveal data-stagger="1">
 <li>Anything outside GitHub: recipes, medical advice, legal or financial questions, general tutoring</li>
 <li>Writing code for targets unrelated to a GitHub repository</li>
 <li>Working around GitHub's own limits</li>
 </ul>
-<h3 id="how-the-limit-is-enforced">How the limit is enforced</h3>
-<p>Three independent layers, one after another:</p>
-<ol>
+<h3 id="how-the-limit-is-enforced" data-reveal>How the limit is enforced</h3>
+<p data-reveal data-stagger="1">Three independent layers, one after another:</p>
+<ol data-reveal data-stagger="1">
 <li><strong>Classified before sending.</strong> The request is checked. If it is off-topic it
 never reaches the model, and you get an out-of-scope reply.</li>
 <li><strong>System prompt.</strong> An explicit allow and deny list travels with every request.</li>
 <li><strong>Output validated.</strong> The answer is checked too. If it strayed, it is
 replaced with the refusal message.</li>
 </ol>
-<p>The first layer also blunts <strong>prompt injection</strong>: if a README or an issue
+<p data-reveal data-stagger="1">The first layer also blunts <strong>prompt injection</strong>: if a README or an issue
 contains "ignore all previous instructions", that text arrives as content rather
 than as a command, and the repository context is always placed after the scope
 reminder.</p>
-<blockquote>
-<p>These layers are not an absolute guarantee; no text filter is. What they do is
+<blockquote data-reveal data-stagger="1">
+<p data-reveal data-stagger="1">These layers are not an absolute guarantee; no text filter is. What they do is
 make the failure unlikely and the consequences small.</p>
 </blockquote>
-<h2 id="what-is-sent-to-the-model">What is sent to the model</h2>
-<p>Only when you ask for it:</p>
-<ul>
+<h2 id="what-is-sent-to-the-model" data-reveal>What is sent to the model</h2>
+<p data-reveal data-stagger="1">Only when you ask for it:</p>
+<ul data-reveal data-stagger="1">
 <li>The repository name and description</li>
 <li>The file tree</li>
 <li>The languages used and the topics</li>
@@ -241,13 +242,13 @@ make the failure unlikely and the consequences small.</p>
 <li>A few key files, capped in size</li>
 <li>The issue or comment you are working on</li>
 </ul>
-<p><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or anything in
+<p data-reveal data-stagger="1"><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or anything in
 the <code>data</code> folder.</p>
-<p>The <code>app/core/</code> package deliberately imports nothing from Qt, which is what makes
+<p data-reveal data-stagger="1">The <code>app/core/</code> package deliberately imports nothing from Qt, which is what makes
 the logic testable on its own — and what lets the integration suite drive the
 real client over real HTTP.</p>
-<h2 id="when-it-does-not-work">When it does not work</h2>
-<div class="scroll-x"><table>
+<h2 id="when-it-does-not-work" data-reveal>When it does not work</h2>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Symptom</th>
@@ -303,6 +304,7 @@ real client over real HTTP.</p>
 </footer>
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

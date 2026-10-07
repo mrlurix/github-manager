@@ -6,20 +6,24 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 <div class="marketing">
 
 <div class="hero">
-  <p class="eyebrow"><b>v1.4.0</b> · Windows · one portable file</p>
-  <h1>GitHub, as a desktop app</h1>
-  <p class="lede">
+  <p class="eyebrow" data-reveal="scale"><b>v1.4.0</b> · Windows · one portable file</p>
+  <h1 data-reveal="scale">GitHub, as a desktop app</h1>
+  <p class="lede" data-reveal="scale">
     A single exe that does the work the website makes you do by hand — with an
     assistant that refuses anything outside GitHub before the request is sent.
   </p>
-  <div class="cta-row">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download for Windows</a>
-    <a class="btn" href="install.html">Getting started</a>
+  <div class="cta-row" data-reveal="scale" data-stagger="1">
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">
+      Download for Windows <span class="btn-arrow" aria-hidden="true"></span>
+    </a>
+    <a class="btn btn-solid" href="install.html">
+      Getting started <span class="btn-arrow" aria-hidden="true"></span>
+    </a>
   </div>
-  <p class="hero-note">63 MB · no installer · no Python</p>
+  <p class="hero-note" data-reveal="fade">63 MB · no installer · no Python</p>
 </div>
 
-<div class="shot">
+<div class="shot" data-reveal="scale">
   <div class="shot-bar">
     <span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span>
     <span class="shot-title">GitHub Manager — mrlurix / github-manager</span>
@@ -70,27 +74,27 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 
 <section class="section">
   <div class="bento">
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>README Studio</h3>
       <p>A README written from the real repository — its tree, its languages, its topics — refined on request and committed once you approve.</p>
     </div>
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>Repositories</h3>
       <p>Create, edit, archive, fork and star, with files attached at creation and removable afterwards.</p>
     </div>
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>Inside one</h3>
       <p>Browse the file tree, create branches, read tags, set collaborator permissions, inspect webhooks.</p>
     </div>
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>Issues &amp; PRs</h3>
       <p>Draft an issue, triage a whole queue at once, reply to review comments, close and reopen.</p>
     </div>
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>Releases</h3>
       <p>Raw commits turned into release notes, with Conventional Commit messages and branch names.</p>
     </div>
-    <div>
+    <div data-reveal data-stagger="1">
       <h3>Scoping</h3>
       <p>Off-topic requests are refused before they reach the model, not after the answer comes back.</p>
     </div>
@@ -98,7 +102,7 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 </section>
 
 <section class="section section-rule">
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <p class="eyebrow">How it works</p>
     <h2>Four steps, then you never touch the website again</h2>
     <p>
@@ -107,25 +111,25 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
     </p>
   </div>
   <div class="steps">
-    <div class="step">
+    <div class="step" data-reveal data-stagger="1">
       <div>
         <h3>Connect a token</h3>
         <p>A fine-grained personal access token. Encrypted with Windows DPAPI the moment you paste it, and readable by nothing but this app on your account.</p>
       </div>
     </div>
-    <div class="step">
+    <div class="step" data-reveal data-stagger="1">
       <div>
         <h3>Point it at a model</h3>
         <p>Any OpenAI-compatible endpoint — OpenAI, OpenRouter, Groq, Together, Ollama, LM Studio. A local model needs no key and the app works offline.</p>
       </div>
     </div>
-    <div class="step">
+    <div class="step" data-reveal data-stagger="1">
       <div>
         <h3>Ask for the work</h3>
         <p>Write a README, triage the issue queue, turn forty commits into release notes. The model sees the repository, not a guess about it.</p>
       </div>
     </div>
-    <div class="step">
+    <div class="step" data-reveal data-stagger="1">
       <div>
         <h3>Review, then commit</h3>
         <p>Every write shows you the file, the branch and the message first. Nothing lands on GitHub that you have not seen.</p>
@@ -135,7 +139,7 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 </section>
 
 <section class="section section-rule">
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <p class="eyebrow">The assistant's boundary</p>
     <h2>It will not answer anything that is not about GitHub</h2>
     <p>
@@ -145,18 +149,18 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
     </p>
   </div>
   <div class="bento">
-    <div>
-      <span class="bento-num">LAYER 01</span>
+    <div data-reveal data-stagger="1">
+      <span class="bento-num">Layer 01</span>
       <h3>Before the request</h3>
       <p>The prompt is classified on your machine. Off-topic and it is dropped there.</p>
     </div>
-    <div>
-      <span class="bento-num">LAYER 02</span>
+    <div data-reveal data-stagger="1">
+      <span class="bento-num">Layer 02</span>
       <h3>In the system prompt</h3>
       <p>The model is told the boundary in the same words every time, so it does not drift.</p>
     </div>
-    <div>
-      <span class="bento-num">LAYER 03</span>
+    <div data-reveal data-stagger="1">
+      <span class="bento-num">Layer 03</span>
       <h3>On the answer</h3>
       <p>What comes back is checked too. A refusal is shown as a refusal, not as a blank.</p>
     </div>
@@ -165,15 +169,27 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 
 <section class="section section-rule">
   <div class="facts">
-    <div class="fact"><b>63 MB</b><span>One file, no installer, no runtime</span></div>
-    <div class="fact"><b>10</b><span>Pages covering the whole of GitHub</span></div>
-    <div class="fact"><b>0</b><span>Telemetry, analytics or crash reporting</span></div>
-    <div class="fact"><b>2</b><span>Hosts it will ever talk to: GitHub and your model</span></div>
+    <div class="fact" data-reveal data-stagger="1">
+      <b data-count="63" data-count-suffix=" MB">63 MB</b>
+      <span>One file, no installer, no runtime</span>
+    </div>
+    <div class="fact" data-reveal data-stagger="1">
+      <b data-count="10">10</b>
+      <span>Pages covering the whole of GitHub</span>
+    </div>
+    <div class="fact" data-reveal data-stagger="1">
+      <b data-count="0">0</b>
+      <span>Telemetry, analytics or crash reporting</span>
+    </div>
+    <div class="fact" data-reveal data-stagger="1">
+      <b data-count="2">2</b>
+      <span>Hosts it will ever talk to: GitHub and your model</span>
+    </div>
   </div>
 </section>
 
 <section class="section section-rule">
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <p class="eyebrow">What it will not do</p>
     <h2>Said plainly, so you are not looking for it</h2>
     <p>
@@ -181,7 +197,7 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
       stated rather than discovered.
     </p>
   </div>
-  <div class="callout">
+  <div class="callout" data-reveal>
     <p>
       <span class="pill pill-ok">Scope enforced before sending</span>
       <span class="pill">Runs offline with a local model</span>
@@ -192,9 +208,13 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
       you added here would start firing at a server you do not control.
     </p>
   </div>
-  <div class="cta-row">
-    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">Download for Windows</a>
-    <a class="btn" href="features.html">Read the features</a>
+  <div class="cta-row" data-reveal>
+    <a class="btn btn-primary" href="https://github.com/mrlurix/github-manager/releases/latest">
+      Download for Windows <span class="btn-arrow" aria-hidden="true"></span>
+    </a>
+    <a class="btn btn-solid" href="features.html">
+      Read the features <span class="btn-arrow" aria-hidden="true"></span>
+    </a>
   </div>
 </section>
 

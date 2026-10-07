@@ -75,6 +75,7 @@
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>
 
 <div class="shell">
@@ -88,28 +89,28 @@
 
   <main id="main" class="content">
 <header class="doc-head"><h1>Getting started</h1><p>Download GitHub Manager, create a token, connect, and be writing READMEs in three minutes.</p></header>
-<h2 id="download">Download</h2>
-<p>Grab <code>GitHubManager.exe</code> from the
+<h2 id="download" data-reveal>Download</h2>
+<p data-reveal data-stagger="1">Grab <code>GitHubManager.exe</code> from the
 <a href="https://github.com/mrlurix/github-manager/releases/latest" target="_blank" rel="noopener noreferrer">&gt;releases page</a>.</p>
-<ul>
+<ul data-reveal data-stagger="1">
 <li>About 63 MB</li>
 <li>A single file, no installer</li>
 <li>Runs on 64-bit Windows</li>
 </ul>
-<p>Put it wherever you like — <code>C:\Tools</code>, a desktop folder, a USB stick. Nothing is
+<p data-reveal data-stagger="1">Put it wherever you like — <code>C:\Tools</code>, a desktop folder, a USB stick. Nothing is
 written to Program Files and no administrator rights are needed.</p>
-<blockquote>
-<p>The exe is unsigned, so SmartScreen may warn that the publisher is unknown.
+<blockquote data-reveal data-stagger="1">
+<p data-reveal data-stagger="1">The exe is unsigned, so SmartScreen may warn that the publisher is unknown.
 Choose <strong>More info → Run anyway</strong>. Every app without a commercial certificate
 gets this.</p>
 </blockquote>
-<h2 id="create-a-token">Create a token</h2>
-<p>The app needs a <strong>Personal Access Token</strong>.</p>
-<ol>
+<h2 id="create-a-token" data-reveal>Create a token</h2>
+<p data-reveal data-stagger="1">The app needs a <strong>Personal Access Token</strong>.</p>
+<ol data-reveal data-stagger="1">
 <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">&gt;github.com/settings/tokens</a></li>
 <li>Choose <strong>Generate new token → Fine-grained</strong></li>
 <li>Grant only what the app actually uses:
-<ul>
+<ul data-reveal data-stagger="1">
 <li><code>Contents: Read and write</code> — to commit READMEs and other files</li>
 <li><code>Issues: Read and write</code> — to work with issues</li>
 <li><code>Pull requests: Read and write</code> — to work with pull requests</li>
@@ -119,32 +120,32 @@ gets this.</p>
 <li>Restrict it to the repositories you actually want to touch</li>
 <li>Generate and copy it — <strong>it is shown only once</strong></li>
 </ol>
-<p>Classic tokens work too; they need the <code>repo</code> and <code>delete_repo</code> scopes. Skip
+<p data-reveal data-stagger="1">Classic tokens work too; they need the <code>repo</code> and <code>delete_repo</code> scopes. Skip
 <code>delete_repo</code> unless you intend to delete repositories — everything else works
 without it.</p>
-<h2 id="first-run">First run</h2>
-<ol>
+<h2 id="first-run" data-reveal>First run</h2>
+<ol data-reveal data-stagger="1">
 <li>Open the app</li>
 <li>Click <strong>Connect GitHub</strong></li>
 <li>Paste the token and confirm</li>
 </ol>
-<p>The token is encrypted with <strong>Windows DPAPI</strong> immediately and stored in the
+<p data-reveal data-stagger="1">The token is encrypted with <strong>Windows DPAPI</strong> immediately and stored in the
 <code>data</code> folder next to the executable. Another user on the same machine cannot
 decrypt it.</p>
-<p>If that folder is not writable — inside Program Files, say — the app falls back
+<p data-reveal data-stagger="1">If that folder is not writable — inside Program Files, say — the app falls back
 to your user data folder automatically.</p>
-<h2 id="configure-the-ai">Configure the AI</h2>
-<p>Next step is picking a provider:</p>
-<ol>
+<h2 id="configure-the-ai" data-reveal>Configure the AI</h2>
+<p data-reveal data-stagger="1">Next step is picking a provider:</p>
+<ol data-reveal data-stagger="1">
 <li>Open <strong>Settings → AI</strong></li>
 <li>Choose a provider</li>
 <li>Enter an API key if it is a cloud service</li>
 <li>Click <strong>Test connection</strong></li>
 </ol>
-<p>If you run a model locally, pick <code>Ollama</code> — <strong>no API key is needed</strong> and the
+<p data-reveal data-stagger="1">If you run a model locally, pick <code>Ollama</code> — <strong>no API key is needed</strong> and the
 whole app works offline.</p>
-<h2 id="where-to-start">Where to start</h2>
-<div class="scroll-x"><table>
+<h2 id="where-to-start" data-reveal>Where to start</h2>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>You want to…</th>
@@ -170,11 +171,11 @@ whole app works offline.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="updating">Updating</h2>
-<p>Download the new exe from the releases page and replace the old one. The <code>data</code>
+<h2 id="updating" data-reveal>Updating</h2>
+<p data-reveal data-stagger="1">Download the new exe from the releases page and replace the old one. The <code>data</code>
 folder is left alone, so your token and settings survive.</p>
-<h2 id="if-something-does-not-work">If something does not work</h2>
-<div class="scroll-x"><table>
+<h2 id="if-something-does-not-work" data-reveal>If something does not work</h2>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Symptom</th>
@@ -215,14 +216,14 @@ folder is left alone, so your token and settings survive.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="running-from-source">Running from source</h2>
-<p>To run or modify it yourself, see <a href="build.html" target="_blank" rel="noopener noreferrer">Building from source</a>.</p>
-<pre><code class="language-bash">git clone https://github.com/mrlurix/github-manager.git
+<h2 id="running-from-source" data-reveal>Running from source</h2>
+<p data-reveal data-stagger="1">To run or modify it yourself, see <a href="build.html" target="_blank" rel="noopener noreferrer">Building from source</a>.</p>
+<pre><code data-reveal data-stagger="1" class="language-bash">git clone https://github.com/mrlurix/github-manager.git
 cd github-manager
 pip install -r requirements.txt
 python main.py
 </code></pre>
-<p>On Windows you can just run <code>run.bat</code>.</p>
+<p data-reveal data-stagger="1">On Windows you can just run <code>run.bat</code>.</p>
 
 <details class="toc-inline"><summary>On this page</summary><nav class="toc" aria-label="On this page"><ul><li class="toc-item toc-level-2"><a href="#download">Download</a></li><li class="toc-item toc-level-2"><a href="#create-a-token">Create a token</a></li><li class="toc-item toc-level-2"><a href="#first-run">First run</a></li><li class="toc-item toc-level-2"><a href="#configure-the-ai">Configure the AI</a></li><li class="toc-item toc-level-2"><a href="#where-to-start">Where to start</a></li><li class="toc-item toc-level-2"><a href="#updating">Updating</a></li><li class="toc-item toc-level-2"><a href="#if-something-does-not-work">If something does not work</a></li><li class="toc-item toc-level-2"><a href="#running-from-source">Running from source</a></li></ul></nav></details>
   </main>
@@ -249,6 +250,7 @@ python main.py
 </footer>
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

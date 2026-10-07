@@ -180,6 +180,15 @@ _ALLOWED_ATTRS = frozenset(
 #: ``style`` is deliberately absent. CSS can fetch a URL and report where the
 #: reader is, and nothing in these pages needs an inline declaration - present it
 #: with an extra class in assets/style.css instead.
+#:
+#: ``data-*`` is a different case. The attribute is inert - it cannot fetch, and
+#: nothing executes from it - but it is how the motion script learns what to
+#: animate without a class per effect. So it is allowed by name rather than by
+#: prefix: a blanket data-* rule would accept data-anything, which is the habit
+#: that turns a tidy exception into an open door later.
+_ALLOWED_DATA = frozenset(
+    {"data-reveal", "data-stagger", "data-count", "data-count-suffix"}
+)
 #: Tags whose content goes with them.
 _DROP_CONTENT = frozenset(
     "script style iframe object embed applet form svg math frame frameset template noscript".split()
@@ -221,6 +230,20 @@ class _BodySanitiser(HTMLParser):
         for raw_name, raw_value in attrs:
             name = (raw_name or "").lower()
             value = raw_value or ""
+            if name in _ALLOWED_DATA:
+                # Only a short value from a known character set. data-stagger
+                # carries an index, data-reveal a variant, data-count a number
+                # and its suffix; none of them needs to carry prose.
+                #
+                # An empty value is a boolean attribute and is written bare.
+                # markdown-it renders attrSet(name, "") as `name=""`, and a
+                # pattern that demands at least one character would drop the
+                # attribute that arms every reveal on the page.
+                if value == "":
+                    parts.append(f" {name}")
+                elif re.fullmatch(r"[A-Za-z0-9 .%-]{1,24}", value):
+                    parts.append(f' {name}="{escape(value, quote=True)}"')
+                continue
             if name.startswith("on") or name not in _ALLOWED_ATTRS:
                 continue
             if name == "href" and not _safe_href(value):
@@ -288,25 +311,58 @@ def sanitize_body(html: str) -> str:
     return parser.result()
 
 
-def render(markdown_text: str) -> tuple[str, list[str]]:
-    """Render markdown, adding ids to headings. Returns html and the TOC."""
+#: Token types that open a top-level block and so can carry a reveal. Marking
+#: them here rather than rewriting the rendered HTML is exact: a regex over
+#: generated markup cannot tell an opening tag from a closing one, and the first
+#: attempt at this nested a <table> inside a <table>.
+_REVEAL_TOKENS = frozenset(
+    {"paragraph_open", "bullet_list_open", "ordered_list_open",
+     "blockquote_open", "fence", "table_open"}
+)
+
+
+def render(markdown_text: str, reveal: bool = False) -> tuple[str, list[str]]:
+    """Render markdown, adding ids to headings. Returns html and the TOC.
+
+    ``reveal`` marks the top-level blocks so motion.js can bring them in as they
+    are scrolled to. It is off for the landing page, which marks its own blocks
+    because its layout is a set of hand-built divs rather than prose.
+    """
     _slug_counts.clear()
     tokens = _md.parse(markdown_text)
     headings: list[tuple[int, str, str]] = []
 
-    for token in tokens:
-        if token.type != "heading_open":
+    for index, token in enumerate(tokens):
+        if token.type == "heading_open":
+            inline = tokens[index + 1]
+            title = inline.content.strip()
+            level = int(token.tag[1])
+            base = slugify(title)
+            _slug_counts[base] = _slug_counts.get(base, 0) + 1
+            anchor = base if _slug_counts[base] == 1 else f"{base}-{_slug_counts[base]}"
+            token.attrSet("id", anchor)
+            if reveal:
+                # The heading leads; the blocks beneath it follow in a stagger.
+                token.attrSet("data-reveal", "")
+            if level in (2, 3):
+                headings.append((level, title, anchor))
             continue
-        index = tokens.index(token)
-        inline = tokens[index + 1]
-        title = inline.content.strip()
-        level = int(token.tag[1])
-        base = slugify(title)
-        _slug_counts[base] = _slug_counts.get(base, 0) + 1
-        anchor = base if _slug_counts[base] == 1 else f"{base}-{_slug_counts[base]}"
-        token.attrSet("id", anchor)
-        if level in (2, 3):
-            headings.append((level, title, anchor))
+
+        if reveal and token.type in _REVEAL_TOKENS:
+            # Only a direct child of the document. A nested paragraph inside a
+            # blockquote or a list item is not its own block, and animating it
+            # would mean the parent and its child arriving independently.
+            depth = 0
+            for previous in tokens[:index][::-1]:
+                if previous.nesting == -1:
+                    depth += 1
+                elif previous.nesting == 1:
+                    if depth == 0:
+                        break
+                    depth -= 1
+            if depth == 0:
+                token.attrSet("data-reveal", "")
+                token.attrSet("data-stagger", "1")
 
     html = _md.renderer.render(tokens, _md.options, {})
     html = _wrap_tables(html)
@@ -322,6 +378,9 @@ def render(markdown_text: str) -> tuple[str, list[str]]:
 _TAG_RE = re.compile(r"<[^>]+>")
 
 
+_TABLE_OPEN = re.compile(r"<table(?=[\s>])")
+
+
 def _wrap_tables(html: str) -> str:
     """Put every table inside a scroll container.
 
@@ -333,9 +392,13 @@ def _wrap_tables(html: str) -> str:
     reads as a panel that failed to paint.
 
     Scrolling has to live on a wrapper, so one is added here rather than asked
-    of the markdown.
+    of the markdown. The opening tag is matched with a lookahead rather than
+    literally: a table that already carries attributes renders as
+    ``<table data-stagger="1">``, and a literal search for ``<table>`` silently
+    skips every one of those and leaves the page with no scroll container at
+    all.
     """
-    return html.replace("<table>", '<div class="scroll-x"><table>').replace(
+    return _TABLE_OPEN.sub('<div class="scroll-x"><table', html).replace(
         "</table>", "</table></div>"
     )
 
@@ -491,6 +554,7 @@ def _header(slug: str) -> str:
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>"""
 
 
@@ -618,6 +682,7 @@ def layout(
 {_footer()}
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
@@ -653,6 +718,7 @@ def marketing_layout(
 {_footer()}
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
@@ -751,7 +817,7 @@ def build() -> int:
                 "render as page content."
             )
         title = title or nav_title
-        body_html, headings = render(body_md)
+        body_html, headings = render(body_md, reveal=slug != "index")
         ANCHORS[slug] = [anchor for _, _, anchor in headings]
 
         # Index every heading as its own searchable entry. The landing page has no
@@ -810,18 +876,27 @@ def _section_html(body_html: str, anchor: str) -> str:
     would leave every parent section empty whenever it is immediately followed
     by a subheading - which is most of the FAQ page - and a search hit would
     then show a title with a blank excerpt.
+
+    The attribute list is matched loosely rather than as ``id`` first. Adding one
+    attribute to a heading - which is exactly what marking it for a reveal does
+    - otherwise stops this matching, and the symptom is not an error: every
+    section silently indexes as empty and search returns titles with blank
+    excerpts. Every heading gets the same shape, so one pattern covers them all.
     """
-    opening = re.search(
-        rf'<h([23]) id="{re.escape(anchor)}"[^>]*>.*?</h\1>',
-        body_html,
-        re.DOTALL,
-    )
+    heading = re.compile(r'<h([23])((?: [^>]*)?) id="([^"]*)"[^>]*>.*?</h\1>', re.DOTALL)
+    any_heading = re.compile(r'<h([23])(?: [^>]*)? id="[^"]*"')
+
+    opening = None
+    for match in heading.finditer(body_html):
+        if match.group(3) == anchor:
+            opening = match
+            break
     if opening is None:
         return ""
     level = int(opening.group(1))
     rest = body_html[opening.end() :]
     end = len(rest)
-    for tag in re.finditer(r'<h([23]) id="[^"]*"', rest):
+    for tag in any_heading.finditer(rest):
         if int(tag.group(1)) <= level:
             end = tag.start()
             break

@@ -75,6 +75,7 @@
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>
 
 <div class="shell">
@@ -88,83 +89,83 @@
 
   <main id="main" class="content">
 <header class="doc-head"><h1>FAQ</h1><p>Common questions about tokens, privacy, the app&#x27;s limits and troubleshooting.</p></header>
-<h2 id="tokens-and-access">Tokens and access</h2>
-<h3 id="why-a-token-rather-than-signing-in">Why a token rather than signing in?</h3>
-<p>The app deliberately does not use OAuth. OAuth needs a registered client and a
+<h2 id="tokens-and-access" data-reveal>Tokens and access</h2>
+<h3 id="why-a-token-rather-than-signing-in" data-reveal>Why a token rather than signing in?</h3>
+<p data-reveal data-stagger="1">The app deliberately does not use OAuth. OAuth needs a registered client and a
 browser round trip, which does not fit "a single portable exe". A Personal
 Access Token is simpler and more transparent: you decide what it can do, and
 when to revoke it.</p>
-<h3 id="does-the-app-phone-anywhere-unexpected">Does the app phone anywhere unexpected?</h3>
-<p>Only two places, both configurable in Settings:</p>
-<ul>
+<h3 id="does-the-app-phone-anywhere-unexpected" data-reveal>Does the app phone anywhere unexpected?</h3>
+<p data-reveal data-stagger="1">Only two places, both configurable in Settings:</p>
+<ul data-reveal data-stagger="1">
 <li>The GitHub API — <code>api.github.com</code></li>
 <li>Whichever AI provider you chose</li>
 </ul>
-<p>If you pick a local model, traffic stays between your machine and <code>localhost</code>.</p>
-<h3 id="what-if-my-token-leaks">What if my token leaks?</h3>
-<p>Delete it on <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">&gt;github.com/settings/tokens</a>.
+<p data-reveal data-stagger="1">If you pick a local model, traffic stays between your machine and <code>localhost</code>.</p>
+<h3 id="what-if-my-token-leaks" data-reveal>What if my token leaks?</h3>
+<p data-reveal data-stagger="1">Delete it on <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">&gt;github.com/settings/tokens</a>.
 It stops working immediately and the app stops using it.</p>
-<h2 id="privacy">Privacy</h2>
-<h3 id="where-does-my-repository-content-go">Where does my repository content go?</h3>
-<p>Only where you send it. When you ask the AI for something, the file tree and a
+<h2 id="privacy" data-reveal>Privacy</h2>
+<h3 id="where-does-my-repository-content-go" data-reveal>Where does my repository content go?</h3>
+<p data-reveal data-stagger="1">Only where you send it. When you ask the AI for something, the file tree and a
 few key files are sent to the model — but that only happens when you press the
 button, never automatically.</p>
-<h3 id="does-github-store-my-access">Does GitHub store my access?</h3>
-<p>Not remotely, in fact: your token is stored only on your own machine, encrypted.
+<h3 id="does-github-store-my-access" data-reveal>Does GitHub store my access?</h3>
+<p data-reveal data-stagger="1">Not remotely, in fact: your token is stored only on your own machine, encrypted.
 There is no server in the middle. This app talks to GitHub, not to anyone else.</p>
-<h3 id="what-does-the-app-store">What does the app store?</h3>
-<pre><code class="language-text">data/
+<h3 id="what-does-the-app-store" data-reveal>What does the app store?</h3>
+<pre><code data-reveal data-stagger="1" class="language-text">data/
   settings.json     appearance and AI settings
   secrets.json      token and API key, encrypted with DPAPI
 </code></pre>
-<p>That is all. No logs, no analytics, no crash reporting.</p>
-<h3 id="can-i-keep-the-data-folder-on-a-usb-stick">Can I keep the data folder on a USB stick?</h3>
-<p>Yes — that is exactly what it is designed for. The <code>data</code> folder stays next to
+<p data-reveal data-stagger="1">That is all. No logs, no analytics, no crash reporting.</p>
+<h3 id="can-i-keep-the-data-folder-on-a-usb-stick" data-reveal>Can I keep the data folder on a USB stick?</h3>
+<p data-reveal data-stagger="1">Yes — that is exactly what it is designed for. The <code>data</code> folder stays next to
 the executable and travels with it.</p>
-<h2 id="limits">Limits</h2>
-<h3 id="why-is-there-no-github-enterprise-setting">Why is there no GitHub Enterprise setting?</h3>
-<p>The client can be pointed at a different API root and the tests cover that, but
+<h2 id="limits" data-reveal>Limits</h2>
+<h3 id="why-is-there-no-github-enterprise-setting" data-reveal>Why is there no GitHub Enterprise setting?</h3>
+<p data-reveal data-stagger="1">The client can be pointed at a different API root and the tests cover that, but
 there is no field for it in the UI yet. It is a small change if you need it.</p>
-<h3 id="why-no-graphs">Why no graphs?</h3>
-<p>GitHub traffic analytics live behind a separate account, and they have nothing to
+<h3 id="why-no-graphs" data-reveal>Why no graphs?</h3>
+<p data-reveal data-stagger="1">GitHub traffic analytics live behind a separate account, and they have nothing to
 do with the core workflow. Deliberately left out.</p>
-<h3 id="can-it-create-api-tokens-for-me">Can it create API tokens for me?</h3>
-<p>No. Creating one needs two-factor re-authentication in a browser, so the app
+<h3 id="can-it-create-api-tokens-for-me" data-reveal>Can it create API tokens for me?</h3>
+<p data-reveal data-stagger="1">No. Creating one needs two-factor re-authentication in a browser, so the app
 sends you to the token page instead of pretending it can do it.</p>
-<h3 id="does-it-work-offline">Does it work offline?</h3>
-<p>Only with a local model. The GitHub side needs a network because nothing is
+<h3 id="does-it-work-offline" data-reveal>Does it work offline?</h3>
+<p data-reveal data-stagger="1">Only with a local model. The GitHub side needs a network because nothing is
 cached — and that is on purpose, so you never see a stale view of a repository.</p>
-<h3 id="how-many-repositories-can-it-see">How many repositories can it see?</h3>
-<p>Up to 600, fetched page by page. With more than that you will see part of the
+<h3 id="how-many-repositories-can-it-see" data-reveal>How many repositories can it see?</h3>
+<p data-reveal data-stagger="1">Up to 600, fetched page by page. With more than that you will see part of the
 list.</p>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="the-ai-buttons-are-greyed-out">The AI buttons are greyed out</h3>
-<p>The AI provider is not configured. Go to <strong>Settings → AI</strong> and pick a provider.
+<h2 id="troubleshooting" data-reveal>Troubleshooting</h2>
+<h3 id="the-ai-buttons-are-greyed-out" data-reveal>The AI buttons are greyed out</h3>
+<p data-reveal data-stagger="1">The AI provider is not configured. Go to <strong>Settings → AI</strong> and pick a provider.
 Ollama and LM Studio need no key — just the model, then <strong>Test connection</strong>.</p>
-<h3 id="the-readme-comes-back-empty">The README comes back empty</h3>
-<p>Expected if the repository has no README yet. Use <strong>Generate README</strong> to create
+<h3 id="the-readme-comes-back-empty" data-reveal>The README comes back empty</h3>
+<p data-reveal data-stagger="1">Expected if the repository has no README yet. Use <strong>Generate README</strong> to create
 one, or <strong>Load existing</strong> to check the path is right.</p>
-<h3 id="i-got-a-403-rate-limit-error">I got a 403 rate limit error</h3>
-<p>Your hourly GitHub quota is spent. The app tells you roughly when it resets. It
+<h3 id="i-got-a-403-rate-limit-error" data-reveal>I got a 403 rate limit error</h3>
+<p data-reveal data-stagger="1">Your hourly GitHub quota is spent. The app tells you roughly when it resets. It
 deliberately does not retry, because waiting a few seconds cannot help and would
 only freeze the interface.</p>
-<h3 id="the-interface-looks-wrong">The interface looks wrong</h3>
-<p>Set Windows display scaling to 100%, or nudge <strong>Settings → UI scale</strong> up or down.</p>
-<h3 id="nothing-happens-after-i-press-commit">Nothing happens after I press commit</h3>
-<p>The request is probably still running. A GitHub call can take a while. If it
+<h3 id="the-interface-looks-wrong" data-reveal>The interface looks wrong</h3>
+<p data-reveal data-stagger="1">Set Windows display scaling to 100%, or nudge <strong>Settings → UI scale</strong> up or down.</p>
+<h3 id="nothing-happens-after-i-press-commit" data-reveal>Nothing happens after I press commit</h3>
+<p data-reveal data-stagger="1">The request is probably still running. A GitHub call can take a while. If it
 fails you get a message at the bottom of the page.</p>
-<h2 id="contributing">Contributing</h2>
-<p>The repository is open. If you find a problem or a missing feature:</p>
-<ol>
+<h2 id="contributing" data-reveal>Contributing</h2>
+<p data-reveal data-stagger="1">The repository is open. If you find a problem or a missing feature:</p>
+<ol data-reveal data-stagger="1">
 <li>Open an issue</li>
 <li>Send a pull request if you like</li>
 </ol>
-<p>Run the tests before you push:</p>
-<pre><code class="language-bash">python tests/run_all_tests.py
+<p data-reveal data-stagger="1">Run the tests before you push:</p>
+<pre><code data-reveal data-stagger="1" class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>All nine suites should be green.</p>
-<h2 id="licence">Licence</h2>
-<p>MIT. See <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">&gt;LICENSE</a>
+<p data-reveal data-stagger="1">All nine suites should be green.</p>
+<h2 id="licence" data-reveal>Licence</h2>
+<p data-reveal data-stagger="1">MIT. See <a href="https://github.com/mrlurix/github-manager/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">&gt;LICENSE</a>
 in the repository.</p>
 
 <details class="toc-inline"><summary>On this page</summary><nav class="toc" aria-label="On this page"><ul><li class="toc-item toc-level-2"><a href="#tokens-and-access">Tokens and access</a></li><li class="toc-item toc-level-3"><a href="#why-a-token-rather-than-signing-in">Why a token rather than signing in?</a></li><li class="toc-item toc-level-3"><a href="#does-the-app-phone-anywhere-unexpected">Does the app phone anywhere unexpected?</a></li><li class="toc-item toc-level-3"><a href="#what-if-my-token-leaks">What if my token leaks?</a></li><li class="toc-item toc-level-2"><a href="#privacy">Privacy</a></li><li class="toc-item toc-level-3"><a href="#where-does-my-repository-content-go">Where does my repository content go?</a></li><li class="toc-item toc-level-3"><a href="#does-github-store-my-access">Does GitHub store my access?</a></li><li class="toc-item toc-level-3"><a href="#what-does-the-app-store">What does the app store?</a></li><li class="toc-item toc-level-3"><a href="#can-i-keep-the-data-folder-on-a-usb-stick">Can I keep the data folder on a USB stick?</a></li><li class="toc-item toc-level-2"><a href="#limits">Limits</a></li><li class="toc-item toc-level-3"><a href="#why-is-there-no-github-enterprise-setting">Why is there no GitHub Enterprise setting?</a></li><li class="toc-item toc-level-3"><a href="#why-no-graphs">Why no graphs?</a></li><li class="toc-item toc-level-3"><a href="#can-it-create-api-tokens-for-me">Can it create API tokens for me?</a></li><li class="toc-item toc-level-3"><a href="#does-it-work-offline">Does it work offline?</a></li><li class="toc-item toc-level-3"><a href="#how-many-repositories-can-it-see">How many repositories can it see?</a></li><li class="toc-item toc-level-2"><a href="#troubleshooting">Troubleshooting</a></li><li class="toc-item toc-level-3"><a href="#the-ai-buttons-are-greyed-out">The AI buttons are greyed out</a></li><li class="toc-item toc-level-3"><a href="#the-readme-comes-back-empty">The README comes back empty</a></li><li class="toc-item toc-level-3"><a href="#i-got-a-403-rate-limit-error">I got a 403 rate limit error</a></li><li class="toc-item toc-level-3"><a href="#the-interface-looks-wrong">The interface looks wrong</a></li><li class="toc-item toc-level-3"><a href="#nothing-happens-after-i-press-commit">Nothing happens after I press commit</a></li><li class="toc-item toc-level-2"><a href="#contributing">Contributing</a></li><li class="toc-item toc-level-2"><a href="#licence">Licence</a></li></ul></nav></details>
@@ -192,6 +193,7 @@ in the repository.</p>
 </footer>
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

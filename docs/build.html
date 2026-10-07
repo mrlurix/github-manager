@@ -75,6 +75,7 @@
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>
 
 <div class="shell">
@@ -88,15 +89,15 @@
 
   <main id="main" class="content">
 <header class="doc-head"><h1>Building from source</h1><p>Run the app from source, run the tests, build the exe and build this documentation site.</p></header>
-<h2 id="running-from-source">Running from source</h2>
-<pre><code class="language-bash">git clone https://github.com/mrlurix/github-manager.git
+<h2 id="running-from-source" data-reveal>Running from source</h2>
+<pre><code data-reveal data-stagger="1" class="language-bash">git clone https://github.com/mrlurix/github-manager.git
 cd github-manager
 pip install -r requirements.txt
 python main.py
 </code></pre>
-<p>On Windows you can double-click <code>run.bat</code>.</p>
-<h3 id="requirements">Requirements</h3>
-<div class="scroll-x"><table>
+<p data-reveal data-stagger="1">On Windows you can double-click <code>run.bat</code>.</p>
+<h3 id="requirements" data-reveal>Requirements</h3>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th></th>
@@ -118,14 +119,14 @@ python main.py
 </tr>
 </tbody>
 </table></div>
-<h2 id="building-the-portable-exe">Building the portable exe</h2>
-<pre><code class="language-bash">python build.py --clean
+<h2 id="building-the-portable-exe" data-reveal>Building the portable exe</h2>
+<pre><code data-reveal data-stagger="1" class="language-bash">python build.py --clean
 </code></pre>
-<p>Or on Windows, run <code>build.bat</code>.</p>
-<p>The result is a single file at <code>dist/GitHubManager.exe</code>, about 63 MB, with no
+<p data-reveal data-stagger="1">Or on Windows, run <code>build.bat</code>.</p>
+<p data-reveal data-stagger="1">The result is a single file at <code>dist/GitHubManager.exe</code>, about 63 MB, with no
 dependency on Python. Copy it anywhere.</p>
-<h3 id="options">Options</h3>
-<div class="scroll-x"><table>
+<h3 id="options" data-reveal>Options</h3>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Command</th>
@@ -147,24 +148,24 @@ dependency on Python. Copy it anywhere.</p>
 </tr>
 </tbody>
 </table></div>
-<h3 id="what-the-build-script-does">What the build script does</h3>
-<ul>
+<h3 id="what-the-build-script-does" data-reveal>What the build script does</h3>
+<ul data-reveal data-stagger="1">
 <li>Renders the <code>.ico</code> at build time</li>
 <li>Writes the Windows version resource</li>
 <li>Generates the PyInstaller spec itself</li>
 <li><strong>Checks its own output</strong> — if a folder build slips through instead of a single
 file, or the size is implausible, the build is reported as failed</li>
 </ul>
-<p>That last check exists because getting it wrong produces an exe that fails at
+<p data-reveal data-stagger="1">That last check exists because getting it wrong produces an exe that fails at
 launch with <code>Failed to load Python DLL</code> and no clue at build time.</p>
-<p>Installing <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">&gt;UPX</a> shrinks it further.</p>
-<h2 id="running-the-tests">Running the tests</h2>
-<pre><code class="language-bash">python tests/run_all_tests.py
+<p data-reveal data-stagger="1">Installing <a href="https://github.com/upx/upx" target="_blank" rel="noopener noreferrer">&gt;UPX</a> shrinks it further.</p>
+<h2 id="running-the-tests" data-reveal>Running the tests</h2>
+<pre><code data-reveal data-stagger="1" class="language-bash">python tests/run_all_tests.py
 </code></pre>
-<p>Eleven suites, around 1100 checks. None of them reach the GitHub API or need a token:
+<p data-reveal data-stagger="1">Eleven suites, around 1100 checks. None of them reach the GitHub API or need a token:
 the only network traffic is to <code>tests/mock_github_server.py</code>, a real HTTP server
 running on your own machine.</p>
-<div class="scroll-x"><table>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Suite</th>
@@ -218,61 +219,61 @@ running on your own machine.</p>
 </tr>
 </tbody>
 </table></div>
-<h3 id="the-sites-own-checks">The site's own checks</h3>
-<p>The site is verified separately, because a broken layout or a policy that stopped
+<h3 id="the-sites-own-checks" data-reveal>The site's own checks</h3>
+<p data-reveal data-stagger="1">The site is verified separately, because a broken layout or a policy that stopped
 matching is not something any app test can see:</p>
-<pre><code class="language-bash">node tools/verify_site_security.js   # the generated pages and the client script
+<pre><code data-reveal data-stagger="1" class="language-bash">node tools/verify_site_security.js   # the generated pages and the client script
 node tools/verify_search.js          # the search normaliser, ranking and snippets
 node tools/verify_layout.js          # the design, in a real browser
 </code></pre>
-<p><code>verify_site_security.js</code> covers the generated pages: each must carry a
+<p data-reveal data-stagger="1"><code>verify_site_security.js</code> covers the generated pages: each must carry a
 Content-Security-Policy with no remote host anywhere in it, load no remote
 stylesheet, script or image, keep outbound links on <code>noopener</code>, and contain no
 inline script or event handler. It also runs the real <code>safeHref</code> and <code>escapeHtml</code>
 out of <code>app.js</code> rather than stubs — a test against a stub only proves the stub is
 safe.</p>
-<p><code>verify_layout.js</code> needs puppeteer, which it loads if it is there and skips the
+<p data-reveal data-stagger="1"><code>verify_layout.js</code> needs puppeteer, which it loads if it is there and skips the
 browser checks if it is not:</p>
-<pre><code class="language-bash">npm install --no-save puppeteer
+<pre><code data-reveal data-stagger="1" class="language-bash">npm install --no-save puppeteer
 </code></pre>
-<p>It serves <code>docs/</code> and drives a real browser: no page may scroll sideways at any
+<p data-reveal data-stagger="1">It serves <code>docs/</code> and drives a real browser: no page may scroll sideways at any
 width from 380px to 1920px, the drawer must open and close, the search must
 return results even when the reader types faster than the index loads, the fonts
 must be the ones the stylesheet asks for, and table rows must fill their table.
 The last one is a regression test: <code>display:block</code> on a table — the usual way to
 make one scroll — stops the rows filling its width, and the header row's
 background then stops at the last column.</p>
-<h3 id="the-mock-github-server">The mock GitHub server</h3>
-<p><code>tests/mock_github_server.py</code> is a real HTTP server that speaks the GitHub REST
+<h3 id="the-mock-github-server" data-reveal>The mock GitHub server</h3>
+<p data-reveal data-stagger="1"><code>tests/mock_github_server.py</code> is a real HTTP server that speaks the GitHub REST
 API:</p>
-<ul>
+<ul data-reveal data-stagger="1">
 <li>paginates with a genuine <code>Link: rel="next"</code> header</li>
 <li>returns base64 file content</li>
 <li>enforces authentication</li>
 <li>answers with real 401, 403, 404, 422 and 500 bodies</li>
 </ul>
-<p>That is why the integration suite can catch things a stub never will — a client
+<p data-reveal data-stagger="1">That is why the integration suite can catch things a stub never will — a client
 that quietly stops at page one, or that shows a blank error for a rate limit
 instead of naming the reset time.</p>
-<h3 id="keeping-the-tests-out-of-your-data">Keeping the tests out of your data</h3>
-<p><code>tests/_bootstrap.py</code> redirects the data folder to a temporary directory before
+<h3 id="keeping-the-tests-out-of-your-data" data-reveal>Keeping the tests out of your data</h3>
+<p data-reveal data-stagger="1"><code>tests/_bootstrap.py</code> redirects the data folder to a temporary directory before
 anything is imported. Running the tests therefore <strong>never</strong> touches your real
 <code>data/secrets.json</code>. That isolation is deliberate: without it a stub token
 written by a test would silently overwrite your real one, and because the file is
 encrypted you would never find out.</p>
-<h3 id="development-tools">Development tools</h3>
-<pre><code class="language-bash">ruff check app                       # static checks
+<h3 id="development-tools" data-reveal>Development tools</h3>
+<pre><code data-reveal data-stagger="1" class="language-bash">ruff check app                       # static checks
 bandit -r app                        # security scan
 node tools/verify_search.js          # test this site's search engine
 python tools/screenshot.py shots     # screenshots of every page
 python tools/build_docs.py           # build this site (commit docs/ to publish)
 </code></pre>
-<h2 id="building-this-site">Building this site</h2>
-<pre><code class="language-bash">python tools/build_docs.py
+<h2 id="building-this-site" data-reveal>Building this site</h2>
+<pre><code data-reveal data-stagger="1" class="language-bash">python tools/build_docs.py
 </code></pre>
-<p>The output is written to <code>docs/</code>, which is what GitHub Pages serves. No Node, no
+<p data-reveal data-stagger="1">The output is written to <code>docs/</code>, which is what GitHub Pages serves. No Node, no
 npm and no other build step is involved.</p>
-<div class="scroll-x"><table>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>File</th>
@@ -306,28 +307,28 @@ npm and no other build step is involved.</p>
 </tr>
 </tbody>
 </table></div>
-<p>The build also verifies that no page links to a page or heading anchor that does
+<p data-reveal data-stagger="1">The build also verifies that no page links to a page or heading anchor that does
 not exist.</p>
-<h3 id="why-the-fonts-are-committed">Why the fonts are committed</h3>
-<p>Geist is the typeface Vercel ships, and it is the reason the type on this site
+<h3 id="why-the-fonts-are-committed" data-reveal>Why the fonts are committed</h3>
+<p data-reveal data-stagger="1">Geist is the typeface Vercel ships, and it is the reason the type on this site
 looks the way it does. It is committed rather than pulled from a font CDN because
 a CDN is a third party that learns who reads the page and from where, and the
 Content-Security-Policy can be written to allow exactly one origin for fonts. Two
 files, about 115 KB together.</p>
-<p>If they are ever replaced, keep <code>font-src 'self'</code> and nothing else. The security
+<p data-reveal data-stagger="1">If they are ever replaced, keep <code>font-src 'self'</code> and nothing else. The security
 check fails if a remote host appears anywhere in the policy.</p>
-<h3 id="why-the-search-is-hand-written">Why the search is hand-written</h3>
-<p>The content is English, but a generic index still breaks on what technical prose
+<h3 id="why-the-search-is-hand-written" data-reveal>Why the search is hand-written</h3>
+<p data-reveal data-stagger="1">The content is English, but a generic index still breaks on what technical prose
 actually contains: <code>Ctrl+N</code> against <code>ctrl n</code>, a curly apostrophe against a
 straight one, and an accented letter that an ASCII <code>\w</code> class would cut out of
 the middle of a word. Arabic text appears too, wherever a Persian README is
 discussed.</p>
-<p>Both sides — the Python index builder and the browser — apply the same
+<p data-reveal data-stagger="1">Both sides — the Python index builder and the browser — apply the same
 normalisation, and they have to agree step for step or a query silently stops
 matching text that is visibly right in front of you. That contract is what
 <code>tools/verify_search.js</code> checks, alongside the ranking and snippet behaviour.</p>
-<h2 id="project-layout">Project layout</h2>
-<pre><code class="language-text">app/
+<h2 id="project-layout" data-reveal>Project layout</h2>
+<pre><code data-reveal data-stagger="1" class="language-text">app/
   config.py              portable paths and settings
   core/                  no Qt imports anywhere in here
     github_api.py        GitHub REST client
@@ -349,8 +350,8 @@ tools/
 docs_src/                site source
 docs/                    generated site
 </code></pre>
-<blockquote>
-<p>One thing worth knowing about <code>app/core/</code>: it imports nothing from Qt on
+<blockquote data-reveal data-stagger="1">
+<p data-reveal data-stagger="1">One thing worth knowing about <code>app/core/</code>: it imports nothing from Qt on
 purpose. That is what lets the GitHub and AI logic be tested without starting
 a UI, and what allows the integration suite to drive the real client over real
 HTTP.</p>
@@ -381,6 +382,7 @@ HTTP.</p>
 </footer>
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

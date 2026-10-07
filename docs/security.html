@@ -75,6 +75,7 @@
       </a>
     </div>
   </div>
+  <div class="progress" role="presentation"></div>
 </header>
 
 <div class="shell">
@@ -88,34 +89,34 @@
 
   <main id="main" class="content">
 <header class="doc-head"><h1>Security</h1><p>Token storage, path validation, HTML sanitising, rate limit handling and how far the token can travel.</p></header>
-<p>Security in this app is built around one fact: a lot of the text it displays is
+<p data-reveal data-stagger="1">Security in this app is built around one fact: a lot of the text it displays is
 text you do <strong>not</strong> control — output from a model, a README from someone else's
 repository, the body of an issue written by a stranger. This page explains what
 happens to that text.</p>
-<h2 id="the-github-token">The GitHub token</h2>
-<h3 id="storage">Storage</h3>
-<ul>
+<h2 id="the-github-token" data-reveal>The GitHub token</h2>
+<h3 id="storage" data-reveal>Storage</h3>
+<ul data-reveal data-stagger="1">
 <li>Encrypted with <strong>Windows DPAPI</strong> (<code>CryptProtectData</code>)</li>
 <li>Bound to your Windows account — another user on the same machine cannot decrypt it</li>
 <li>Uses an extra entropy value, so only this application can read it back</li>
 <li>On non-Windows systems it is stored obfuscated, written <code>0600</code> on POSIX</li>
 </ul>
-<h3 id="display">Display</h3>
-<ul>
+<h3 id="display" data-reveal>Display</h3>
+<ul data-reveal data-stagger="1">
 <li>Never shown in the clear anywhere in the UI</li>
 <li>The last character is masked before you submit it</li>
 <li>Every error message, toast and dialog is <strong>scrubbed before it is shown</strong></li>
 </ul>
-<h3 id="removing-it">Removing it</h3>
-<ul>
+<h3 id="removing-it" data-reveal>Removing it</h3>
+<ul data-reveal data-stagger="1">
 <li><strong>Settings → Clear API key</strong> removes the model key</li>
 <li><strong>Settings → Erase everything</strong> removes tokens, keys, the repository cache and settings</li>
 <li>To wipe it by hand, delete the <code>data</code> folder next to the executable</li>
 </ul>
-<h2 id="the-token-never-leaves-github">The token never leaves GitHub</h2>
-<p>The <code>Authorization</code> header goes only to the address the app itself configured.
+<h2 id="the-token-never-leaves-github" data-reveal>The token never leaves GitHub</h2>
+<p data-reveal data-stagger="1">The <code>Authorization</code> header goes only to the address the app itself configured.
 Any other absolute URL is refused:</p>
-<div class="scroll-x"><table>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>URL</th>
@@ -145,11 +146,11 @@ Any other absolute URL is refused:</p>
 </tr>
 </tbody>
 </table></div>
-<p>The check is made on the parsed <strong>hostname</strong>, not on the text of the URL, so
+<p data-reveal data-stagger="1">The check is made on the parsed <strong>hostname</strong>, not on the text of the URL, so
 tricks that merely look like the right host do not work.</p>
-<h2 id="input-validation">Input validation</h2>
-<p>A repository name can be typed by hand in the picker, so it is not trusted.</p>
-<div class="scroll-x"><table>
+<h2 id="input-validation" data-reveal>Input validation</h2>
+<p data-reveal data-stagger="1">A repository name can be typed by hand in the picker, so it is not trusted.</p>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Input</th>
@@ -171,13 +172,13 @@ tricks that merely look like the right host do not work.</p>
 </tr>
 </tbody>
 </table></div>
-<p>Anything like <code>owner/../../user</code> is refused <strong>before the URL is built</strong>, rather
+<p data-reveal data-stagger="1">Anything like <code>owner/../../user</code> is refused <strong>before the URL is built</strong>, rather
 than being sent and coming back as a 404.</p>
-<h2 id="html-sanitising">HTML sanitising</h2>
-<p>The preview renders into a <code>QTextBrowser</code>, which is a real HTML engine: it
+<h2 id="html-sanitising" data-reveal>HTML sanitising</h2>
+<p data-reveal data-stagger="1">The preview renders into a <code>QTextBrowser</code>, which is a real HTML engine: it
 fetches images and follows links. Rendered markdown therefore passes through an
 <strong>allow-list</strong> sanitiser.</p>
-<div class="scroll-x"><table>
+<div class="scroll-x"><table data-reveal data-stagger="1">
 <thead>
 <tr>
 <th>Threat</th>
@@ -219,54 +220,54 @@ fetches images and follows links. Rendered markdown therefore passes through an
 </tr>
 </tbody>
 </table></div>
-<p>On top of that, <strong>every link click is checked again</strong> before the browser opens.
+<p data-reveal data-stagger="1">On top of that, <strong>every link click is checked again</strong> before the browser opens.
 If a future markdown renderer ever slipped past the sanitiser, this layer would
 still stop a dangerous URL from launching.</p>
-<blockquote>
-<p>Remote <code>http(s)</code> images <strong>are</strong> loaded so that badges work. That is a conscious
+<blockquote data-reveal data-stagger="1">
+<p data-reveal data-stagger="1">Remote <code>http(s)</code> images <strong>are</strong> loaded so that badges work. That is a conscious
 choice — GitHub does the same thing behind its camo proxy. What remains is that
 a third party can see which repository page was opened.</p>
 </blockquote>
-<h2 id="rate-limits-and-error-handling">Rate limits and error handling</h2>
-<p>GitHub enforces an hourly quota per token. When it runs out, the API returns 403.</p>
-<p>The app <strong>does not retry that</strong>. Retrying after a couple of seconds cannot help,
+<h2 id="rate-limits-and-error-handling" data-reveal>Rate limits and error handling</h2>
+<p data-reveal data-stagger="1">GitHub enforces an hourly quota per token. When it runs out, the API returns 403.</p>
+<p data-reveal data-stagger="1">The app <strong>does not retry that</strong>. Retrying after a couple of seconds cannot help,
 because the quota returns after minutes, not seconds — all it achieves is freezing
 the UI for several seconds before explaining why. Instead:</p>
-<ul>
+<ul data-reveal data-stagger="1">
 <li>The error appears immediately</li>
 <li>The approximate reset time, read from the <code>X-RateLimit-Reset</code> header, is included in the message</li>
 </ul>
-<p>401 and 422 behave the same way: one request, one clear message, no retry. Only
+<p data-reveal data-stagger="1">401 and 422 behave the same way: one request, one clear message, no retry. Only
 5xx is retried, because those are genuinely transient.</p>
-<p>Every error message passes through the redaction filter, so a service that echoes
+<p data-reveal data-stagger="1">Every error message passes through the redaction filter, so a service that echoes
 your API key back in an error body never shows it on screen.</p>
-<h2 id="what-is-sent-to-the-model">What is sent to the model</h2>
-<p>The exact list is on the <a href="ai.html" target="_blank" rel="noopener noreferrer">AI</a> page. In short: repository content, and
+<h2 id="what-is-sent-to-the-model" data-reveal>What is sent to the model</h2>
+<p data-reveal data-stagger="1">The exact list is on the <a href="ai.html" target="_blank" rel="noopener noreferrer">AI</a> page. In short: repository content, and
 only when you ask for it.</p>
-<p><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or the
+<p data-reveal data-stagger="1"><strong>Never sent:</strong> your GitHub token, your API key, local file paths, or the
 contents of the <code>data</code> folder.</p>
-<h2 id="path-handling">Path handling</h2>
-<p>When the app opens a file or folder on your behalf, the path is passed to the
+<h2 id="path-handling" data-reveal>Path handling</h2>
+<p data-reveal data-stagger="1">When the app opens a file or folder on your behalf, the path is passed to the
 system as an argument rather than as a string to a shell. A path containing shell
 metacharacters can therefore never be interpreted as a command.</p>
-<h2 id="write-operations">Write operations</h2>
-<p>Nothing is written to GitHub without confirmation:</p>
-<ul>
+<h2 id="write-operations" data-reveal>Write operations</h2>
+<p data-reveal data-stagger="1">Nothing is written to GitHub without confirmation:</p>
+<ul data-reveal data-stagger="1">
 <li><strong>Delete repository</strong> — you must type the full repository name</li>
 <li><strong>Publish release</strong> — a dialog naming the tag and repository</li>
 <li><strong>Commit a file</strong> — a dialog showing the path, the branch and the message</li>
 <li><strong>Close an issue or create one</strong> — a confirmation dialog</li>
 </ul>
-<p>The AI assistant never writes anything without one of these.</p>
-<h2 id="reducing-your-exposure">Reducing your exposure</h2>
-<p>Give the token the least it can do:</p>
-<ul>
+<p data-reveal data-stagger="1">The AI assistant never writes anything without one of these.</p>
+<h2 id="reducing-your-exposure" data-reveal>Reducing your exposure</h2>
+<p data-reveal data-stagger="1">Give the token the least it can do:</p>
+<ul data-reveal data-stagger="1">
 <li>Only the repositories you really work in</li>
 <li>Skip the delete scope if you do not delete repositories</li>
 <li><code>Contents: Read-only</code> is enough if you only ever read</li>
 </ul>
-<h2 id="reporting-a-problem">Reporting a problem</h2>
-<p>If you find a security issue, report it privately on the repository so it can be
+<h2 id="reporting-a-problem" data-reveal>Reporting a problem</h2>
+<p data-reveal data-stagger="1">If you find a security issue, report it privately on the repository so it can be
 fixed before it becomes public.</p>
 
 <details class="toc-inline"><summary>On this page</summary><nav class="toc" aria-label="On this page"><ul><li class="toc-item toc-level-2"><a href="#the-github-token">The GitHub token</a></li><li class="toc-item toc-level-3"><a href="#storage">Storage</a></li><li class="toc-item toc-level-3"><a href="#display">Display</a></li><li class="toc-item toc-level-3"><a href="#removing-it">Removing it</a></li><li class="toc-item toc-level-2"><a href="#the-token-never-leaves-github">The token never leaves GitHub</a></li><li class="toc-item toc-level-2"><a href="#input-validation">Input validation</a></li><li class="toc-item toc-level-2"><a href="#html-sanitising">HTML sanitising</a></li><li class="toc-item toc-level-2"><a href="#rate-limits-and-error-handling">Rate limits and error handling</a></li><li class="toc-item toc-level-2"><a href="#what-is-sent-to-the-model">What is sent to the model</a></li><li class="toc-item toc-level-2"><a href="#path-handling">Path handling</a></li><li class="toc-item toc-level-2"><a href="#write-operations">Write operations</a></li><li class="toc-item toc-level-2"><a href="#reducing-your-exposure">Reducing your exposure</a></li><li class="toc-item toc-level-2"><a href="#reporting-a-problem">Reporting a problem</a></li></ul></nav></details>
@@ -294,6 +295,7 @@ fixed before it becomes public.</p>
 </footer>
 
 <script src="assets/search.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

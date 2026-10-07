@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const { spawnSync } = require("child_process");
 
 const docs = path.join(__dirname, "..", "docs");
 
@@ -19,6 +20,40 @@ let pass = 0, fail = 0;
 function check(name, ok, detail) {
   if (ok) { pass++; console.log("  [PASS] " + name); }
   else { fail++; console.log("  [FAIL] " + name + (detail ? " -> " + detail : "")); }
+}
+
+/** How many revealed elements are still painted at zero opacity.
+ *
+ *  The class is the state; the opacity is the animation. Headless Chrome does
+ *  not finish a CSS transition without a compositor, so an element correctly
+ *  marked as revealed can still read as opacity 0 here. Callers that care about
+ *  state should ask for `revealed`, and only check `painted` where the
+ *  transition is known to have had time to run.
+ */
+async function revealState(page) {
+  return page.evaluate(() => {
+    const nodes = [...document.querySelectorAll("[data-reveal]")];
+    return {
+      total: nodes.length,
+      revealed: nodes.filter(n => n.classList.contains("is-revealed")).length,
+      painted: nodes.filter(n => parseFloat(getComputedStyle(n).opacity) >= 0.99).length,
+    };
+  });
+}
+
+/** Open a page with smooth scrolling switched off.
+ *
+ *  `scroll-behavior: smooth` animates every jump, and headless Chrome has no
+ *  compositor to drive that animation - the scroll simply never finishes, so a
+ *  test that scrolls sees a page that did not move. It is turned off here
+ *  rather than in the stylesheet because it is a property of the harness, not of
+ *  the site.
+ */
+async function open(page, url, { width = 1440, height = 1000 } = {}) {
+  await page.setViewport({ width, height });
+  await page.goto(url, { waitUntil: "load" });
+  await page.addStyleTag({ content: "html{scroll-behavior:auto!important}" });
+  return page;
 }
 
 const PAGES = ["index", "features", "install", "ai", "security", "build", "faq"];
@@ -63,6 +98,8 @@ function serve() {
     check(`${name}.html links the stylesheet`, /href="assets\/style\.css"/.test(html));
     check(`${name}.html links both scripts`,
       /src="assets\/search\.js"/.test(html) && /src="assets\/app\.js"/.test(html));
+    check(`${name}.html links the motion script`, /src="assets\/motion\.js"/.test(html));
+    check(`${name}.html has a reading progress bar`, /class="progress"/.test(html));
     check(`${name}.html has a footer`, /class="site-foot"/.test(html));
     check(`${name}.html has a skip link`, /class="skip" href="#main"/.test(html));
   }
@@ -105,7 +142,14 @@ function serve() {
   } else {
     const server = await serve();
     const base = `http://127.0.0.1:${server.address().port}`;
-    const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox"],
+      // Two of the blocks below launch a second browser for the coarse-pointer
+      // checks, and thirty-odd pages share this one. The default 30s budget is
+      // not enough headroom for that and it fails as a navigation timeout
+      // rather than as anything to do with the page.
+      protocolTimeout: 120000,
+    });
 
     console.log("\nno horizontal overflow:");
     for (const name of PAGES) {
@@ -470,7 +514,418 @@ function serve() {
       await page.close();
     }
 
-    console.log("\nfonts:");
+    /* ------------------------------------------------------------ motion safety
+   A reveal animation that can leave content invisible is worse than no
+   animation at all: the reader is looking at a blank section and has no way to
+   know it is a bug rather than a page that has not loaded. Every check here is
+   about the page being complete no matter what happens to the script. */
+  console.log("\nthe page is complete without JavaScript:");
+  {
+    const page = await browser.newPage();
+    await page.setJavaScriptEnabled(false);
+    await page.setViewport({ width: 1440, height: 1000 });
+    await page.goto(`${base}/index.html`, { waitUntil: "load" });
+    const blind = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll("[data-reveal]")];
+      const hidden = nodes.filter(n => {
+        const s = getComputedStyle(n);
+        return parseFloat(s.opacity) < 0.99 || s.visibility === "hidden";
+      });
+      return {
+        total: nodes.length,
+        hidden: hidden.length,
+        motionClass: document.documentElement.classList.contains("motion"),
+        headlineVisible: document.querySelector(".hero h1").getBoundingClientRect().height > 0,
+        // The figures must read as real numbers with no script to count them.
+        facts: [...document.querySelectorAll(".fact b")].map(n => n.textContent.trim()),
+      };
+    });
+    check("no reveal is armed without the script",
+      blind.motionClass === false && blind.hidden === 0,
+      `${blind.hidden}/${blind.total} hidden, motion=${blind.motionClass}`);
+    check("the headline is on screen", blind.headlineVisible);
+    check("the figures read correctly with no script",
+      blind.facts.join("|") === "63 MB|10|0|2", blind.facts.join("|"));
+    await page.close();
+  }
+
+  console.log("\nreduced motion leaves nothing hidden:");
+  {
+    const page = await browser.newPage();
+    await page.emulateMediaFeatures([
+      { name: "prefers-reduced-motion", value: "reduce" }]);
+    await page.setViewport({ width: 1440, height: 1000 });
+    await page.goto(`${base}/index.html`, { waitUntil: "load" });
+    await new Promise(r => setTimeout(r, 400));
+    const calm = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll("[data-reveal]")];
+      return {
+        hidden: nodes.filter(n => parseFloat(getComputedStyle(n).opacity) < 0.99).length,
+        total: nodes.length,
+        progressHidden: getComputedStyle(document.querySelector(".progress")).display,
+      };
+    });
+    check("every reveal is open", calm.hidden === 0, `${calm.hidden}/${calm.total}`);
+    // The progress bar is the one thing that is genuinely motion, so it goes.
+    check("the progress bar is not drawn", calm.progressHidden === "none",
+      calm.progressHidden);
+    await page.close();
+  }
+
+  console.log("\nreveals complete as the page is scrolled:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/index.html`);
+    await new Promise(r => setTimeout(r, 300));
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await new Promise(r => setTimeout(r, 700));
+    const done = await revealState(page);
+    check("everything is revealed by the bottom of the page",
+      done.revealed === done.total, `${done.revealed}/${done.total}`);
+    await page.close();
+  }
+
+  /* The failsafe. An observer that never fires leaves an element at zero opacity
+     for good unless something opens it after a deadline. This cuts the script's
+     own timeout short and checks the page recovers. */
+  console.log("\nthe reveal failsafe opens what an observer misses:");
+  {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 1000 });
+    // Freeze every observer so none of them ever fires, then re-add the deadline
+    // on its own - which is the state a browser without IntersectionObserver,
+    // or a container that reports zero height, would be in.
+    await page.evaluateOnNewDocument(() => {
+      window.IntersectionObserver = function () {
+        return { observe() {}, unobserve() {}, disconnect() {} };
+      };
+      const realSetTimeout = window.setTimeout;
+      window.setTimeout = function (fn, ms, ...rest) {
+        // The 10s failsafe, run immediately.
+        if (ms === 10000) return realSetTimeout(fn, 50, ...rest);
+        return realSetTimeout(fn, ms, ...rest);
+      };
+    });
+    await page.goto(`${base}/index.html`, { waitUntil: "load" });
+    await new Promise(r => setTimeout(r, 900));
+    const stuck = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll("[data-reveal]")];
+      return nodes.filter(n => parseFloat(getComputedStyle(n).opacity) < 0.99).length;
+    });
+    check("content is still readable with no observer", stuck === 0, `${stuck} hidden`);
+    await page.close();
+  }
+
+  /* The count-up is the effect; the deadline is the fact. Headless Chrome stops
+       requestAnimationFrame without a compositor, which is exactly the
+       condition that would leave a half-finished number on the page, so this
+       also proves the value is written whether or not the frames ran. */
+  console.log("\nthe counters land on the real number:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/index.html`);
+    await page.evaluate(() => {
+      document.querySelector(".facts").scrollIntoView();
+    });
+    await new Promise(r => setTimeout(r, 2400));
+    const counted = await page.evaluate(() =>
+      [...document.querySelectorAll(".fact b")].map(n => n.textContent.trim()));
+    check("the figures read as themselves once counted",
+      counted.join("|") === "63 MB|10|0|2", counted.join("|"));
+    await page.close();
+  }
+
+  /* Pressing End, or following a deep link, skips past most of the page in one
+       step. The observer never sees those sections on screen, so nothing else
+       would ever reveal them - and the reader is looking at a blank page. */
+  console.log("\nnothing is left hidden after a jump to the bottom:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/index.html`);
+    await new Promise(r => setTimeout(r, 250));
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await new Promise(r => setTimeout(r, 700));
+    const jumped = await page.evaluate(() => Math.round(window.scrollY));
+    const state = await revealState(page);
+    check("the page really scrolled", jumped > 0, `${jumped}px`);
+    check("an instant jump leaves nothing unrevealed",
+      state.revealed === state.total, `${state.revealed}/${state.total}`);
+    await page.close();
+  }
+
+  /* The same arriving cold on a link that is already a third of the way down.
+     No scroll happens at all - the browser got there before a line of the
+     motion script ran. */
+  console.log("\nnothing is hidden on a deep link:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/features.html#webhooks`);
+    await new Promise(r => setTimeout(r, 900));
+    const deep = await page.evaluate(() => {
+      const anchor = document.getElementById("webhooks");
+      return {
+        scrolled: Math.round(window.scrollY),
+        anchorText: anchor ? anchor.textContent.trim().slice(0, 20) : "",
+      };
+    });
+    const deepState = await revealState(page);
+    check("the browser really did scroll to the anchor", deep.scrolled > 0, `${deep.scrolled}px`);
+    check("the anchor landed on its section", deep.anchorText.length > 0, deep.anchorText);
+    // Everything above the anchor must be readable. What is below it has not
+    // been reached yet, and staying hidden there is the point.
+    check("nothing above the anchor is left unrevealed",
+      deepState.revealed > 0 && deepState.revealed < deepState.total,
+      `${deepState.revealed}/${deepState.total}`);
+    await page.close();
+  }
+
+  /* rAF is not guaranteed - a background tab, or a browser with no compositor,
+     stops delivering frames. Content must not depend on one. */
+  console.log("\nreveals do not depend on a frame callback:");
+  {
+    const page = await browser.newPage();
+    await page.evaluateOnNewDocument(() => {
+      window.requestAnimationFrame = () => 0;   // never fires
+    });
+    await open(page, `${base}/index.html`);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await new Promise(r => setTimeout(r, 900));
+    const frozen = await revealState(page);
+    const frozenFacts = await page.evaluate(() =>
+      [...document.querySelectorAll(".fact b")].map(n => n.textContent.trim()));
+    check("the page is complete with no frames at all",
+      frozen.revealed === frozen.total, `${frozen.revealed}/${frozen.total}`);
+    check("the figures are right with no frames at all",
+      frozenFacts.join("|") === "63 MB|10|0|2", frozenFacts.join("|"));
+    await page.close();
+  }
+
+  console.log("\nthe reading progress bar moves:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/features.html`);
+    await new Promise(r => setTimeout(r, 250));
+    // The value is written as scaleX(n), so it is read back from the inline style
+    // rather than from the computed matrix - a scale of zero has no matrix
+    // equivalent that survives serialisation cleanly.
+    const read = () => page.evaluate(() => {
+      const bar = document.querySelector(".progress");
+      return bar.style.transform || getComputedStyle(bar).transform;
+    });
+    const scale = (value) => {
+      const m = value.match(/scaleX\(([\d.]+)\)/) || value.match(/matrix\(([-\d.]+),/);
+      return m ? parseFloat(m[1]) : NaN;
+    };
+    const top = await read();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await new Promise(r => setTimeout(r, 350));
+    const end = await read();
+    check("the bar starts empty", scale(top) === 0, `${top} -> ${scale(top)}`);
+    check("the bar fills as the page is read",
+      scale(end) > 0.9, `${end} -> ${scale(end)}`);
+    check("the bar is driven by a transform, not a width",
+      /^scaleX\(|^matrix\(/.test(end), end);
+    await page.close();
+  }
+
+  console.log("\nthe copy button only appears where it works:");
+  {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 1000 });
+    await page.goto(`${base}/install.html`, { waitUntil: "load" });
+    await new Promise(r => setTimeout(r, 300));
+    const copy = await page.evaluate(() => ({
+      secure: window.isSecureContext,
+      buttons: document.querySelectorAll("pre .copy").length,
+      blocks: document.querySelectorAll("pre").length,
+    }));
+    check("every code block gets a copy button",
+      copy.secure ? copy.buttons === copy.blocks : copy.buttons === 0,
+      `${copy.buttons} of ${copy.blocks}, secure=${copy.secure}`);
+    if (copy.buttons) {
+      const before = await page.evaluate(() =>
+        document.querySelector("pre .copy span").textContent);
+      await page.click("pre .copy");
+      await new Promise(r => setTimeout(r, 400));
+      const after = await page.evaluate(() => ({
+        label: document.querySelector("pre .copy span").textContent,
+        done: document.querySelector("pre .copy").classList.contains("is-done"),
+      }));
+      check("clicking it confirms", after.done && after.label !== before,
+        `${before} -> ${after.label}`);
+    }
+    await page.close();
+  }
+
+  /* ---------------------------------------------------------------- buttons */
+  console.log("\nbuttons are filled, not outlined:");
+  {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 1000 });
+    await page.goto(`${base}/index.html`, { waitUntil: "load" });
+    const buttons = await page.evaluate(() => {
+      const opaque = (c) => {
+        const m = c.match(/[\d.]+/g);
+        if (!m) return false;
+        // rgba(0,0,0,0) or "transparent" means there is no fill behind the label.
+        if (m.length >= 4 && parseFloat(m[3]) === 0) return false;
+        return c !== "transparent";
+      };
+      return [...document.querySelectorAll(".btn")].map(b => ({
+        cls: b.className.replace("btn", "").trim() || "(base)",
+        bg: getComputedStyle(b).backgroundColor,
+        filled: opaque(getComputedStyle(b).backgroundColor),
+        height: Math.round(b.getBoundingClientRect().height),
+        radius: getComputedStyle(b).borderTopLeftRadius,
+      }));
+    });
+    check("the page has buttons", buttons.length > 0, String(buttons.length));
+    for (const b of buttons) {
+      check(`'${b.cls}' is filled`, b.filled, b.bg);
+    }
+    // 32px is the height a filled button looked like before. Anything shorter
+    // than this reads as a chip, not a control.
+    check("no button is shorter than 36px",
+      buttons.every(b => b.height >= 36), JSON.stringify(buttons.map(b => b.height)));
+    check("the hero buttons are the largest",
+      buttons.filter(b => b.height > 40).length >= 2,
+      JSON.stringify(buttons.map(b => b.height)));
+    await page.close();
+  }
+
+  /* A mouse pointer does not need 44px and a dense rail cannot afford it, so the
+       rule follows the input. Both are checked: a phone has to clear the target,
+       and a desktop pointer is allowed the tighter row.
+
+       The coarse case is a second browser launched with the pointer flags set
+       rather than a media emulation - Puppeteer cannot emulate `pointer`, and
+       overriding the rule with an injected stylesheet would be testing the
+       override rather than the stylesheet. */
+  console.log("\ntouch targets are big enough to hit:");
+  {
+    // Blink's enums: pointer 1 = none, 2 = coarse, 4 = fine; hover 1 = none, 2 = hover.
+    const coarse = await puppeteer.launch({
+      args: [
+        "--no-sandbox",
+        "--blink-settings=primaryPointerType=2,availablePointerTypes=2," +
+        "primaryHoverType=1,availableHoverTypes=1",
+      ],
+    });
+
+    for (const [label, engine, floor] of [
+      ["a touch device", coarse, 44],
+      ["a mouse", browser, 32],
+    ]) {
+      const page = await engine.newPage();
+      await open(page, `${base}/features.html`, { width: 380, height: 900 });
+      const result = await page.evaluate((min) => {
+        const nodes = [...document.querySelectorAll(
+          "header button, header a.btn, main a.btn, .rail a, .toc a, .foot-col a")];
+        return {
+          coarsePointer: matchMedia("(pointer: coarse)").matches,
+          noHover: matchMedia("(hover: none)").matches,
+          small: nodes.filter(n => n.offsetParent !== null).map(n => {
+            const r = n.getBoundingClientRect();
+            return {
+              label: (n.textContent || n.getAttribute("aria-label") || "?").trim().slice(0, 20),
+              h: Math.round(r.height), w: Math.round(r.width),
+            };
+          }).filter(x => x.h < min || x.w < 24),
+        };
+      }, floor);
+      check(`${label} really is the pointer it claims`,
+        label.startsWith("a touch")
+          ? result.coarsePointer && result.noHover
+          : !result.coarsePointer,
+        `coarse=${result.coarsePointer} noHover=${result.noHover}`);
+      check(`${label} clears ${floor}px`, result.small.length === 0,
+        JSON.stringify(result.small.slice(0, 4)));
+      await page.close();
+    }
+    await coarse.close();
+  }
+
+  console.log("\nhover effects do not stick on a touch screen:");
+  {
+    const coarse = await puppeteer.launch({
+      args: [
+        "--no-sandbox",
+        "--blink-settings=primaryPointerType=2,availablePointerTypes=2," +
+        "primaryHoverType=1,availableHoverTypes=1",
+      ],
+    });
+    const page = await coarse.newPage();
+    await open(page, `${base}/install.html`);
+    const hover = await page.evaluate(() => ({
+      noHover: matchMedia("(hover: none)").matches,
+      // The wash lives on the cell's ::after, not on the cell.
+      wash: getComputedStyle(document.querySelector(".bento > *") || document.body, "::after")
+        .transitionDuration,
+      copyOpacity: (() => {
+        const copy = document.querySelector("pre .copy");
+        return copy ? getComputedStyle(copy).opacity : "no copy button";
+      })(),
+    }));
+    check("the page reports a device with no hover", hover.noHover, String(hover.noHover));
+    check("the bento wash is not animated on touch",
+      hover.wash === "0s", hover.wash);
+    check("the copy button is visible without a hover", hover.copyOpacity === "1",
+      hover.copyOpacity);
+    await page.close();
+    await coarse.close();
+  }
+
+  /* The header is the row a thumb reaches for on any device, so it grows at
+     narrow widths whatever pointer is attached. */
+  console.log("\nthe header grows on a narrow screen:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/features.html`, { width: 380, height: 900 });
+    const bar = await page.evaluate(() =>
+      [...document.querySelectorAll(".bar button, .bar a.btn")].map(n => ({
+        label: (n.textContent || n.getAttribute("aria-label") || "?").trim().slice(0, 14),
+        h: Math.round(n.getBoundingClientRect().height),
+      })));
+    check("every header control is at least 44px",
+      bar.length > 0 && bar.every(x => x.h >= 44), JSON.stringify(bar));
+    await page.close();
+  }
+
+  console.log("\nhover does something:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/index.html`);
+    const rest = await page.evaluate(() => {
+      const b = document.querySelector(".btn-primary");
+      const cell = document.querySelector(".bento > *");
+      const s = getComputedStyle(b);
+      return { transform: s.transform, transition: s.transitionProperty,
+               cellBg: getComputedStyle(cell).transitionProperty };
+    });
+    check("the primary button transitions", rest.transition.includes("transform"),
+      rest.transition);
+    check("a bento cell transitions", rest.cellBg.length > 0, rest.cellBg);
+    await page.close();
+  }
+
+  /* Two checks that need a real pointer, run in their own process: the primary
+     button must not invert on hover, and the arrow on it must survive the body
+     sanitiser. Chrome only applies :hover when it decides the window can take
+     pointer input, and after thirty pages of hover, click and scroll through a
+     shared browser it stops - the geometry is right, the state never lands. See
+     the file for the full reasoning. */
+  console.log("\nhover and the button arrow (own browser):");
+  {
+    const result = spawnSync(process.execPath,
+      [path.join(__dirname, "verify_hover.js")], { encoding: "utf8" });
+    for (const line of (result.stdout || "").split(/\r?\n/)) {
+      if (line.trim()) console.log(line.replace(/^ {2}/, "  "));
+    }
+    check("the hover and arrow checks ran", result.status === 0,
+      (result.stderr || "").split(/\r?\n/).filter(Boolean).slice(0, 2).join(" "));
+  }
+
+  console.log("\nfonts:");
     {
       const page = await browser.newPage();
       await page.setViewport({ width: 1440, height: 900 });

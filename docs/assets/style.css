@@ -15,8 +15,12 @@
       that share edges instead of floating apart on a gap.
    4. One accent, used for focus and links and nothing else. A colour that means
       something everywhere stops meaning anything.
-   5. Display type is tight (-0.04em). Body type is not. The contrast between the
+   5. Display type is tight (-0.045em). Body type is not. The contrast between the
       two is what makes a headline feel set rather than typed.
+   6. Motion explains. It shows where something came from and where it went, and
+      it never hides content that is already on screen. Everything here is off
+      under prefers-reduced-motion, and the reveal never gates readability - see
+      the "reveal" section for why that matters.
 */
 
 /* ------------------------------------------------------------------- tokens */
@@ -74,7 +78,14 @@
   --edge: 24px;
 
   --r: 6px;
+  --r-btn: 8px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* A second curve, slower and with no overshoot. Used for anything that moves
+     a long way: reveals and panels. */
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* The sheen that sweeps a filled button on hover. Dark on a light surface,
+     light on a dark one - set per theme below. */
+  --sheen: rgba(0, 0, 0, 0.16);
 }
 
 html[data-theme="light"] {
@@ -102,6 +113,8 @@ html[data-theme="light"] {
   --warn-soft: rgba(138, 90, 0, 0.09);
   --danger: #c11c1c;
   --danger-soft: rgba(193, 28, 28, 0.08);
+
+  --sheen: rgba(255, 255, 255, 0.24);
 }
 
 * { box-sizing: border-box; }
@@ -152,6 +165,32 @@ svg {
 }
 .skip:focus { transform: none; text-decoration: none; }
 
+/* ------------------------------------------------------------------ motion */
+/* The whole animation system hangs off this one class.
+
+   Without JavaScript - or with it blocked, or slow - the class is never added,
+   and nothing is hidden. That is the reason the reveal states are scoped to
+   `html.motion` rather than written on the elements themselves: a reveal that
+   can hide content is a bug waiting for a reader who never scrolls far enough. */
+@media (prefers-reduced-motion: no-preference) {
+  html.motion [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity .7s var(--ease-soft),
+      transform .7s var(--ease-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  html.motion [data-reveal="left"] { transform: translateX(-18px); }
+  html.motion [data-reveal="scale"] { transform: translateY(26px) scale(.965); }
+  html.motion [data-reveal="fade"] { transform: none; }
+
+  html.motion [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ------------------------------------------------------------------- header */
 .site-header {
   position: sticky; top: 0; z-index: 60;
@@ -169,19 +208,35 @@ svg {
   max-width: 1440px; margin: 0 auto; padding: 0 var(--edge);
 }
 
+/* Reading progress. A two pixel accent line under the header that grows with the
+   page. Scaled rather than resized: transform stays on the compositor, so it
+   does not cost a layout pass per frame. */
+.progress {
+  position: absolute; inset-block-end: -1px; inset-inline-start: 0;
+  height: 2px; width: 100%;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: 0 50%;
+  opacity: .9;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress { display: none; }
+}
+
 .brand {
   display: flex; align-items: center; gap: 9px;
   color: var(--text); font-weight: 560; font-size: 0.94rem;
   letter-spacing: -0.012em; white-space: nowrap;
 }
 .brand:hover { color: var(--text); text-decoration: none; }
-.brand-mark { width: 20px; height: 20px; }
+.brand-mark { width: 20px; height: 20px; transition: transform .4s var(--ease); }
+.brand:hover .brand-mark { transform: rotate(-12deg); }
 
 .top-nav {
   display: flex; align-items: center; gap: 4px;
   margin-inline-start: 8px;
 }
 .top-nav a {
+  position: relative;
   color: var(--text-dim); font-size: 0.875rem; font-weight: 460;
   padding: 5px 10px; border-radius: var(--r);
   transition: color .12s var(--ease);
@@ -193,12 +248,17 @@ svg {
 
 .icon-btn {
   display: grid; place-items: center;
-  width: 32px; height: 32px; flex: none;
+  width: 34px; height: 34px; flex: none;
   border: 1px solid var(--line); border-radius: var(--r);
-  background: transparent; color: var(--text-dim); cursor: pointer;
-  transition: color .12s var(--ease), border-color .12s var(--ease);
+  background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
+  transition: color .12s var(--ease), border-color .12s var(--ease),
+    background .12s var(--ease), transform .12s var(--ease);
 }
-.icon-btn:hover { color: var(--text); border-color: var(--line-strong); }
+.icon-btn:hover {
+  color: var(--text); border-color: var(--line-strong);
+  background: var(--bg-sunken); transform: translateY(-1px);
+}
+.icon-btn:active { transform: translateY(0) scale(.94); }
 html[data-theme="light"] .i-moon,
 html:not([data-theme="light"]) .i-sun { display: none; }
 .nav-toggle { display: none; }
@@ -210,9 +270,9 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .search { position: relative; width: 264px; flex: none; }
 .search-icon-button {
   display: none; place-items: center;
-  width: 32px; height: 32px; flex: none;
+  width: 34px; height: 34px; flex: none;
   border: 1px solid var(--line); border-radius: var(--r);
-  background: transparent; color: var(--text-dim); cursor: pointer;
+  background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
 }
 .search-icon-button:hover { color: var(--text); border-color: var(--line-strong); }
 
@@ -224,7 +284,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 }
 
 .search input {
-  width: 100%; height: 32px;
+  width: 100%; height: 34px;
   padding: 0 14px 0 33px;
   border: 1px solid var(--line); border-radius: var(--r);
   background: var(--bg-raised); color: var(--text);
@@ -248,6 +308,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .result {
   display: block; padding: 9px 11px; border-radius: 5px;
   color: var(--text); line-height: 1.5;
+  transition: background .1s var(--ease);
 }
 .result:hover, .result.is-active { background: var(--bg); text-decoration: none; }
 .result-title { display: block; font-weight: 560; font-size: 0.8125rem; }
@@ -269,25 +330,99 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 }
 
 /* ------------------------------------------------------------------ buttons */
+/* Filled, not outlined.
+
+   An outline reads as "this is available". A fill reads as "this is the thing
+   to press", which is what a call to action actually is. On a black page a
+   light fill is also the brightest object on the screen, so it is found without
+   needing colour to point at it.
+
+   Three weights, all filled:
+     primary  - light surface, dark label. One per view.
+     solid    - dark surface, light label. For a second action.
+     ghost    - no fill until hover. For a tertiary action in a dense row. */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  height: 38px; padding: 0 16px;
-  border: 1px solid var(--line); border-radius: var(--r);
-  background: transparent; color: var(--text);
-  font: inherit; font-size: 0.875rem; font-weight: 500; letter-spacing: -0.005em;
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 18px;
+  border: 1px solid var(--line); border-radius: var(--r-btn);
+  background: var(--bg-raised); color: var(--text);
+  font: inherit; font-size: 0.875rem; font-weight: 520; letter-spacing: -0.008em;
   cursor: pointer; white-space: nowrap;
-  transition: background .12s var(--ease), border-color .12s var(--ease), color .12s var(--ease);
+  transition: background .14s var(--ease), border-color .14s var(--ease),
+    color .14s var(--ease), transform .14s var(--ease),
+    box-shadow .14s var(--ease);
 }
-.btn:hover { text-decoration: none; background: var(--bg-raised); border-color: var(--line-strong); }
-/* The primary button inverts: light surface, dark label. On a black page that
-   is the brightest thing on the screen and needs no colour to be found first. */
-.btn-primary {
+.btn:hover {
+  text-decoration: none; background: var(--bg-sunken);
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .7);
+}
+.btn:active { transform: translateY(0) scale(.98); box-shadow: none; }
+html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .3); }
+
+/* Each variant repeats the base class in its own selector on purpose.
+   `.btn:hover` is two selectors deep, so it beats a bare `.btn-primary` - and
+   the primary button inverted to dark on hover, which is exactly the moment it
+   must not, since that is when someone is deciding whether to press it. */
+.btn.btn-primary {
   background: var(--text); color: var(--bg); border-color: var(--text);
+  font-weight: 560;
 }
-.btn-primary:hover { background: transparent; color: var(--text); border-color: var(--line-strong); }
+.btn.btn-primary:hover {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+  box-shadow: 0 8px 26px -8px color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+.btn.btn-solid {
+  background: var(--bg-sunken); color: var(--text); border-color: var(--line-strong);
+}
+.btn.btn-solid:hover { background: var(--bg-raised); border-color: var(--text-faint); }
+
+.btn.btn-ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+.btn.btn-ghost:hover { background: var(--bg-raised); border-color: var(--line); color: var(--text); }
+
+/* The sheen. One pass of light across the surface on hover, which is what makes
+   a filled button feel like an object rather than a rectangle of colour. */
+.btn::after {
+  content: "";
+  position: absolute; inset-block: 0; inset-inline-start: -60%;
+  width: 55%;
+  background: linear-gradient(100deg, transparent, var(--sheen), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn::after { transform: translateX(0) skewX(-18deg); opacity: 0; }
+  .btn:hover::after { animation: sheen .75s var(--ease) forwards; }
+}
+@keyframes sheen {
+  from { transform: translateX(-40%) skewX(-18deg); opacity: 0; }
+  35% { opacity: 1; }
+  to { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+
+/* An arrow that steps forward on hover, so the button points at its destination.
+
+   Drawn with two borders rather than written as an <svg>. The body sanitiser
+   drops svg outright, and rightly so - it can carry script, event handlers and
+   external references. A shape made of borders cannot, costs nothing, and
+   scales with the button. */
+.btn-arrow {
+  display: inline-block; flex: none;
+  width: 8px; height: 8px;
+  margin-inline-start: 2px;
+  border-top: 1.6px solid currentColor;
+  border-right: 1.6px solid currentColor;
+  transform: rotate(45deg) translate(-1px, 1px);
+  transition: transform .22s var(--ease);
+}
+.btn:hover .btn-arrow { transform: rotate(45deg) translate(2px, -2px); }
 
 .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
-.cta-row .btn { height: 42px; padding: 0 20px; font-size: 0.9375rem; }
+.cta-row .btn { height: 46px; padding: 0 22px; font-size: 0.9375rem; border-radius: 10px; }
 
 /* ------------------------------------------------------------ marketing shell
    The landing page drops the docs rails: one centred column, full bleed, with
@@ -297,10 +432,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 
 /* A masked line grid. The mask is what makes it read as light falling off a
    surface rather than as graph paper laid over the text. */
-.gridfield {
-  position: relative;
-  isolation: isolate;
-}
+.gridfield { position: relative; isolation: isolate; }
 .gridfield::before {
   content: "";
   position: absolute; inset: -1px 0 auto; height: 760px; z-index: -1;
@@ -320,6 +452,21 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   pointer-events: none;
 }
 
+/* The grid drifts, slowly enough that you notice it only if you stop reading.
+   24s across one cell: long enough to never resolve into a loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .gridfield::before { animation: drift 24s linear infinite; }
+  .gridfield::after { animation: breathe 9s var(--ease-soft) infinite alternate; }
+}
+@keyframes drift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 68px 68px, 68px 68px; }
+}
+@keyframes breathe {
+  from { opacity: .7; }
+  to { opacity: 1; }
+}
+
 .hero { padding: 108px 0 0; text-align: center; }
 
 .eyebrow {
@@ -332,6 +479,15 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   background: var(--bg-raised);
 }
 .eyebrow b { color: var(--text); font-weight: 500; }
+/* A slow pulse on the version number, so the eyebrow reads as live rather than
+   as a label someone typed once. */
+@media (prefers-reduced-motion: no-preference) {
+  .eyebrow b { animation: pulse 3.4s var(--ease-soft) infinite; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
 
 .hero h1 {
   font-size: clamp(2.6rem, 7.2vw, 4.75rem);
@@ -358,6 +514,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
    one machine; these divs stay sharp on every display and cost no bytes.
    ------------------------------------------------------------------------- */
 .shot {
+  position: relative;
   margin: 68px 0 0;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
@@ -374,10 +531,22 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   border-bottom: 1px solid var(--line);
   background: var(--bg-sunken);
 }
-.shot-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+.shot-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .shot-dot:nth-child(1) { animation: blink 4s var(--ease-soft) infinite; }
+  .shot-dot:nth-child(2) { animation: blink 4s var(--ease-soft) .5s infinite; }
+  .shot-dot:nth-child(3) { animation: blink 4s var(--ease-soft) 1s infinite; }
+}
+@keyframes blink {
+  0%, 70%, 100% { background: var(--line-strong); }
+  35% { background: var(--text-faint); }
+}
 .shot-title {
   margin-inline-start: 10px; font-family: var(--mono); font-size: 0.6875rem;
   color: var(--text-faint); letter-spacing: 0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 .shot-body { display: grid; grid-template-columns: 172px minmax(0, 1fr); min-height: 268px; }
@@ -392,9 +561,13 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   font-style: normal; font-size: 0.75rem; color: var(--text-faint);
   padding: 4px 9px;
 }
-.shot-nav i.on { background: var(--bg-sunken); color: var(--text); box-shadow: inset 2px 0 0 var(--text); }
+.shot-nav i.on {
+  background: var(--bg-sunken); color: var(--text);
+  box-shadow: inset 2px 0 0 var(--text);
+}
 
 .shot-main { padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.shot-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .shot-h {
   font-size: 0.9375rem; font-weight: 560; letter-spacing: -0.015em; color: var(--text);
 }
@@ -404,17 +577,11 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .shot-chip {
   font-family: var(--mono); font-size: 0.6875rem; color: var(--text-dim);
   border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px;
+  transition: color .16s var(--ease), border-color .16s var(--ease);
 }
 .shot-chip.on { color: var(--bg); background: var(--text); border-color: var(--text); }
-
-.shot-pane {
-  border: 1px solid var(--line); border-radius: 7px;
-  padding: 11px 13px; background: var(--bg);
-  font-family: var(--mono); font-size: 0.6875rem; line-height: 1.9;
-  color: var(--text-dim);
-}
-.shot-pane b { color: var(--text); font-weight: 500; }
-.shot-pane em { color: var(--accent); font-style: normal; }
+.shot:hover .shot-chip { color: var(--text-faint); }
+.shot:hover .shot-chip.on { color: var(--bg); background: var(--text); }
 
 /* The panes are equal height, which is what a real split view looks like, but
    they hug their contents rather than filling the window - an empty lower half
@@ -430,8 +597,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 /* ----------------------------------------------------------------- sections */
 /* Padded on both sides on purpose. The rule belongs to the top edge of its own
    section, so without space below the previous one the divider lands directly on
-   the block above it and reads as that block's bottom border - which is exactly
-   what it looked like before this was written down. */
+   the block above it and reads as that block's bottom border. */
 .section { padding: 96px 0; }
 .section-rule { border-top: 1px solid var(--line); }
 
@@ -462,19 +628,33 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   overflow: hidden;
 }
 .bento > * {
+  position: relative;
   padding: 26px 24px 28px;
   border-inline-end: 1px solid var(--line);
   border-block-end: 1px solid var(--line);
   margin-inline-end: -1px;
   margin-block-end: -1px;
-  transition: background .16s var(--ease);
+  transition: background .2s var(--ease);
+}
+/* A wash that rises from the bottom edge on hover. Contained by the cell's own
+   padding box, so it cannot bleed into its neighbour through the shared border. */
+.bento > *::after {
+  content: "";
+  position: absolute; inset-inline: 0; inset-block-end: 0; height: 0;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--text) 5%, transparent), transparent);
+  pointer-events: none;
+  transition: height .3s var(--ease);
 }
 .bento > *:hover { background: var(--bg-raised); }
+.bento > *:hover::after { height: 100%; }
 .bento h3 {
   margin: 0 0 8px; font-size: 1rem; font-weight: 560;
   letter-spacing: -0.018em;
+  transition: transform .2s var(--ease);
 }
 .bento p { margin: 0; color: var(--text-dim); font-size: 0.875rem; line-height: 1.6; }
+.bento > *:hover h3 { transform: translateX(3px); }
 .bento-num {
   font-family: var(--mono); font-size: 0.6875rem; color: var(--text-faint);
   letter-spacing: 0.06em; margin-bottom: 14px; display: block;
@@ -488,24 +668,34 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   display: grid; grid-template-columns: 64px minmax(0, 1fr);
   gap: 8px; align-items: start;
   padding: 26px 0; border-bottom: 1px solid var(--line);
+  transition: background .2s var(--ease), padding-inline-start .2s var(--ease);
 }
+.step:hover { background: var(--bg-raised); padding-inline-start: 10px; }
 .step::before {
   content: "0" counter(step);
   font-family: var(--mono); font-size: 0.8125rem; color: var(--text-faint);
   letter-spacing: 0.02em; padding-top: 3px;
+  transition: color .2s var(--ease);
 }
+.step:hover::before { color: var(--text); }
 .step h3 {
   margin: 0 0 6px; font-size: 1.0625rem; font-weight: 560; letter-spacing: -0.018em;
 }
 .step p { margin: 0; color: var(--text-dim); font-size: 0.9375rem; }
 
-/* A fact strip. Four numbers, hairline separated. */
+/* A fact strip. Four numbers, hairline separated. The count-up is driven by
+   assets/motion.js reading data-count; the final value is written in the markup
+   too, so a reader without JavaScript sees the right number immediately. */
 .facts {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
 }
-.fact { padding: 28px 24px; border-inline-end: 1px solid var(--line); }
+.fact {
+  padding: 28px 24px; border-inline-end: 1px solid var(--line);
+  transition: background .2s var(--ease);
+}
 .fact:last-child { border-inline-end: none; }
+.fact:hover { background: var(--bg-raised); }
 .fact b {
   display: block; font-size: 1.75rem; font-weight: 560;
   letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 6px;
@@ -543,10 +733,11 @@ html:not([data-theme="light"]) .i-sun { display: none; }
   color: var(--text-faint); margin: 0 0 14px;
 }
 .foot-col a {
-  display: block; color: var(--text-dim); font-size: 0.875rem;
-  padding: 4px 0;
+  display: flex; align-items: center;
+  min-height: 32px; color: var(--text-dim); font-size: 0.875rem;
+  transition: color .12s var(--ease), transform .18s var(--ease);
 }
-.foot-col a:hover { color: var(--text); }
+.foot-col a:hover { color: var(--text); transform: translateX(3px); }
 .foot-base {
   max-width: 1080px; margin: 44px auto 0; padding: 22px var(--edge) 0;
   border-top: 1px solid var(--line);
@@ -578,12 +769,30 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 }
 .rail-caption:first-child { padding-top: 0; }
 .rail-link {
-  display: block; padding: 6px 10px; border-radius: 5px;
+  position: relative;
+  display: flex; align-items: center;
+  padding: 6px 10px; border-radius: 5px;
+  min-height: 36px;
   color: var(--text-dim); font-size: 0.875rem; font-weight: 460;
-  transition: color .12s var(--ease), background .12s var(--ease);
+  transition: color .12s var(--ease), background .12s var(--ease),
+    transform .18s var(--ease);
 }
-.rail-link:hover { background: var(--bg-raised); color: var(--text); text-decoration: none; }
+.rail-link:hover {
+  background: var(--bg-raised); color: var(--text);
+  text-decoration: none; transform: translateX(2px);
+}
 .rail-link.is-active { color: var(--text); background: var(--bg-raised); font-weight: 540; }
+/* The active entry gets a bar rather than only a background tint, so it stays
+   findable in a long list. */
+.rail-link.is-active::before {
+  content: "";
+  position: absolute; inset-block: 7px; inset-inline-start: -1px;
+  width: 2px; border-radius: 1px; background: var(--text);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.motion .rail-link.is-active::before { animation: grow .45s var(--ease) both; }
+}
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
 .rail-foot { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
 .rail-foot .btn { width: 100%; }
@@ -602,7 +811,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .content > .steps, .content > .bento, .content > .facts,
 .content > .scroll-x { max-width: var(--measure); }
 
-.doc-head { margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+.doc-head { max-width: var(--measure); margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
 .doc-head h1 {
   font-size: clamp(2rem, 4.4vw, 2.75rem);
   line-height: 1.08; letter-spacing: -0.038em; font-weight: 560;
@@ -639,6 +848,19 @@ li::marker { color: var(--text-faint); }
 li > ul, li > ol { margin: 6px 0; }
 strong { font-weight: 560; }
 
+/* Prose links grow an underline from the left rather than snapping it on. */
+.content p a, .content li a, td a, .step p a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size .22s var(--ease), color .12s var(--ease);
+}
+.content p a:hover, .content li a:hover, td a:hover, .step p a:hover {
+  background-size: 100% 1px;
+  text-decoration: none;
+}
+
 code {
   font-family: var(--mono); font-size: 0.855em;
   background: var(--bg-raised);
@@ -656,22 +878,45 @@ code {
 pre { max-width: min(100%, 900px); }
 
 pre {
+  position: relative;
   background: var(--bg-raised); border: 1px solid var(--line);
   border-radius: var(--r); padding: 15px 17px;
   overflow-x: auto; direction: ltr; text-align: left;
   margin: 18px 0; line-height: 1.6;
   font-size: 0.8125rem;
+  transition: border-color .2s var(--ease);
 }
+pre:hover { border-color: var(--line-strong); }
 pre code {
   background: none; border: none; padding: 0; font-size: inherit;
   overflow-wrap: normal;
 }
 
+/* Copy button, added by motion.js only when it can work. */
+.copy {
+  position: absolute; top: 8px; inset-inline-end: 8px;
+  height: 28px; padding: 0 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 5px;
+  background: var(--bg-sunken); color: var(--text-dim);
+  font: inherit; font-size: 0.6875rem; font-family: var(--mono);
+  cursor: pointer;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity .18s var(--ease), transform .18s var(--ease),
+    color .12s var(--ease), border-color .12s var(--ease);
+}
+pre:hover .copy, .copy:focus-visible { opacity: 1; transform: none; }
+.copy:hover { color: var(--text); border-color: var(--line-strong); }
+.copy.is-done { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.copy svg { width: 13px; height: 13px; }
+
 blockquote {
   margin: 20px 0; padding: 12px 18px;
   border-inline-start: 2px solid var(--line-strong);
   color: var(--text-dim);
+  transition: border-inline-start-color .2s var(--ease);
 }
+blockquote:hover { border-inline-start-color: var(--text); }
 blockquote p { margin: 6px 0; }
 blockquote > :first-child { margin-top: 0; }
 blockquote > :last-child { margin-bottom: 0; }
@@ -683,6 +928,7 @@ table {
 th, td {
   border-bottom: 1px solid var(--line-faint);
   padding: 10px 14px; text-align: start; vertical-align: top;
+  transition: background .14s var(--ease);
 }
 th {
   background: var(--bg-raised); font-weight: 560;
@@ -702,7 +948,9 @@ details {
   border: 1px solid var(--line); border-radius: var(--r);
   padding: 12px 16px; margin: 16px 0;
   background: var(--bg-raised);
+  transition: border-color .18s var(--ease);
 }
+details[open] { border-color: var(--line-strong); }
 summary { cursor: pointer; font-weight: 540; font-size: 0.9375rem; }
 summary:hover { color: var(--accent); }
 details > *:not(summary) { margin-top: 12px; }
@@ -715,6 +963,7 @@ details > *:not(summary) { margin-top: 12px; }
   border: 1px solid var(--line); background: var(--bg-raised);
   color: var(--text-dim);
   margin-inline-end: 7px; margin-block: 4px;
+  transition: border-color .16s var(--ease), color .16s var(--ease);
 }
 .pill::before {
   content: ""; width: 5px; height: 5px; border-radius: 50%;
@@ -722,6 +971,7 @@ details > *:not(summary) { margin-top: 12px; }
 }
 .pill-ok { color: var(--ok); }
 .pill-warn { color: var(--warn); }
+.pill:hover { border-color: var(--line-strong); color: var(--text); }
 
 /* ---------------------------------------------------------------------- toc */
 .toc {
@@ -743,14 +993,21 @@ details > *:not(summary) { margin-top: 12px; }
 .toc-level-2:first-child > a { margin-top: 0; }
 .toc-level-3 > a { color: var(--text-faint); }
 .toc-item a {
-  display: block;
-  padding: 4px 0 4px 12px; margin-inline-start: -1px; line-height: 1.45;
+  display: flex; align-items: center;
+  padding: 4px 0 4px 12px; margin-inline-start: -1px;
+  min-height: 32px; line-height: 1.45;
   font-size: 0.8125rem;
   border-inline-start: 1px solid var(--line);
   transition: color .12s var(--ease), border-color .12s var(--ease);
 }
 .toc-level-3 > a { padding-inline-start: 24px; font-size: 0.78125rem; }
 .toc-item a:hover { color: var(--text); border-inline-start-color: var(--text); }
+
+/* The heading the reader is currently at, tracked by motion.js. */
+.toc-item a.is-current {
+  color: var(--text); border-inline-start-color: var(--text);
+  font-weight: 500;
+}
 
 /* Below the three-column threshold the right rail drops; the TOC moves into the
    flow as a disclosure so the headings are still reachable. */
@@ -767,7 +1024,6 @@ details > *:not(summary) { margin-top: 12px; }
 .foot-nav a { color: var(--text-dim); font-weight: 460; }
 .foot-nav a:hover { color: var(--text); }
 
-/* --------------------------------------------------------------- responsive */
 @media (max-width: 1180px) {
   .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 40px; }
   .toc-rail { display: none; }
@@ -778,6 +1034,13 @@ details > *:not(summary) { margin-top: 12px; }
   .top-nav { display: none; }
   .nav-toggle { display: grid; }
   .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+
+  /* A tablet is often touched with a stylus or a finger even with a mouse
+     attached, so the bar grows here too. This sits above the narrow-screen
+     rules below deliberately: they are the ones that reach 44px, and a later
+     rule with the same specificity would quietly undo that. */
+  .icon-btn, .search-icon-button, .bar .btn { height: 38px; }
+  .icon-btn, .search-icon-button { width: 38px; }
 
   .rail {
     position: fixed; inset-block: var(--header-h) 0; inset-inline-start: 0;
@@ -795,7 +1058,12 @@ details > *:not(summary) { margin-top: 12px; }
   .content > .bento, .content > .facts,
   .content > .scroll-x, pre { max-width: 100%; }
   .bento > * { padding: 22px 18px; }
-  .fact { border-inline-end: none; border-bottom: 1px solid var(--line); padding: 22px 18px; }
+  .fact {
+    border-inline-end: none;
+    border-bottom: 1px solid var(--line);
+    padding: 22px 18px;
+  }
+  .fact:last-child { border-bottom: none; }
 }
 
 @media (max-width: 640px) {
@@ -810,7 +1078,6 @@ details > *:not(summary) { margin-top: 12px; }
     display: none; width: auto; padding: 0 var(--edge);
     background: var(--bg); border-bottom: 1px solid var(--line);
   }
-  .site-header { position: sticky; }
   .bar { position: relative; }
   body.searching .search {
     display: block;
@@ -823,31 +1090,74 @@ details > *:not(summary) { margin-top: 12px; }
   /* "Download" alone is enough at this width; the hero carries the rest. */
   .bar .btn { padding-inline: 12px; }
 
+  /* 44px is the smallest target a finger reliably lands on. Everything in the
+     bar grows to it rather than being shrunk to fit. */
+  .bar .btn, .icon-btn, .search-icon-button { height: 44px; }
+  .icon-btn, .search-icon-button { width: 44px; }
+  .search input { height: 44px; }
+
   .hero { padding-top: 72px; }
-  .cta-row .btn { width: 100%; }
+  .cta-row .btn { width: 100%; height: 48px; }
   .step { grid-template-columns: 44px minmax(0, 1fr); }
+  .step:hover { padding-inline-start: 0; }
   .section { padding: 64px 0; }
   .shot-title { display: none; }
   .bento { grid-template-columns: minmax(0, 1fr); }
   .foot-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 28px; }
   .foot-brand { grid-column: 1 / -1; }
+  /* A hover wash on a touch screen sticks after the tap and never leaves. */
+  .bento > *:hover::after { height: 0; }
+  .bento > *:active::after { height: 100%; }
 }
 
 @media (min-width: 641px) {
   .search-icon-button { display: none !important; }
 }
 
+/* Coarse pointers get no hover states at all: they do not exist, and faking
+   them with :active leaves things stuck on. */
+@media (hover: none) {
+  .bento > *::after { transition: none; }
+  .bento > *:hover::after, .bento > *:hover h3 { transform: none; }
+  .copy { opacity: 1; transform: none; }
+}
+
+/* A finger needs 44px. A mouse pointer does not, and making every link on a
+   dense documentation rail 44px tall would push the list past the fold, so the
+   sizing follows the input rather than the screen.
+
+   This block comes last on purpose. The width-based rules above already set the
+   bar's height, and a media query of the same specificity that follows them
+   wins outright - which is how the header ended up 40px on a phone. */
+@media (pointer: coarse) {
+  .rail-link, .toc-item a, .foot-col a { min-height: 44px; }
+  .top-nav a { padding-block: 12px; }
+  /* Every button, not only the ones in the bar. The rail's download button is
+     the most-pressed control on the whole site and it was 40px. */
+  .btn { height: 44px; }
+  .icon-btn, .search-icon-button { height: 44px; width: 44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+  /* Not an animation: the reader needs to be able to see it. */
+  .progress { display: none; }
 }
 
 @media print {
-  .site-header, .rail, .toc-rail, .toc-inline, .page-foot, .search { display: none; }
+  .site-header, .rail, .toc-rail, .toc-inline, .page-foot, .search, .copy {
+    display: none;
+  }
   .shell { display: block; padding: 0; }
   .content { padding: 0; }
   body { background: #fff; color: #000; }
+  /* Reveal states are scoped to html.motion; print may run with the class set
+     and paint hidden content as blank paper. */
+  html.motion [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
