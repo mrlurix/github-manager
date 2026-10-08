@@ -71,14 +71,24 @@
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
     Consolas, "Liberation Mono", monospace;
 
-  --header-h: 60px;
+  --header-h: 58px;
+  /* The header floats 12px down and is --header-h tall, so content has to clear
+     that much more than the bar itself. Every sticky rail and every scroll
+     offset below is derived from these two rather than from --header-h alone. */
+  --header-top: 12px;
+  --header-clear: calc(var(--header-top) + var(--header-h) + 12px);
   --rail-w: 248px;
   --toc-w: 216px;
   --measure: 68ch;
   --edge: 24px;
 
-  --r: 6px;
-  --r-btn: 8px;
+  /* Round, deliberately. A 6px corner on a 40px button reads as square; the
+     ask was round, so the buttons go all the way and the header is a floating
+     pill rather than a full-bleed bar. Panels sit between the two: enough curve
+     to match, not so much that a card grid starts looking like bubbles. */
+  --r: 12px;
+  --r-btn: 999px;
+  --r-head: 18px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   /* A second curve, slower and with no overshoot. Used for anything that moves
      a long way: reveals and panels. */
@@ -121,7 +131,7 @@ html[data-theme="light"] {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-h) + 24px);
+  scroll-padding-top: calc(var(--header-clear) + 12px);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -191,29 +201,44 @@ svg {
   }
 }
 
-/* ------------------------------------------------------------------- header */
+/* ------------------------------------------------------------------- header
+   A floating bar rather than a full-bleed one. Rounding the corners of a bar
+   that runs edge to edge looks like a mistake - there is nothing for the curve
+   to sit inside. Insetting it turns the same idea into a shape: the header reads
+   as a control that happens to be always present, which is what it is.
+   ------------------------------------------------------------------------- */
 .site-header {
-  position: sticky; top: 0; z-index: 60;
+  position: sticky; top: 12px; z-index: 60;
   height: var(--header-h);
+  max-width: 1416px;
+  margin: 12px auto 0;
+  padding-inline: 6px;
   /* Translucent so content scrolling underneath reads as motion rather than as
      a second, sharper copy of itself. */
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-head);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
 }
+html[data-theme="light"] .site-header { box-shadow: 0 1px 3px rgba(0, 0, 0, .07); }
 
 .bar {
   height: 100%;
-  display: flex; align-items: center; gap: 16px;
-  max-width: 1440px; margin: 0 auto; padding: 0 var(--edge);
+  display: flex; align-items: center; gap: 14px;
+  padding-inline: 12px;
 }
 
-/* Reading progress. A two pixel accent line under the header that grows with the
+/* Reading progress. A two pixel accent line along the bottom that grows with the
    page. Scaled rather than resized: transform stays on the compositor, so it
-   does not cost a layout pass per frame. */
+   does not cost a layout pass per frame.
+
+   Inset from each end so it runs along the flat part of the curve. Without it
+   the line would sit under the rounded corners, where it is mostly invisible
+   and looks like a rendering fault at the two points it does show. */
 .progress {
-  position: absolute; inset-block-end: -1px; inset-inline-start: 0;
-  height: 2px; width: 100%;
+  position: absolute; inset-block-end: 0; inset-inline: var(--r-head);
+  height: 2px;
   background: var(--accent);
   transform: scaleX(0); transform-origin: 0 50%;
   opacity: .9;
@@ -249,7 +274,7 @@ svg {
 .icon-btn {
   display: grid; place-items: center;
   width: 34px; height: 34px; flex: none;
-  border: 1px solid var(--line); border-radius: var(--r);
+  border: 1px solid var(--line); border-radius: var(--r-btn);
   background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
   transition: color .12s var(--ease), border-color .12s var(--ease),
     background .12s var(--ease), transform .12s var(--ease);
@@ -271,7 +296,7 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .search-icon-button {
   display: none; place-items: center;
   width: 34px; height: 34px; flex: none;
-  border: 1px solid var(--line); border-radius: var(--r);
+  border: 1px solid var(--line); border-radius: var(--r-btn);
   background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
 }
 .search-icon-button:hover { color: var(--text); border-color: var(--line-strong); }
@@ -285,8 +310,8 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 
 .search input {
   width: 100%; height: 34px;
-  padding: 0 14px 0 33px;
-  border: 1px solid var(--line); border-radius: var(--r);
+  padding: 0 14px 0 34px;
+  border: 1px solid var(--line); border-radius: var(--r-btn);
   background: var(--bg-raised); color: var(--text);
   font: inherit; font-size: 0.8125rem; outline: none;
   transition: border-color .12s var(--ease), background .12s var(--ease);
@@ -344,11 +369,14 @@ html:not([data-theme="light"]) .i-sun { display: none; }
 .btn {
   position: relative; overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  height: 40px; padding: 0 18px;
+  height: 40px;
   border: 1px solid var(--line); border-radius: var(--r-btn);
   background: var(--bg-raised); color: var(--text);
   font: inherit; font-size: 0.875rem; font-weight: 520; letter-spacing: -0.008em;
   cursor: pointer; white-space: nowrap;
+  /* A pill needs more horizontal room than a rectangle of the same label, or
+     the curve eats the space the text needs. */
+  padding-inline: 20px;
   transition: background .14s var(--ease), border-color .14s var(--ease),
     color .14s var(--ease), transform .14s var(--ease),
     box-shadow .14s var(--ease);
@@ -422,7 +450,7 @@ html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 
 .btn:hover .btn-arrow { transform: rotate(45deg) translate(2px, -2px); }
 
 .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
-.cta-row .btn { height: 46px; padding: 0 22px; font-size: 0.9375rem; border-radius: 10px; }
+.cta-row .btn { height: 46px; padding: 0 26px; font-size: 0.9375rem; }
 
 /* ------------------------------------------------------------ marketing shell
    The landing page drops the docs rails: one centred column, full bleed, with
@@ -475,7 +503,7 @@ html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 
   letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--text-dim);
   border: 1px solid var(--line); border-radius: 999px;
-  padding: 4px 12px; margin-bottom: 26px;
+  padding: 5px 14px; margin-bottom: 26px;
   background: var(--bg-raised);
 }
 .eyebrow b { color: var(--text); font-weight: 500; }
@@ -517,7 +545,7 @@ html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 
   position: relative;
   margin: 68px 0 0;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 14px;
   background: var(--bg-raised);
   overflow: hidden;
   /* The glow sits behind the window, not around it. */
@@ -753,10 +781,12 @@ html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 
   gap: 48px;
   align-items: start;
 }
+/* The landing page has no shell, so its content needs the same clearance. */
+.marketing { padding-top: 40px; }
 
 .rail {
-  position: sticky; top: var(--header-h);
-  max-height: calc(100vh - var(--header-h));
+  position: sticky; top: var(--header-clear);
+  max-height: calc(100vh - var(--header-clear));
   overflow-y: auto; overscroll-behavior: contain;
   padding: 32px 0 28px;
 }
@@ -827,17 +857,17 @@ h2 {
   margin: 56px 0 16px; padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
   line-height: 1.25;
-  scroll-margin-top: calc(var(--header-h) + 24px);
+  scroll-margin-top: var(--header-clear);
 }
 h3 {
   font-size: 1.0625rem; letter-spacing: -0.018em; font-weight: 560;
   margin: 36px 0 10px; line-height: 1.4;
-  scroll-margin-top: calc(var(--header-h) + 24px);
+  scroll-margin-top: var(--header-clear);
 }
 h4 {
   font-size: 0.9375rem; font-weight: 560;
   margin: 26px 0 8px;
-  scroll-margin-top: calc(var(--header-h) + 24px);
+  scroll-margin-top: var(--header-clear);
 }
 p { margin: 16px 0; }
 .content > h2:first-child, .doc-head + h2 { margin-top: 40px; }
@@ -975,8 +1005,8 @@ details > *:not(summary) { margin-top: 12px; }
 
 /* ---------------------------------------------------------------------- toc */
 .toc {
-  position: sticky; top: var(--header-h);
-  max-height: calc(100vh - var(--header-h));
+  position: sticky; top: var(--header-clear);
+  max-height: calc(100vh - var(--header-clear));
   overflow-y: auto; overscroll-behavior: contain;
   padding: 40px 0 28px;
 }
@@ -1043,7 +1073,7 @@ details > *:not(summary) { margin-top: 12px; }
   .icon-btn, .search-icon-button { width: 38px; }
 
   .rail {
-    position: fixed; inset-block: var(--header-h) 0; inset-inline-start: 0;
+    position: fixed; inset-block: var(--header-clear) 0; inset-inline-start: 0;
     width: 288px; max-height: none;
     background: var(--bg); border-inline-end: 1px solid var(--line);
     padding: 24px 16px; z-index: 55;
@@ -1067,9 +1097,12 @@ details > *:not(summary) { margin-top: 12px; }
 }
 
 @media (max-width: 640px) {
-  :root { --edge: 16px; }
-  .bar { gap: 8px; }
+  :root { --edge: 16px; --header-top: 8px; }
+  .bar { gap: 8px; padding-inline: 6px; }
   .brand span { display: none; }
+  /* Nearly the full width, so the pill has room to be a pill. The margin is
+     what keeps the curve from being cut off at the screen edge. */
+  .site-header { margin-inline: 10px; padding-inline: 4px; }
 
   /* The search box becomes an overlay so the bar keeps room to breathe. */
   .search-icon-button { display: grid; }
@@ -1081,14 +1114,17 @@ details > *:not(summary) { margin-top: 12px; }
   .bar { position: relative; }
   body.searching .search {
     display: block;
-    position: fixed; inset-block-start: 0; z-index: 70;
-    padding-block: 14px;
+    /* Covers the whole width when open. The bar is rounded, so an overlay
+       clipped to its box would leave square corners floating over it. */
+    position: fixed; inset-inline: 0; inset-block-start: 0; z-index: 70;
+    padding: 14px var(--edge);
+    border-bottom: 1px solid var(--line);
   }
   body.searching .search-icon-button { visibility: hidden; }
   .results { inset-inline: var(--edge); }
 
   /* "Download" alone is enough at this width; the hero carries the rest. */
-  .bar .btn { padding-inline: 12px; }
+  .bar .btn { padding-inline: 14px; }
 
   /* 44px is the smallest target a finger reliably lands on. Everything in the
      bar grows to it rather than being shrunk to fit. */

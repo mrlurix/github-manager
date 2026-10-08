@@ -212,6 +212,48 @@ console.log("\nthe arrow:");
     !!body(".btn:hover .btn-arrow"), "no .btn:hover .btn-arrow rule");
 }
 
+console.log("\nround, not square:");
+{
+  // The ask was round. A 6px corner on a 40px button reads as square, so the
+  // buttons go all the way to a pill and the panels take the larger --r, or the
+  // two look like they came from different sites.
+  const root = /:root\s*\{([\s\S]*?)\n\}/.exec(css);
+  const token = (name) => {
+    const m = root && new RegExp(name + ":\\s*([^;]+)").exec(root[1]);
+    return m ? m[1].trim() : null;
+  };
+  check("the button token is a full pill", token("--r-btn") === "999px",
+    String(token("--r-btn")));
+  check("the panel token is properly round", parseInt(token("--r"), 10) >= 10,
+    String(token("--r")));
+  check("the header has its own, larger radius",
+    parseInt(token("--r-head"), 10) >= parseInt(token("--r"), 10),
+    String(token("--r-head")));
+
+  const head = body(".site-header");
+  check("the header is inset, so the curve has an edge to sit inside",
+    !!head && /margin:/.test(head.body) && /border:/.test(head.body),
+    head && JSON.stringify(head.body.slice(0, 90)));
+  check("it is rounded, not a full-bleed bar with square corners",
+    !!head && /border-radius:/.test(head.body) && !/border-bottom:\s*1px/.test(head.body),
+    head && JSON.stringify(head.body.slice(0, 110)));
+
+  // Every interactive thing inherits the pill, so none of them is left square.
+  const square = all.filter(r =>
+    r.media === 0 &&
+    /(^|[\s,>])\.(btn|icon-btn|search-icon-button)(\s|,|:|\{|$)/.test(r.selector) &&
+    /border-radius/.test(r.body) &&
+    !/999px|50%|--r-btn/.test(r.body));
+  check("nothing interactive was left square", square.length === 0,
+    square.map(r => r.selector).join(" | "));
+
+  // And a pill needs the horizontal room, or the curve eats the label.
+  const btn = body(".btn");
+  check("a pill button is given the extra padding it needs",
+    !!btn && /padding-inline:\s*1[6-9]px|padding-inline:\s*2\dpx/.test(btn.body),
+    btn && JSON.stringify(btn.body.slice(0, 140)));
+}
+
 console.log("\nreduced motion turns it all off:");
 {
   const blanket = /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition-duration:\s*0\.01ms/.test(css);

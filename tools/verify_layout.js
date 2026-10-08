@@ -49,8 +49,21 @@ async function revealState(page) {
  *  rather than in the stylesheet because it is a property of the harness, not of
  *  the site.
  */
-async function open(page, url, { width = 1440, height = 1000 } = {}) {
+async function open(page, url, { width = 1440, height = 1000, beforeLoad = false } = {}) {
   await page.setViewport({ width, height });
+  /* On a deep link the browser performs its anchor jump during load, so the
+     rule has to be in place before the document exists. Injected afterwards it
+     arrives after a smooth scroll that never finishes without a compositor,
+     and the page reads as though it never moved. */
+  if (beforeLoad) {
+    await page.evaluateOnNewDocument(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const s = document.createElement("style");
+        s.textContent = "html{scroll-behavior:auto!important}";
+        document.head.appendChild(s);
+      });
+    });
+  }
   await page.goto(url, { waitUntil: "load" });
   await page.addStyleTag({ content: "html{scroll-behavior:auto!important}" });
   return page;
@@ -659,7 +672,7 @@ function serve() {
   console.log("\nnothing is hidden on a deep link:");
   {
     const page = await browser.newPage();
-    await open(page, `${base}/features.html#webhooks`);
+    await open(page, `${base}/features.html#webhooks`, { beforeLoad: true });
     await new Promise(r => setTimeout(r, 900));
     const deep = await page.evaluate(() => {
       const anchor = document.getElementById("webhooks");
@@ -923,6 +936,112 @@ function serve() {
     }
     check("the hover and arrow checks ran", result.status === 0,
       (result.stderr || "").split(/\r?\n/).filter(Boolean).slice(0, 2).join(" "));
+  }
+
+  /* Round corners. The ask was round, and 6px on a 40px button reads as square -
+     so the buttons go to a full pill and the header becomes a floating one,
+     because rounding the corners of a bar that runs edge to edge looks like a
+     mistake rather than a shape. */
+  console.log("\nthe header and the buttons are round:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/index.html`);
+
+    const round = await page.evaluate(() => {
+      const half = (n) => {
+        const box = n.getBoundingClientRect();
+        return Math.max(box.width, box.height) / 2;
+      };
+      const box = (n) => {
+        // A DOMRect does not survive the trip out of the page - width and
+        // height live on its prototype, so the properties come back undefined.
+        const r = n.getBoundingClientRect();
+        return { width: r.width, height: r.height, left: r.left, top: r.top };
+      };
+      const button = document.querySelector(".hero .btn-primary");
+      const head = document.querySelector(".site-header");
+      return {
+        buttonRadius: parseFloat(getComputedStyle(button).borderTopLeftRadius),
+        headerRadius: parseFloat(getComputedStyle(head).borderTopLeftRadius),
+        headerBox: box(head),
+        headerInset: box(head).left,
+        viewport: window.innerWidth,
+        half: half(button),
+      };
+    });
+
+    check("the button is a full pill",
+      round.buttonRadius >= round.half - 1,
+      `${round.buttonRadius}px of a ${Math.round(round.half)}px half-height`);
+
+    check("the header has a real curve",
+      round.headerRadius >= 12, `${round.headerRadius}px`);
+
+    check("the header is inset from the edge",
+      round.headerInset >= 8 && round.headerInset < round.viewport / 4,
+      `${round.headerInset}px inset at ${round.viewport}px wide`);
+
+    check("the header is a bar and not a slab",
+      Math.round(round.headerBox.height) >= 44 &&
+      round.headerBox.width > round.headerBox.height * 8,
+      `${Math.round(round.headerBox.width)}x${Math.round(round.headerBox.height)}`);
+
+    // A pill on a 380px screen has to leave room for the label.
+    await open(page, `${base}/index.html`, { width: 380, height: 800 });
+    const narrow = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll(".cta-row .btn")].map(b => {
+        const r = b.getBoundingClientRect();
+        return {
+          text: b.textContent.trim().slice(0, 24),
+          fits: b.scrollWidth <= b.clientWidth + 1,
+          wide: Math.round(r.width),
+        };
+      });
+      return rows;
+    });
+    check("the pill buttons still fit their labels at 380px",
+      narrow.every(r => r.fits), JSON.stringify(narrow));
+    check("there are two of them", narrow.length >= 2, String(narrow.length));
+    await page.close();
+  }
+
+  /* The floating header changes what "sticky" has to clear. A rail pinned to
+     the old offset ends up underneath the bar, and an anchor jump lands a
+     heading behind it. */
+  console.log("\nthe floating header does not cover anything:");
+  {
+    const page = await browser.newPage();
+    await open(page, `${base}/features.html`, { width: 1440, height: 1000 });
+    const clear = await page.evaluate(() => {
+      const head = document.querySelector(".site-header").getBoundingClientRect();
+      const rail = document.querySelector(".rail").getBoundingClientRect();
+      const toc = document.querySelector(".toc-rail");
+      return {
+        headBottom: Math.round(head.bottom),
+        railTop: Math.round(rail.top),
+        tocTop: toc ? Math.round(toc.getBoundingClientRect().top) : null,
+        contentTop: Math.round(document.querySelector(".content").getBoundingClientRect().top),
+      };
+    });
+    check("the rail starts below the header", clear.railTop >= clear.headBottom,
+      JSON.stringify(clear));
+    check("the content starts below the header", clear.contentTop >= clear.headBottom - 1,
+      JSON.stringify(clear));
+    check("the heading list starts below the header",
+      clear.tocTop === null || clear.tocTop >= clear.headBottom - 1, JSON.stringify(clear));
+
+    // And an anchor jump has to leave the heading visible, not behind it.
+    await open(page, `${base}/features.html#webhooks`, { beforeLoad: true });
+    await new Promise(r => setTimeout(r, 700));
+    const anchored = await page.evaluate(() => {
+      const head = document.querySelector(".site-header").getBoundingClientRect();
+      const target = document.getElementById("webhooks").getBoundingClientRect();
+      return { headBottom: Math.round(head.bottom), targetTop: Math.round(target.top) };
+    });
+    check("an anchor jump does not land behind the header",
+      anchored.targetTop >= anchored.headBottom,
+      JSON.stringify(anchored));
+    await page.close();
   }
 
   console.log("\nfonts:");
