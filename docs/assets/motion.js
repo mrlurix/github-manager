@@ -23,14 +23,17 @@
   var reduced = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* Nothing here is worth animating for a reader who asked for none of it. The
-     page still gets the progress bar's markup, but it is display:none in that
-     case, and every reveal is forced open below. */
-  if (reduced || !("IntersectionObserver" in window)) {
+  /* A reader who asked for no motion should get a still page - but the *same*
+     page. The copy button, the table-of-contents tracking and the progress bar
+     are not animations; they are a control and two pieces of navigation, and
+     returning early here took all three away from anyone with the setting on.
+     So this skips the reveals only, and falls through to the features. */
+  var still = reduced || !("IntersectionObserver" in window);
+
+  if (still) {
     document.querySelectorAll("[data-reveal]").forEach(function (node) {
       node.classList.add("is-revealed");
     });
-    return;
   }
 
   // ------------------------------------------------------------------ reveals
@@ -58,6 +61,9 @@
   }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
 
   function arm() {
+    /* Nothing to observe, and nothing to observe with. */
+    if (still) return;
+
     var nodes = document.querySelectorAll("[data-reveal]");
     var group = 0;
     var lastGroup = null;
@@ -144,15 +150,22 @@
   }
 
   /* The class is added last, once every observer exists. Anything that reads it
-     as "animations are on" is therefore looking at a page that will finish. */
+     as "animations are on" is therefore looking at a page that will finish.
+
+     Only when motion is actually wanted: the class is what makes the stylesheet
+     hide the reveals, and a still page has nothing to hide - it has already
+     been opened above. */
   arm();
-  root.classList.add("motion");
+  if (!still) root.classList.add("motion");
 
   // ---------------------------------------------------------------- counters
   /* The figures count up to the number already written in the markup. Reading
      the number rather than taking it as an argument is the point: the value is
      in the HTML, so a reader without JavaScript, or with it blocked, still
-     reads "63 MB" rather than a zero. */
+     reads "63 MB" rather than a zero.
+
+     The count-up is decoration over a value that is already correct, so a still
+     page is left showing the real figure rather than animating to it. */
   var counters = new IntersectionObserver(function (entries) {
     for (var i = 0; i < entries.length; i++) {
       if (!entries[i].isIntersecting) continue;
@@ -203,6 +216,9 @@
   }
 
   function armCounters() {
+    /* The markup already holds the finished value, so there is nothing to do on
+       a still page - and animating to it would contradict the setting. */
+    if (still) return;
     var nodes = document.querySelectorAll("[data-count]");
     for (var i = 0; i < nodes.length; i++) counters.observe(nodes[i]);
   }
@@ -321,6 +337,8 @@
   }
 
   // ------------------------------------------------------------------- start
+  /* Copy buttons and the table of contents run for every reader, still or not.
+     Counters are the one exception and they opt out inside armCounters(). */
   function start() {
     armCounters();
     armProgress();
