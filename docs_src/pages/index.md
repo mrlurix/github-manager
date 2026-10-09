@@ -6,7 +6,7 @@ description: A portable GitHub client for Windows, with an AI assistant that onl
 <div class="marketing">
 
 <div class="hero">
-  <p class="eyebrow" data-reveal="scale"><b>v1.4.0</b> · Windows · one portable file</p>
+  <p class="eyebrow" data-reveal="scale"><b>v{version}</b> · Windows · one portable file</p>
   <h1 data-reveal="scale">GitHub, as a desktop app</h1>
   <p class="lede" data-reveal="scale">
     A single exe that does the work the website makes you do by hand — with an

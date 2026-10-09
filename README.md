@@ -56,8 +56,10 @@ and give each version its own download.
 | **AI Assistant** | A chat scoped to GitHub that can be grounded in the selected repository's real contents. |
 | **Dashboard** | Profile snapshot, live metrics, recent public activity, and an AI review of your whole GitHub presence. |
 
-Modern flat UI with a dark and a light theme, six accent colours, adjustable font
-and UI scale, HiDPI support, and a matching native title bar.
+A monochrome UI with a dark and a light theme, adjustable font and UI scale,
+HiDPI support, and a matching native title bar. The app and the documentation
+site share one design system and one logo, so a screenshot of either is the same
+picture.
 
 ---
 
@@ -91,12 +93,12 @@ reach any service other than the GitHub API and the AI provider you configured.
 | --- | --- |
 | ![README Studio](screenshots/02_readme_dark.png) | ![Repositories](screenshots/03_repos_dark.png) |
 | **README Studio** — generate, refine and commit | **Repositories** — create, tune and organise |
-| ![Issues](screenshots/04_issues_dark.png) | ![Releases](screenshots/05_releases_dark.png) |
-| **Issues & PRs** — triage and reply | **Releases & commits** — notes and messages |
-| ![Assistant](screenshots/06_assistant_dark.png) | ![Account](screenshots/07_account_dark.png) |
-| **AI Assistant** — scoped to GitHub | **Account** — profile and organisations |
-| ![Settings dark](screenshots/08_settings_dark.png) | ![Settings light](screenshots/08_settings_light.png) |
-| **Settings** — dark theme | **Settings** — light theme |
+| ![Repository](screenshots/04_repoadmin_dark.png) | ![Issues](screenshots/05_issues_dark.png) |
+| **Repository** — files, branches, tags, collaborators | **Issues & PRs** — triage and reply |
+| ![Releases](screenshots/06_releases_dark.png) | ![Assistant](screenshots/07_assistant_dark.png) |
+| **Releases & commits** — notes and messages | **AI Assistant** — scoped to GitHub |
+| ![Account](screenshots/08_account_dark.png) | ![Settings dark](screenshots/09_settings_dark.png) |
+| **Account** — profile and organisations | **Settings** — dark theme |
 
 ---
 
@@ -173,9 +175,17 @@ or
 python build.py --clean
 ```
 
-The build renders an icon, generates the PyInstaller spec, and produces a single
-self-contained `dist/GitHubManager.exe`. Copy that one file to any Windows
-machine — no Python, no installer, no admin rights.
+The build renders the app icon from the same mark the site uses, generates the
+PyInstaller spec, and produces a single self-contained `dist/GitHubManager.exe`.
+Copy that one file to any Windows machine — no Python, no installer, no admin
+rights.
+
+To rebuild just the icon — after changing the logo, or just to see it change
+without waiting out a full build:
+
+```bash
+python build.py --icon-only
+```
 
 The script verifies its own output: a onefile build that accidentally produced
 a folder layout (or an implausibly small exe) is reported as a build failure,
@@ -196,7 +206,7 @@ truly portable — put it on a USB stick and carry your settings with you.
 
 ```
 data/
-  settings.json    preferences: theme, accent, AI model, ...
+  settings.json    preferences: theme, font, UI scale, AI model, ...
   secrets.json     token and API key, encrypted
 ```
 
@@ -239,9 +249,16 @@ github_manager/
       context.py              shared services handed to every page
       main_window.py          sidebar navigation and page stack
       pages/                  welcome, dashboard, readme, repositories,
-                              issues, releases, assistant, account, settings
-  tests/                      eight suites, no network access required
-  tools/                      screenshot and crop helpers
+                              repo_admin, issues, releases, assistant,
+                              account, settings
+  tests/                      eleven suites, no network access required
+  docs_src/                   the documentation site's source
+  tools/
+    build_docs.py             renders docs_src/ into the deployable docs/
+    make_logo.py              generates the logo for both the site and the app
+    screenshot.py crop.py     render every app page to PNG
+    deploy_site.py            push docs/ to the Pages branch
+    verify_*.js               browser checks for the site
 ```
 
 `app/core/` has no Qt imports at all, which keeps the GitHub and AI logic
@@ -264,10 +281,32 @@ python tests/run_all_tests.py
 | `smoke_test.py` | Every page builds and renders against a stubbed GitHub API, including failure paths |
 | `feature_test.py` | End-to-end flows driven through the real widgets: create / edit / delete a repository, commit a README, reply to and draft issues, publish a release, edit the profile, upload an avatar, change every setting |
 | `ai_flow_test.py` | Streaming generation, refinement, commit path, and the scope lock blocking off-topic input |
+| `repo_admin_test.py` | The Repository page: file tree, filter, preview, branches, tags, collaborators, webhooks |
 | `layout_test.py` | Every page at 1080×680 through 1920×1080 — catches collapsed rows and clipped controls |
+| `responsive_test.py` | Narrow, medium and wide windows, including the sidebar collapse and the minimum usable width |
+| `upload_test.py` | File upload and delete, including multi-file, cancellation and failure paths |
 
 The suites stub both the GitHub API and the AI provider, so they run offline and
 never touch your account.
+
+### The site's own checks
+
+The documentation site is verified in a real browser rather than by inspection:
+
+```bash
+npm install --no-save puppeteer
+node tools/verify_layout.js          # 222 checks — layout, responsive, contrast
+node tools/verify_hover.js           #  35 checks — hover states, via the cascade
+node tools/verify_site_security.js   # 128 checks — CSP, headers, external links
+node tools/verify_search.js          #  43 checks — search across every page
+node tools/verify_motion.js          #  84 checks — reveals, and reduced motion
+```
+
+`verify_motion.js` exists because "the animations are gone" is not a report you
+can act on. A stylesheet can be full of transitions that match nothing, and a
+script can run cleanly while revealing nothing, so it measures what a reader
+would actually see — in pixels, in both motion settings — and fails if any
+section is ever left invisible.
 
 ### The mock GitHub server
 
@@ -350,16 +389,20 @@ exposure is limited to "a third party sees which repository page was opened".
 An English documentation site with full-text search lives at
 **<https://mrlurix.github.io/github-manager/>**.
 
-It is a static site generated from docs_src/ by python tools/build_docs.py
-and served straight from the docs/ folder by GitHub Pages - no Node, no build
+It is a static site generated from `docs_src/` by `python tools/build_docs.py`
+and served straight from the `docs/` folder by GitHub Pages — no Node, no build
 service. Search folds case, accents and typographic punctuation, and handles
 Arabic text where the docs mention a Persian README, so a loosely typed query
-still finds the right page. Verify it with:
+still finds the right page. Its fonts are self-hosted, so the
+Content-Security-Policy can keep `font-src 'self'` and there is no third party
+in the critical path.
 
-`ash
-node tools/verify_search.js
-`
+The app and the site share one design system and one logo. `python
+tools/make_logo.py` writes the site's SVG and the app's copy in the same pass,
+so the two cannot drift apart.
 
+> This is an independent client and is not affiliated with, endorsed by, or
+> supported by GitHub, Inc. The Octocat mark is GitHub's.
 ---
 
 ## Licence

@@ -38,9 +38,14 @@ RELEASES_URL = f"{REPO_URL}/releases/latest"
 # link keeps working after the next release. Hardcoding a tag here would 404.
 EXE_URL = f"{RELEASES_URL}/download/GitHubManager.exe"
 
-#: Kept in step with app/config.py. Only used for the visible download label, so
-#: a mismatch is cosmetic, but it is still wrong to show a stale version.
-APP_VERSION = "1.4.0"
+#: Read from app/config.py rather than kept in step by hand. It used to be a
+#: second copy with a comment asking the reader to keep them matching, which is
+#: a comment that works exactly once.
+APP_VERSION = re.search(
+    r'^APP_VERSION\s*=\s*"([^"]+)"',
+    (ROOT / "app" / "config.py").read_text(encoding="utf-8"),
+    re.MULTILINE,
+).group(1)
 
 #: Ordered navigation, grouped so the sidebar reads as sections rather than one
 #: flat list. Each caption introduces the group beneath it.
@@ -712,7 +717,12 @@ def marketing_layout(
     The grid field behind the hero is what carries the structure on a page that
     has no sidebar to divide the width, so it is applied to the body here rather
     than to a section the markdown would have to know about.
+
+    ``{version}`` in the markdown is filled in from app/config.py. It was a
+    hand-written "v1.4.0" in the page source, which is the kind of thing that is
+    correct on release day and wrong for the eleven months after it.
     """
+    body = body.replace("{version}", APP_VERSION)
     return f"""<!DOCTYPE html>
 <html lang="en" dir="ltr" class="gridfield">
 <head>
