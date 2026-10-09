@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import sys
 import traceback
 from pathlib import Path
@@ -73,6 +74,35 @@ def _make_icon() -> QIcon | None:
         return None
 
 
+#: Must be a dotted, reverse-DNS-looking string and must never change between
+#: releases. Windows keys its taskbar and icon caches on it, so a stable value is
+#: what lets an upgraded executable replace its own cached icon, and an unstable
+#: one leaves every past version's icon behind in the cache.
+APP_USER_MODEL_ID = "mrlurix.GitHubManager.Desktop"
+
+
+def _claim_taskbar_identity(app: QApplication) -> None:
+    """Give the taskbar a stable identity for this app.
+
+    Without an AppUserModelID, Windows derives one from the executable's path.
+    A portable app is copied to wherever the user likes, so the same build
+    presents a different identity in each place, and the taskbar and the icon
+    cache accumulate one entry per location instead of one per application.
+
+    Called before any window exists, which is what the API requires. A failure
+    here is not worth interrupting startup for: the app runs, it just inherits
+    whatever identity Windows guesses.
+    """
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            APP_USER_MODEL_ID
+        )
+    except Exception:
+        # Present on every Windows this app targets, but an app that will not
+        # start over a missing taskbar nicety would be a worse trade.
+        pass
+
+
 def main() -> int:
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
@@ -83,6 +113,8 @@ def main() -> int:
     app.setApplicationVersion(APP_VERSION)
     app.setOrganizationName(ORG_NAME)
     app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, False)
+
+    _claim_taskbar_identity(app)
 
     icon = _make_icon()
     if icon is not None:

@@ -15,6 +15,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+
+sys.path.insert(0, str(ROOT))
+from app.config import APP_VERSION  # noqa: E402
 APP_NAME = "GitHubManager"
 ENTRY = ROOT / "main.py"
 DIST = ROOT / "dist"
@@ -115,14 +118,26 @@ def make_icon() -> Path | None:
 
 
 def version_info(icon: Path | None) -> Path | None:
-    """Generate a Windows version resource so the exe has proper metadata."""
+    """Generate a Windows version resource so the exe has proper metadata.
+
+    The numbers come from APP_VERSION rather than being written out. This used
+    to say 1.0.0 while the app was at 1.5.0, which is not merely cosmetic:
+    Windows uses the version resource to decide whether a file it has seen
+    before has changed, so an exe whose version never moves is an exe a cache is
+    entitled to keep serving the old copy of. That is how a replaced executable
+    keeps the icon it had three releases ago.
+    """
     target = ROOT / "build_assets" / "version_info.txt"
     target.parent.mkdir(parents=True, exist_ok=True)
+
+    # FixedFileInfo wants four integers. A two-part version pads to (1, 5, 0, 0).
+    parts = (APP_VERSION.split("-", 1)[0].split(".") + ["0", "0", "0"])[:4]
+    quad = ", ".join(str(int(p)) for p in parts)
     target.write_text(
         f"""VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 0),
-    prodvers=(1, 0, 0, 0),
+    filevers=({quad}),
+    prodvers=({quad}),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -135,13 +150,13 @@ def version_info(icon: Path | None) -> Path | None:
       StringTable(
         u'040904B0',
         [StringStruct(u'CompanyName', u'GitHub Manager'),
-         StringStruct(u'FileDescription', u'GitHub Manager - AI powered GitHub client'),
-         StringStruct(u'FileVersion', u'1.0.0'),
+         StringStruct(u'FileDescription', u'GitHub Manager - portable GitHub client'),
+         StringStruct(u'FileVersion', u'{APP_VERSION}'),
          StringStruct(u'InternalName', u'{APP_NAME}'),
          StringStruct(u'LegalCopyright', u'MIT'),
          StringStruct(u'OriginalFilename', u'{APP_NAME}.exe'),
          StringStruct(u'ProductName', u'GitHub Manager'),
-         StringStruct(u'ProductVersion', u'1.0.0')])
+         StringStruct(u'ProductVersion', u'{APP_VERSION}')])
     ]),
     VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
   ]
@@ -207,19 +222,26 @@ coll = COLLECT(
 '''
 
 
-def spec_text(icon: Path | None, onedir: bool) -> str:
+def spec_text(icon: Path | None, onedir: bool, version: Path | None = None) -> str:
     """Render the spec for a onefile (default) or onedir PyInstaller build.
 
     The flag is named ``onedir`` to match ``--onedir`` and its caller; getting
     this backwards silently produces a folder build while the script still
     reports a single portable file.
+
+    ``version`` is passed to PyInstaller as well as generated. It used to be
+    written out and then never referenced, so every exe so far reported an empty
+    FileVersion in Explorer's properties - and, because Windows uses that field
+    to tell one build from another, an exe whose version never moves is one a
+    cache is entitled to keep serving an old copy of.
     """
     icon_line = f"\n    icon={str(icon)!r}," if icon else ""
+    version_line = f"\n    version={str(version)!r}," if version else ""
     text = SPEC_TEMPLATE.format(
         hiddenimports=HIDDEN_IMPORTS,
         excludes=EXCLUDES,
         name=APP_NAME,
-        icon_line=icon_line,
+        icon_line=icon_line + version_line,
     )
     if not onedir:
         return text
@@ -253,9 +275,9 @@ def main() -> int:
     run([sys.executable, "-m", "pip", "install", "--upgrade", "pyinstaller"])
 
     icon = make_icon()
-    version_info(icon)
+    version = version_info(icon)
 
-    SPEC.write_text(spec_text(icon, onedir), encoding="utf-8")
+    SPEC.write_text(spec_text(icon, onedir, version), encoding="utf-8")
     print(f"spec written: {SPEC}")
 
     run([sys.executable, "-m", "PyInstaller", str(SPEC), "--noconfirm", "--clean"])
