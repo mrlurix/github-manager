@@ -113,11 +113,11 @@ class DashboardPage(Page):
         grid.setSpacing(12)
         specs = [
             ("repos", "Repositories", "folder", ""),
-            ("stars", "Stars earned", "star", "#f5a524"),
-            ("followers", "Followers", "users", "#3aa0ff"),
+            ("stars", "Stars earned", "star", ""),
+            ("followers", "Followers", "users", ""),
             ("following", "Following", "user", ""),
             ("orgs", "Organisations", "shield", ""),
-            ("private", "Private repos", "lock", "#6b7690"),
+            ("private", "Private repos", "lock", "text_faint"),
         ]
         for index, (key, caption, icon, color) in enumerate(specs):
             tile = StatTile("-", caption, icon=icon, accent=color)
@@ -183,7 +183,7 @@ class DashboardPage(Page):
         self.ai_view.setObjectName("MarkdownView")
         self.ai_view.setMinimumHeight(150)
         self.ai_view.setHtml(
-            '<div style="color:#6b7690">Connect the AI provider in Settings to get '
+            '<div style="color:#737373">Connect the AI provider in Settings to get '
             "a personalised review of your GitHub presence.</div>"
         )
         self.ai_card.add(self.ai_view)
@@ -369,7 +369,7 @@ class DashboardPage(Page):
             row = QHBoxLayout()
             row.setSpacing(9)
             icon = QLabel()
-            icon.setPixmap(icon_svg(EVENT_ICONS.get(event.get("type", ""), "dot"), "#7c6cff", 16).pixmap(16, 16))
+            icon.setPixmap(icon_svg(EVENT_ICONS.get(event.get("type", ""), "dot"), "accent", 16).pixmap(16, 16))
             row.addWidget(icon, 0, Qt.AlignmentFlag.AlignTop)
             text = describe_event(event)
             lab = label(text, "dim")
@@ -389,7 +389,7 @@ class DashboardPage(Page):
             return
         self.ai_button.setEnabled(False)
         self.ai_button.setText("Analysing...")
-        self.ai_view.setHtml('<div style="color:#9aa5bb">Reading profile, repositories and topics…</div>')
+        self.ai_view.setHtml('<div style="color:#a1a1a1">Reading profile, repositories and topics…</div>')
 
         def build() -> Any:
             profile = self.ctx.profile or self.ctx.github.get_authenticated_user()
@@ -471,9 +471,14 @@ class DashboardPage(Page):
         self.ai_view.setHtml(f"<style>{markdown_css()}</style>" + _md(text))
 
     def _on_ai_error(self, message: str) -> None:
-        self.ai_view.setHtml(
-            f'<div style="color:#f2555a">{message}</div>'
-        )
+        # Read from the palette rather than written out. Red for an error is
+        # information, so it stays - but it has to be the same red as every other
+        # error, and this was the one place in the app still carrying a hex that
+        # happened to look right.
+        from ..theme import build_palette
+
+        colour = build_palette(self.ctx.config.get("theme", "dark"))["danger"]
+        self.ai_view.setHtml(f'<div style="color:{colour}">{message}</div>')
         self.notify(message, "error")
 
     def _reset_ai_button(self) -> None:
@@ -502,7 +507,7 @@ class RepoChip(QWidget):
         top.addWidget(name)
         top.addStretch(1)
         stars = QLabel()
-        stars.setPixmap(icon_svg("star", "#f5a524", 13).pixmap(13, 13))
+        stars.setPixmap(icon_svg("star", "warning", 13).pixmap(13, 13))
         stars.setToolTip(f"{repo.stars} stars")
         top.addWidget(stars)
         count = label(str(repo.stars), "faint")

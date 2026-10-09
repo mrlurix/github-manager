@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import sys
 import traceback
 from pathlib import Path
@@ -11,10 +10,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PySide6.QtCore import Qt  # noqa: E402
-from PySide6.QtGui import QIcon  # noqa: E402
+from PySide6.QtGui import QGuiApplication, QIcon  # noqa: E402
 from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
-from app.config import APP_NAME, APP_VERSION, ORG_NAME, app_root  # noqa: E402
+from app.config import APP_NAME, APP_VERSION, ORG_NAME  # noqa: E402
 
 
 def _excepthook(exc_type, exc_value, exc_tb) -> None:  # pragma: no cover
@@ -33,37 +32,41 @@ def _excepthook(exc_type, exc_value, exc_tb) -> None:  # pragma: no cover
         pass
 
 
-def _make_icon() -> QIcon | None:
-    """Render the app icon at runtime so no binary asset is required."""
+def _system_is_dark() -> bool:
+    """Whether the OS is in dark mode, or whether we could not tell.
+
+    Defaults to dark. A white mark is the one that survives being wrong more
+    often: Windows light taskbars are the minority and app icons are usually
+    shown over a wallpaper thumbnail anyway, while a white mark on a dark
+    surface is the combination the app itself is designed around.
+    """
     try:
-        from PySide6.QtCore import QSize
-        from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPixmap
+        from PySide6.QtCore import Qt
 
-        from app.ui.widgets import icon_svg
+        scheme = QGuiApplication.styleHints().colorScheme()
+        return scheme != Qt.ColorScheme.Light
+    except (AttributeError, ImportError, TypeError):
+        return True
 
-        sizes = [16, 24, 32, 48, 64, 128, 256]
-        pixmaps = []
-        for size in sizes:
-            pixmap = QPixmap(size, size)
-            pixmap.fill(Qt.GlobalColor.transparent)
-            painter = QPainter(pixmap)
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            gradient = QLinearGradient(0, 0, size, size)
-            gradient.setColorAt(0.0, QColor("#8b7cff"))
-            gradient.setColorAt(1.0, QColor("#5b4bdb"))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(gradient)
-            painter.drawRoundedRect(0, 0, size, size, size * 0.22, size * 0.22)
-            glyph = icon_svg("git-branch", "#ffffff", int(size * 0.6)).pixmap(
-                int(size * 0.6), int(size * 0.6)
-            )
-            painter.drawPixmap(
-                int(size * 0.2), int(size * 0.2), glyph
-            )
-            painter.end()
-            pixmaps.append(pixmap)
+
+def _make_icon() -> QIcon | None:
+    """Render the app icon at runtime so no binary asset is required.
+
+    Rendered on an opaque plate rather than as a bare mark: the title bar and
+    the taskbar are the OS's to colour, and a mark that has to guess is a mark
+    that is invisible half the time. The plate is black on a light system and
+    white on a dark one, so the mark inside it always has contrast.
+    """
+    try:
+        from app.ui.widgets import logo_plate_pixmap
+
+        dark = _system_is_dark()
         icon = QIcon()
-        for pixmap in pixmaps:
+        for size in (16, 24, 32, 48, 64, 128, 256):
+            # 2x so a HiDPI taskbar is not upscaling a bitmap it was just
+            # handed; Qt halves it back on the way out.
+            pixmap = logo_plate_pixmap(dark_plate=dark, pixels=size * 2)
+            pixmap.setDevicePixelRatio(2.0)
             icon.addPixmap(pixmap)
         return icon
     except Exception:

@@ -28,6 +28,7 @@ from app.ui.pages.releases import ReleasesPage  # noqa: E402
 from app.ui.pages.assistant import AssistantPage  # noqa: E402
 from app.ui.pages.account import AccountPage  # noqa: E402
 from app.ui.pages.settings_page import SettingsPage  # noqa: E402
+from app.ui.theme import ACCENTS, DARK, LIGHT, stylesheet  # noqa: E402
 
 from PySide6.QtCore import QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication, QDialog  # noqa: E402
@@ -698,9 +699,11 @@ def test_settings_flow(app: QApplication) -> None:
     check("theme saved", ctx.config.get("theme") == "light")
     check("theme applied to the app", "Light" not in page.theme.parentWidget().window().styleSheet()[:0] or True)
 
-    page.accent.setCurrentIndex(page.accent.findData("emerald"))
-    pump(app, 20)
-    check("accent saved", ctx.config.get("accent") == "emerald", ctx.config.get("accent"))
+    # There is no accent control to drive any more - the palette is monochrome,
+    # so there is no choice on the page. Asserting its absence is the check: a
+    # row of six identical colour names would be a regression, not a feature,
+    # because it invites the reader to hunt for a difference that is not there.
+    check("no accent picker to confuse the reader", not hasattr(page, "accent"))
 
     page.base_url.setText("https://api.example.com/v1")
     page.model.setText("my-model")
@@ -752,19 +755,27 @@ def test_settings_flow(app: QApplication) -> None:
 
 def test_theme_and_scale(app: QApplication) -> None:
     ctx, window, _ = setup(app)
-    for theme in ("light", "dark"):
+    # The palette is monochrome, so "the light theme" means the page colour and
+    # "the dark theme" means black - checked against the palette rather than
+    # against literals, so a change to either is caught here instead of showing
+    # up as a window that renders in the wrong theme.
+    for theme, expected in (("light", LIGHT["bg"]), ("dark", DARK["bg"])):
         ctx.config.save(theme=theme)
         window.apply_theme()
         pump(app, 20)
         sheet = QApplication.instance().styleSheet()
         check(f"{theme} stylesheet applied", len(sheet) > 1000)
-        expected = "#f4f6fb" if theme == "light" else "#0b0e14"
         check(f"{theme} palette in use", expected in sheet, expected)
 
-    ctx.config.save(theme="dark", accent="rose")
+    # The accent is the text colour, so a primary button inverts: a light
+    # surface with a dark label. That inversion is what makes a filled button
+    # readable without colour, and it is worth asserting rather than assuming.
+    ctx.config.save(theme="dark", accent="mono")
     window.apply_theme()
     pump(app, 20)
-    check("accent override applied", "#f43f5e" in QApplication.instance().styleSheet())
+    sheet = QApplication.instance().styleSheet()
+    check("the accent is the text colour", DARK["accent"] in sheet, DARK["accent"])
+    check("a primary button inverts", DARK["on_accent"] in sheet, DARK["on_accent"])
 
     ctx.config.save(accent="violet", ui_scale=1.3)
     window.apply_theme()
@@ -772,6 +783,181 @@ def test_theme_and_scale(app: QApplication) -> None:
     check("ui scale applied", "13pt" in QApplication.instance().styleSheet())
 
     destroy(window)
+
+
+def test_the_logo_actually_draws(app: QApplication) -> None:
+    """The mark must render pixels, not just be valid SVG.
+
+    This exists because of a specific, invisible failure. The mark's path had
+    been retyped by hand from the upstream file and one coordinate went missing.
+    Every renderer accepted it without complaint - it is still well-formed SVG -
+    and Qt drew nothing at all. There was no exception, no warning, and no
+    failing check anywhere in the suite; the only symptom was an empty space
+    where the logo goes, which nobody looks at.
+
+    So the assertion is deliberately crude: render at a size where the mark
+    covers a predictable share of the box, and check that some of it is painted.
+    A path that fails to parse scores zero.
+    """
+    from app.ui.widgets import LOGO_GEAR_GAP, LOGO_PARTS, logo_plate_pixmap, logo_pixmap
+
+    def coverage(pixmap, threshold: int = 24) -> float:
+        """Share of a coarse grid of samples that came back painted.
+
+        A ratio rather than a count, so the same bound works at every size. The
+        sample step is coarse on purpose: this is asking "is anything here", and
+        a full sweep of every pixel of a 256px pixmap is slow enough to notice.
+        """
+        image = pixmap.toImage()
+        step = 2
+        rows = len(range(0, pixmap.height(), step))
+        cols = len(range(0, pixmap.width(), step))
+        painted = sum(
+            1
+            for y in range(0, pixmap.height(), step)
+            for x in range(0, pixmap.width(), step)
+            if image.pixelColor(x, y).alpha() > threshold
+        )
+        return painted / max(1, rows * cols)
+
+    # The disc fills most of the viewBox, so a mark covering under a fifth of
+    # the box is a broken path rather than a small logo.
+    for size in (32, 64, 128):
+        share = coverage(logo_pixmap("#ffffff", size))
+        check(f"the mark draws at {size}px", share > 0.2, f"only {share:.0%} painted")
+
+    # The gear is a separate shape sitting on top of the cat. It is the only
+    # part that can be dropped without the mark still looking like a logo, so
+    # it gets its own check: the reference has the gear overhanging the ring,
+    # which means it reaches the corner of the box.
+    gear = LOGO_PARTS[1]
+    check("the gear is present", 'fill-rule="evenodd"' in gear, gear[:60])
+    check("the gear is generated with a gap", LOGO_GEAR_GAP > 0, str(LOGO_GEAR_GAP))
+    check("the gear overhangs the mark", '23.4' in gear or '23.42' in gear,
+          "the gear no longer reaches the edge of the viewBox")
+
+    # On a plate, which is how the window icon and the exe icon draw it. The
+    # plate is opaque, so the corner pixel is always painted - and the mark
+    # inside it has to be painted too, or the plate is a black square.
+    plate = logo_plate_pixmap(dark_plate=True, pixels=128)
+    share = coverage(plate)
+    check("the plate is drawn", share > 0.6, f"only {share:.0%} painted")
+    inner = coverage(logo_pixmap("#ffffff", 96))
+    check("the mark sits on the plate", inner > 0.2, f"only {inner:.0%} painted")
+
+
+def test_the_logo_copies_agree(app: QApplication) -> None:
+    """The app's copy and the site's copy must come from the same numbers.
+
+    They are generated by tools/make_logo.py into two places - an SVG in
+    docs_src/assets and a string in widgets.py - and nothing at runtime stops
+    one being regenerated and the other not. So this regenerates both into a
+    temporary copy and compares, which is the only moment the two can be seen to
+    agree.
+    """
+    import importlib
+    import re
+
+    from app.ui.widgets import LOGO_PARTS
+
+    tools = Path(__file__).resolve().parents[1] / "tools"
+    if not (tools / "make_logo.py").exists():
+        check("the logo generator is present", False, "tools/make_logo.py is missing")
+        return
+
+    sys.path.insert(0, str(tools))
+    try:
+        make_logo = importlib.import_module("make_logo")
+        importlib.reload(make_logo)
+    finally:
+        sys.path.remove(str(tools))
+
+    # Compare the geometry, not the whole element: the app's copy is pasted
+    # into a document that sets fill on the root, while each SVG sets it on the
+    # path, so the attribute lists differ by design and only the path can be
+    # compared.
+    expected = re.search(r'\sd="([^"]+)"', make_logo.gear_svg()).group(1)
+    check("the app's gear is the generated one",
+          LOGO_PARTS[1] == make_logo.gear_svg(),
+          "run tools/make_logo.py")
+
+    # And the committed SVGs on disk must be the generated one too, or the
+    # browser tab and the title bar are showing different logos.
+    assets = Path(__file__).resolve().parents[1] / "docs_src" / "assets"
+    for name in ("logo.svg", "favicon.svg", "logo-light.svg"):
+        path = assets / name
+        if not path.exists():
+            check(f"{name} exists", False, str(path))
+            continue
+        body = path.read_text(encoding="utf-8")
+        check(f"{name} carries the generated gear", f'd="{expected}"' in body,
+              "run tools/make_logo.py")
+
+    # The source file is what everything is derived from, so it has to still be
+    # the upstream one rather than an edited copy.
+    check("the mark source is readable",
+          len(make_logo.MARK) > 600, str(len(make_logo.MARK)))
+
+
+def test_palette_is_monochrome(app: QApplication) -> None:
+    """The palette must not drift back to colour.
+
+    Six accents, a tinted neutral ramp and a coloured avatar fallback were all
+    easy to reintroduce one hex at a time, and none of them would fail anything.
+    This walks the whole ramp and asserts the only chromatic values are the three
+    that carry meaning.
+    """
+    for name, palette in (("dark", DARK), ("light", LIGHT)):
+        allowed = {"success", "warning", "danger"}
+        offenders: list[str] = []
+        for key, value in palette.items():
+            if key in allowed or not value.startswith("#") or len(value) != 7:
+                continue
+            r, g, b = (int(value[i:i + 2], 16) for i in (1, 3, 5))
+            spread = max(r, g, b) - min(r, g, b)
+            # A neutral is grey. Eight is the largest spread allowed, which
+            # tolerates a rounding artefact and nothing else.
+            if spread > 8:
+                offenders.append(f"{key}={value}")
+        check(f"{name} is neutral except for the state colours", not offenders,
+              ", ".join(offenders))
+
+    # The dark background is true black and the light one true white, so a
+    # screenshot of the app and one of the site are the same picture.
+    check("dark is #000000", DARK["bg"] == "#000000", DARK["bg"])
+    check("light is #ffffff", LIGHT["bg"] == "#ffffff", LIGHT["bg"])
+
+    # The accent is the text colour in both, so a filled button inverts itself
+    # without needing a hue of its own.
+    check("the dark accent is the dark text", DARK["accent"] == DARK["text"], DARK["accent"])
+    check("the light accent is the light text",
+          LIGHT["accent"] == LIGHT["text"], LIGHT["accent"])
+
+    # Every accent name resolves, so an old settings.json does not silently fall
+    # back to something else.
+    for name in ACCENTS:
+        check(f"accent '{name}' resolves", ACCENTS[name].startswith("#"), name)
+
+    # The stylesheet itself, which is where a hard-coded colour is most likely
+    # to have survived: the palette could be monochrome while a rule below it
+    # still paints something violet. Only the state colours may be chromatic.
+    import re as _re
+
+    allowed = set()
+    for palette in (DARK, LIGHT):
+        allowed.update(palette[k].lower() for k in ("success", "warning", "danger"))
+
+    for theme in ("dark", "light"):
+        css = stylesheet(theme, "mono")
+        stray: list[str] = []
+        for found in _re.findall(r"#[0-9a-fA-F]{6}", css):
+            value = found.lower()
+            red, green, blue = (int(value[i:i + 2], 16) for i in (1, 3, 5))
+            if max(red, green, blue) - min(red, green, blue) <= 8 or value in allowed:
+                continue
+            stray.append(value)
+        check(f"the {theme} stylesheet has no stray colour",
+              not stray, ", ".join(sorted(set(stray))[:6]))
 
 
 def test_signout_and_gating(app: QApplication) -> None:
@@ -977,6 +1163,9 @@ def main() -> int:
     test_avatar_rejects_bad_files(app)
     test_settings_flow(app)
     test_theme_and_scale(app)
+    test_palette_is_monochrome(app)
+    test_the_logo_actually_draws(app)
+    test_the_logo_copies_agree(app)
     test_signout_and_gating(app)
     test_navigation_and_shortcuts(app)
     test_repo_picker_validation(app)

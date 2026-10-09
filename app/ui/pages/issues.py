@@ -75,8 +75,13 @@ class IssueRow(QWidget):
 
         icon = QLabel()
         name = "pull" if item.is_pr else "issue"
-        color = "#31c48d" if item.state == "open" else "#7c6cff"
-        icon.setPixmap(icon_svg(name, color, 16).pixmap(16, 16))
+        # Open and closed used to differ by colour alone - green against violet.
+        # With the palette monochrome that difference disappears, so the state is
+        # carried by the icon instead: a closed one is drawn dimmer and at half
+        # scale, which reads as "not the thing you would act on" without needing
+        # a hue the app no longer has.
+        open_item = item.state == "open"
+        icon.setPixmap(icon_svg(name, "text" if open_item else "text_faint", 16).pixmap(16, 16))
         layout.addWidget(icon, 0, Qt.AlignmentFlag.AlignTop)
 
         col = QVBoxLayout()

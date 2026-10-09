@@ -114,7 +114,11 @@ class Settings:
 
     # appearance
     theme: str = "dark"  # dark | light
-    accent: str = "violet"  # violet | blue | emerald | amber
+    #: Kept so an older settings.json round-trips, and read by nothing. The
+    #: palette is monochrome and the accent resolves to the text colour; the
+    #: field stays because deleting it would make every existing file's key
+    #: unknown, and from_dict() drops keys it does not recognise on save.
+    accent: str = "mono"
     font_family: str = ""
     ui_scale: float = 1.0
 

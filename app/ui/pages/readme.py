@@ -648,4 +648,4 @@ def _strip_fence(text: str) -> str:
 def icon_svg_item(name: str):
     from ..widgets import icon_svg
 
-    return icon_svg(name, "#9aa5bb", 16)
+    return icon_svg(name, "dim", 16)

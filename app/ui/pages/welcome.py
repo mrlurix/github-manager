@@ -19,6 +19,7 @@ from ..dialogs import TokenDialog
 from ..widgets import (
     Card,
     FlowWidget,
+    app_logo,
     button,
     icon_svg,
     label,
@@ -52,8 +53,8 @@ class WelcomePage(Page):
         hero_row.setContentsMargins(0, 0, 0, 0)
         hero_row.setSpacing(14)
         logo = QLabel()
-        logo.setPixmap(icon_svg("git-branch", "#7c6cff", 34).pixmap(34, 34))
-        logo.setFixedSize(34, 34)
+        logo.setPixmap(app_logo("accent", 40).pixmap(40, 40))
+        logo.setFixedSize(40, 40)
         logo.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         hero_row.addWidget(logo, 0, Qt.AlignmentFlag.AlignTop)
 
@@ -147,7 +148,7 @@ class WelcomePage(Page):
             head = QHBoxLayout()
             head.setSpacing(8)
             icon_label = QLabel()
-            icon_label.setPixmap(icon_svg(icon, "#7c6cff", 16).pixmap(16, 16))
+            icon_label.setPixmap(icon_svg(icon, "accent", 16).pixmap(16, 16))
             head.addWidget(icon_label)
             head.addWidget(label(title, "h3"))
             head.addStretch(1)

@@ -150,7 +150,7 @@ class AccountPage(Page):
         self.readme_view.setObjectName("MarkdownView")
         self.readme_view.setMinimumHeight(140)
         self.readme_view.setHtml(
-            '<div style="color:#6b7690">Generate a profile README to fill this space.</div>'
+            '<div style="color:#737373">Generate a profile README to fill this space.</div>'
         )
         self.readme_card.add(self.readme_view)
         self.scroll.add(self.readme_card)

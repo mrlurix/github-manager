@@ -70,44 +70,41 @@ def run(args: list[str]) -> None:
 
 
 def make_icon() -> Path | None:
-    """Render an .ico at build time so no binary asset is checked in."""
+    """Render an .ico at build time so no binary asset is checked in.
+
+    Always regenerated rather than reused if the file is already there. It used
+    to short-circuit on ``target.exists()``, which meant a palette or logo
+    change shipped with the old icon until someone noticed and deleted the file
+    by hand. Rendering seven sizes takes well under a second, and there is no
+    version of "stale icon in the release" that is worth that shortcut.
+    """
     target = ROOT / "build_assets" / "icon.ico"
-    if target.exists():
-        return target
     try:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-        from PySide6.QtCore import QSize, Qt
-        from PySide6.QtGui import QColor, QIcon, QLinearGradient, QPainter, QPixmap
+        from PySide6.QtCore import QSize
+        from PySide6.QtGui import QIcon
         from PySide6.QtWidgets import QApplication
 
         sys.path.insert(0, str(ROOT))
-        from app.ui.widgets import icon_svg
+        from app.ui.widgets import logo_plate_pixmap
 
-        app = QApplication.instance() or QApplication([])
+        # Held in a name: a QApplication created without a reference can be
+        # collected, and rendering a QPixmap with no application alive is a
+        # crash rather than a wrong answer.
+        app = QApplication.instance() or QApplication([])  # noqa: F841
 
+        # One plate colour has to be chosen for the whole file: an .ico carries
+        # no way to say "invert me for a dark taskbar". Dark, because Windows 11
+        # defaults to a dark taskbar - and the plate keeps the mark readable on
+        # either one, since the mark inside it always has its own background.
         icon = QIcon()
         for size in (16, 24, 32, 48, 64, 128, 256):
-            pixmap = QPixmap(size, size)
-            pixmap.fill(Qt.GlobalColor.transparent)
-            painter = QPainter(pixmap)
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            gradient = QLinearGradient(0, 0, size, size)
-            gradient.setColorAt(0.0, QColor("#8b7cff"))
-            gradient.setColorAt(1.0, QColor("#5b4bdb"))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(gradient)
-            radius = size * 0.22
-            painter.drawRoundedRect(0, 0, size, size, radius, radius)
-            glyph_size = int(size * 0.62)
-            glyph = icon_svg("git-branch", "#ffffff", glyph_size).pixmap(glyph_size, glyph_size)
-            painter.drawPixmap((size - glyph_size) // 2, (size - glyph_size) // 2, glyph)
-            painter.end()
-            icon.addPixmap(pixmap)
+            icon.addPixmap(logo_plate_pixmap(dark_plate=True, pixels=size))
 
         target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            target.unlink()
         # QIcon cannot write .ico, so save the largest pixmap through QImage.
-        from PySide6.QtGui import QImage
-
         image = icon.pixmap(QSize(256, 256)).toImage()
         image.save(str(target), "ICO")
         print(f"icon written: {target}")
@@ -236,6 +233,14 @@ def main() -> int:
     args = sys.argv[1:]
     clean = "--clean" in args
     onedir = "--onedir" in args
+
+    if "--icon-only" in args:
+        # Just the icon. It used to have no way to be rebuilt without running a
+        # full PyInstaller pass, which is why the icon in the repo went stale
+        # through a whole palette change - nobody was going to do a five-minute
+        # build to move a logo.
+        icon = make_icon()
+        return 0 if icon else 1
 
     if clean:
         for path in (DIST, BUILD):

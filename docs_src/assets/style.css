@@ -253,8 +253,16 @@ html[data-theme="light"] .site-header { box-shadow: 0 1px 3px rgba(0, 0, 0, .07)
   letter-spacing: -0.012em; white-space: nowrap;
 }
 .brand:hover { color: var(--text); text-decoration: none; }
-.brand-mark { width: 20px; height: 20px; transition: transform .4s var(--ease); }
-.brand:hover .brand-mark { transform: rotate(-12deg); }
+/* The app mark: the GitHub Octocat with a gear. Filled, so the fill has to be
+   set explicitly - the site's global svg rule is for stroked icons. */
+.brand-mark {
+  width: 22px; height: 22px;
+  fill: currentColor; stroke: none;
+  transition: transform .45s var(--ease);
+}
+/* A small turn on hover, not a spin: the gear implies rotation, and this much
+   of it reads as acknowledging the pointer rather than as a loading state. */
+.brand:hover .brand-mark { transform: rotate(18deg); }
 
 .top-nav {
   display: flex; align-items: center; gap: 4px;
@@ -755,6 +763,17 @@ html[data-theme="light"] .btn:hover { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 
   color: var(--text-faint); font-size: 0.8125rem;
   margin: 14px 0 0; max-width: 34ch; line-height: 1.6;
 }
+/* The mark is GitHub's, so the line saying so has to be here rather than only
+   in the source repository: this is where someone decides whether the app is
+   an official product, and the answer has to be on the page. */
+.foot-brand .unofficial {
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--line-faint);
+  color: var(--text-faint); font-size: 0.75rem;
+  line-height: 1.6; max-width: 40ch;
+}
+.foot-brand .unofficial a { color: var(--text-dim); }
+.foot-brand .unofficial a:hover { color: var(--text); }
 .foot-col h4 {
   font-family: var(--mono); font-size: 0.6875rem; font-weight: 400;
   letter-spacing: 0.08em; text-transform: uppercase;

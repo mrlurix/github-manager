@@ -32,9 +32,10 @@ from .pages.repo_admin import RepoAdminPage
 from .pages.repositories import ReposPage
 from .pages.settings_page import SettingsPage
 from .pages.welcome import WelcomePage
-from .theme import ACCENTS, stylesheet
+from .theme import stylesheet
 from .widgets import (
     Avatar,
+    app_logo,
     button,
     icon_button,
     icon_svg,
@@ -71,7 +72,8 @@ class Sidebar(QFrame):
         brand = QHBoxLayout()
         brand.setSpacing(10)
         logo = QLabel()
-        logo.setPixmap(icon_svg("git-branch", "#7c6cff", 24).pixmap(24, 24))
+        logo.setPixmap(app_logo("accent", 26).pixmap(26, 26))
+        logo.setToolTip(APP_NAME)
         brand.addWidget(logo)
         titles = QVBoxLayout()
         titles.setSpacing(0)
@@ -91,7 +93,7 @@ class Sidebar(QFrame):
             btn.setObjectName("NavButton")
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setIcon(icon_svg(icon, "#9aa5bb", 17))
+            btn.setIcon(icon_svg(icon, "dim", 17))
             btn.setIconSize(QSize(17, 17))
             btn.setToolTip(f"{title}  (Ctrl+{index + 1})")
             # Page 0 is the welcome screen and has no sidebar entry, so the nav
@@ -178,7 +180,7 @@ class MainWindow(QMainWindow):
         self.ai_pill = QPushButton()
         self.ai_pill.setObjectName("BadgeAccent")
         self.ai_pill.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.ai_pill.setIcon(icon_svg("sparkles", "#7c6cff", 13))
+        self.ai_pill.setIcon(icon_svg("sparkles", "accent", 13))
         self.ai_pill.setIconSize(QSize(13, 13))
         self.ai_pill.setToolTip("Open the AI assistant (Ctrl+K)")
         self.ai_pill.clicked.connect(lambda: self.goto(self._index_of(AssistantPage)))
@@ -338,6 +340,13 @@ class MainWindow(QMainWindow):
         scale = float(self.ctx.config.get("ui_scale", 1.0) or 1.0)
         family = self.ctx.config.get("font_family", "")
 
+        # Icon colours are resolved through the palette and cached by value, so
+        # a theme change has to drop the cache or every icon keeps the colour it
+        # was first rendered in. It grows back within a frame.
+        from .widgets import ICON_CACHE
+
+        ICON_CACHE.clear()
+
         app = QApplication.instance()
         if app is not None:
             app.setStyleSheet(stylesheet(theme, accent, family, scale))
@@ -345,23 +354,32 @@ class MainWindow(QMainWindow):
         if app is not None:
             from PySide6.QtGui import QPalette
 
-            accent_color = ACCENTS.get(accent, "#7c6cff")
+            from .theme import build_palette
+
+            # The native palette is taken from the same source as the QSS rather
+            # than repeating hex values, so the two cannot drift apart. That
+            # drift is what made the window frame one shade lighter than the
+            # client area and looked like a rendering fault.
+            pal_colors = build_palette(theme, accent)
             dark = theme == "dark"
             pal = QPalette()
-            pal.setColor(QPalette.ColorRole.Window, QColor("#0b0e14" if dark else "#f4f6fb"))
-            pal.setColor(QPalette.ColorRole.WindowText, QColor("#e7ecf5" if dark else "#141824"))
-            pal.setColor(QPalette.ColorRole.Base, QColor("#151a26" if dark else "#ffffff"))
-            pal.setColor(QPalette.ColorRole.AlternateBase, QColor("#1b2130" if dark else "#f7f8fc"))
-            pal.setColor(QPalette.ColorRole.Text, QColor("#e7ecf5" if dark else "#141824"))
-            pal.setColor(QPalette.ColorRole.Button, QColor("#1b2130" if dark else "#eef0f7"))
-            pal.setColor(QPalette.ColorRole.ButtonText, QColor("#e7ecf5" if dark else "#141824"))
-            pal.setColor(QPalette.ColorRole.Highlight, QColor(accent_color))
-            pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
-            pal.setColor(QPalette.ColorRole.ToolTipBase, QColor("#222939" if dark else "#ffffff"))
-            pal.setColor(QPalette.ColorRole.ToolTipText, QColor("#e7ecf5" if dark else "#141824"))
+            pal.setColor(QPalette.ColorRole.Window, QColor(pal_colors["bg"]))
+            pal.setColor(QPalette.ColorRole.WindowText, QColor(pal_colors["text"]))
+            pal.setColor(QPalette.ColorRole.Base, QColor(pal_colors["surface"]))
+            pal.setColor(QPalette.ColorRole.AlternateBase, QColor(pal_colors["surface_2"]))
+            pal.setColor(QPalette.ColorRole.Text, QColor(pal_colors["text"]))
+            pal.setColor(QPalette.ColorRole.Button, QColor(pal_colors["surface_3"]))
+            pal.setColor(QPalette.ColorRole.ButtonText, QColor(pal_colors["text"]))
+            pal.setColor(QPalette.ColorRole.Highlight, QColor(pal_colors["accent"]))
+            pal.setColor(QPalette.ColorRole.HighlightedText, QColor(pal_colors["on_accent"]))
+            pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(pal_colors["surface_3"]))
+            pal.setColor(QPalette.ColorRole.ToolTipText, QColor(pal_colors["text"]))
+            pal.setColor(QPalette.ColorRole.PlaceholderText, QColor(pal_colors["text_faint"]))
+            pal.setColor(QPalette.ColorRole.Link, QColor(pal_colors["accent"]))
             app.setPalette(pal)
+            del dark
 
-        self.theme_button.setIcon(icon_svg("sun" if theme == "dark" else "moon", "#9aa5bb", 18))
+        self.theme_button.setIcon(icon_svg("sun" if theme == "dark" else "moon", "dim", 18))
 
         for page in self.pages:
             if not hasattr(page, "on_theme_changed"):

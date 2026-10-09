@@ -62,11 +62,11 @@ class Bubble(QFrame):
         head.setSpacing(7)
         icon = QLabel()
         if role == "user":
-            icon.setPixmap(icon_svg("user", "#9aa5bb", 15).pixmap(15, 15))
+            icon.setPixmap(icon_svg("user", "dim", 15).pixmap(15, 15))
             head.addWidget(icon)
             head.addWidget(label("You", ""))
         else:
-            icon.setPixmap(icon_svg("sparkles", "#7c6cff", 15).pixmap(15, 15))
+            icon.setPixmap(icon_svg("sparkles", "accent", 15).pixmap(15, 15))
             head.addWidget(icon)
             head.addWidget(label("GitHub Assistant", ""))
             head.addWidget(Badge("github only", "Accent"))
@@ -128,7 +128,7 @@ class AssistantPage(Page):
         row = QHBoxLayout()
         row.setSpacing(10)
         icon = QLabel()
-        icon.setPixmap(icon_svg("shield-check", "#31c48d", 18).pixmap(18, 18))
+        icon.setPixmap(icon_svg("shield-check", "success", 18).pixmap(18, 18))
         row.addWidget(icon)
         text = label(
             "Scope lock: requests and answers outside GitHub are blocked before they reach "

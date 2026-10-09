@@ -56,7 +56,7 @@ def set_palette(palette: dict[str, str] | None) -> None:
 
 def render_markdown(text: str) -> str:
     if not text:
-        return '<p style="color:#6b7690">Nothing to preview yet.</p>'
+        return '<p style="color:#737373">Nothing to preview yet.</p>'
     try:
         html = markdown_renderer().render(text)
     except Exception:

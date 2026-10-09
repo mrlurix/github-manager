@@ -52,7 +52,12 @@ class SettingsPage(Page):
         self.scroll.add(self.header)
 
         # ---------------------------------------------------------- appearance
-        look = Card("Appearance", "Theme, accent colour and scaling")
+        # No accent control. There were six, and every one of them now resolves
+        # to the same value - a row of identical choices is worse than no row,
+        # because it invites the reader to look for a difference that is not
+        # there. The app is monochrome; that is the setting, and it is not a
+        # preference.
+        look = Card("Appearance", "Theme and scaling")
         look_form = QFormLayout()
         look_form.setSpacing(10)
 
@@ -60,12 +65,6 @@ class SettingsPage(Page):
         self.theme.addItems(["dark", "light"])
         self.theme.currentTextChanged.connect(self._save_appearance)
         look_form.addRow(label("Theme", "dim"), self.theme)
-
-        self.accent = QComboBox()
-        for name in ("violet", "blue", "emerald", "amber", "rose", "cyan"):
-            self.accent.addItem(name.capitalize(), name)
-        self.accent.currentIndexChanged.connect(self._save_appearance)
-        look_form.addRow(label("Accent", "dim"), self.accent)
 
         self.font = QComboBox()
         from PySide6.QtGui import QFontDatabase
@@ -228,9 +227,6 @@ class SettingsPage(Page):
     def on_show(self) -> None:
         s = self.ctx.config.settings
         self.theme.setCurrentText(s.theme)
-        index = self.accent.findData(s.accent)
-        if index >= 0:
-            self.accent.setCurrentIndex(index)
         self.font.setCurrentText(s.font_family or "(system default)")
         self.scale.setValue(s.ui_scale)
 
@@ -276,7 +272,11 @@ class SettingsPage(Page):
         family = self.font.currentText()
         self.ctx.config.save(
             theme=self.theme.currentText(),
-            accent=self.accent.currentData(),
+            # The accent stays in settings.json for an older file to keep
+            # round-tripping, but nothing reads it any more: the palette has no
+            # accent. Left as-is rather than cleared, because writing a default
+            # over it would mean this function quietly edits a key it no longer
+            # owns.
             font_family="" if family == "(system default)" else family,
             ui_scale=self.scale.value(),
         )
@@ -285,7 +285,7 @@ class SettingsPage(Page):
             window.apply_theme()
 
     def reset_appearance(self) -> None:
-        self.ctx.config.save(theme="dark", accent="violet", font_family="", ui_scale=1.0)
+        self.ctx.config.save(theme="dark", font_family="", ui_scale=1.0)
         self.on_show()
         window = self.window()
         if hasattr(window, "apply_theme"):

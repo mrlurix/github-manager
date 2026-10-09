@@ -416,19 +416,6 @@ def to_text(html: str) -> str:
 
 
 # -------------------------------------------------------------------- layout
-#: The brand mark, inline so it inherits colour and needs no second request. A
-#: commit graph: two nodes joined by one path, for a client that commits.
-MARK = (
-    '<path d="M3 6h7.5A5.5 5.5 0 0 1 16 11.5" stroke="currentColor" stroke-width="1.9" '
-    'stroke-linecap="round" fill="none"/>'
-    '<path d="M21 18h-7.5A5.5 5.5 0 0 1 8 12.5" stroke="currentColor" '
-    'stroke-width="1.9" stroke-linecap="round" fill="none"/>'
-    '<circle cx="3" cy="6" r="2.6" fill="currentColor"/>'
-    '<circle cx="21" cy="12" r="2.6" fill="currentColor"/>'
-    '<circle cx="3" cy="18" r="2.6" fill="currentColor"/>'
-    '<path d="M12.6 3.2 16.8 12l-4.2 8.8L8.4 12z" fill="currentColor" opacity="0.92"/>'
-)
-
 #: Footer columns. Every href here is checked by check_internal_links, so a typo
 #: fails the build rather than shipping a dead link.
 FOOT_COLUMNS = [
@@ -494,10 +481,31 @@ def _head(title: str, description: str, canonical: str) -> str:
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">"""
 
 
+#: The app mark, inline so it inherits colour and needs no second request. The
+#: same geometry the desktop app uses - see tools/make_logo.py, which is the one
+#: place either copy is written.
+def _logo_mark() -> str:
+    svg = SRC / "assets" / "logo.svg"
+    if not svg.exists():
+        # Fall back to a dot rather than an empty <svg>, which renders as a
+        # zero-width box and shifts the wordmark sideways.
+        return '<circle cx="12" cy="12" r="4" fill="currentColor"/>'
+    text = svg.read_text(encoding="utf-8")
+    inner = text.split(">", 1)[1].rsplit("</svg>", 1)[0]
+    # The file's own <title> is for when it stands alone as an image. Inline it
+    # three times per page and it becomes a stray tooltip and a duplicate
+    # landmark; the wordmark next to it already names the thing.
+    inner = re.sub(r"<title>.*?</title>", "", inner, flags=re.DOTALL)
+    # currentColor for exactly this reason: the header, the footer and both
+    # themes are covered by one copy of the file.
+    return inner.strip()
+
+
 def _header(slug: str) -> str:
     """The bar. The landing page keeps the section links visible at every width;
     a doc page hides them behind the menu button, because the rail already lists
     the same destinations."""
+    mark = _logo_mark()
     wide = slug == "index"
     top_links = (
         "".join(
@@ -515,7 +523,7 @@ def _header(slug: str) -> str:
     </button>
 
     <a class="brand" href="index.html">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{MARK}</svg>
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{mark}</svg>
       <span>GitHub&nbsp;Manager</span>
     </a>
 
@@ -573,10 +581,14 @@ def _footer() -> str:
   <div class="foot-grid">
     <div class="foot-brand">
       <a class="brand" href="index.html">
-        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{MARK}</svg>
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">{_logo_mark()}</svg>
         <span>GitHub&nbsp;Manager</span>
       </a>
       <p>A portable GitHub client with an assistant that only works on GitHub.</p>
+      <p class="unofficial">
+        Not affiliated with, endorsed by, or supported by GitHub, Inc. The mark
+        is GitHub's; this is an independent client that uses the public API.
+      </p>
     </div>
     {columns}
   </div>

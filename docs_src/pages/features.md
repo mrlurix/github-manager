@@ -258,8 +258,7 @@ review your current README, write a `.gitignore`, and explain adding a LICENSE.
 
 ### Appearance
 
-- Dark and light themes
-- Six accent colours: violet, blue, emerald, amber, rose and cyan
+- Dark and light themes, both monochrome
 - Font family
 - UI scale from 85% to 130%
 

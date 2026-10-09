@@ -235,7 +235,7 @@ class RepoPickerDialog(BaseDialog):
                 continue
             item = QListWidgetItem(f"{repo.full_name}\n{repo.description or 'no description'}")
             item.setData(Qt.ItemDataRole.UserRole, repo.full_name)
-            item.setIcon(icon_svg("folder", "#7c6cff", 18))
+            item.setIcon(icon_svg("folder", "accent", 18))
             self.list.addItem(item)
         if self.list.count():
             self.list.setCurrentRow(0)

@@ -1,64 +1,88 @@
-"""Modern, flat design system: palette, typography and the global QSS."""
+"""Modern, flat design system: palette, typography and the global QSS.
+
+The palette is monochrome on purpose, so the app and the documentation site are
+the same object. Colour had exactly one job here - telling the reader that a
+value means something - and it was doing a second job it was not good at, which
+was decoration. Everything that used to be tinted is now a step on a neutral
+ramp, and the state colours are the only ones left:
+
+    success  something worked
+    warning  look here
+    danger   this breaks
+
+Those three stay coloured because removing them would remove information. A red
+"Invalid or expired token" and a grey one are not the same sentence. Everything
+else is black, white, and the greys between them.
+"""
 
 from __future__ import annotations
 
 from PySide6.QtGui import QColor, QFont, QFontDatabase
 
 DARK = {
-    "bg": "#0b0e14",
-    "bg_elev": "#11151f",
-    "surface": "#151a26",
-    "surface_2": "#1b2130",
-    "surface_3": "#222939",
-    "border": "#252c3b",
-    "border_soft": "#1d2432",
-    "text": "#e7ecf5",
-    "text_dim": "#9aa5bb",
-    "text_faint": "#6b7690",
-    "accent": "#7c6cff",
-    "accent_hi": "#9487ff",
-    "accent_press": "#6857f5",
-    "accent_soft": "rgba(124, 108, 255, 0.16)",
-    "on_accent": "#ffffff",
-    "success": "#31c48d",
+    "bg": "#000000",
+    "bg_elev": "#0a0a0a",
+    "surface": "#0f0f0f",
+    "surface_2": "#161616",
+    "surface_3": "#1f1f1f",
+    "border": "#2e2e2e",
+    "border_soft": "#1f1f1f",
+    "text": "#ededed",
+    "text_dim": "#a1a1a1",
+    "text_faint": "#737373",
+    # The accent is the text colour. On a black page that makes every accent
+    # surface the brightest thing on the screen, which is what a call to action
+    # has to be - and it means the primary button needs no colour of its own to
+    # be the first thing the eye lands on.
+    "accent": "#ededed",
+    "accent_hi": "#ffffff",
+    "accent_press": "#d4d4d4",
+    "accent_soft": "rgba(237, 237, 237, 0.12)",
+    "on_accent": "#000000",
+    "success": "#3ecf8e",
     "warning": "#f5a524",
     "danger": "#f2555a",
-    "info": "#3aa0ff",
-    "shadow": "rgba(0, 0, 0, 0.55)",
-    "code_bg": "#0e1320",
+    "info": "#ededed",
+    "shadow": "rgba(0, 0, 0, 0.7)",
+    "code_bg": "#0a0a0a",
 }
 
 LIGHT = {
-    "bg": "#f4f6fb",
+    "bg": "#ffffff",
     "bg_elev": "#ffffff",
     "surface": "#ffffff",
-    "surface_2": "#f7f8fc",
-    "surface_3": "#eef0f7",
-    "border": "#dfe3ed",
-    "border_soft": "#e9ecf4",
-    "text": "#141824",
-    "text_dim": "#5a6377",
-    "text_faint": "#8b93a5",
-    "accent": "#5b4bdb",
-    "accent_hi": "#6c5ce7",
-    "accent_press": "#4a3ac9",
-    "accent_soft": "rgba(91, 75, 219, 0.12)",
+    "surface_2": "#fafafa",
+    "surface_3": "#f2f2f2",
+    "border": "#e0e0e0",
+    "border_soft": "#f0f0f0",
+    "text": "#0a0a0a",
+    "text_dim": "#626262",
+    "text_faint": "#8f8f8f",
+    "accent": "#0a0a0a",
+    "accent_hi": "#000000",
+    "accent_press": "#383838",
+    "accent_soft": "rgba(10, 10, 10, 0.08)",
     "on_accent": "#ffffff",
-    "success": "#12a374",
-    "warning": "#c77700",
-    "danger": "#d63b40",
-    "info": "#1372c4",
-    "shadow": "rgba(23, 28, 45, 0.14)",
-    "code_bg": "#0f1320",
+    "success": "#0f7b4f",
+    "warning": "#8a5a00",
+    "danger": "#c11c1c",
+    "info": "#0a0a0a",
+    "shadow": "rgba(0, 0, 0, 0.12)",
+    "code_bg": "#fafafa",
 }
 
+#: The one accent the app offers, because it is the only one that matches the
+#: site any more. The names the old palette used are kept as aliases so an old
+#: ``settings.json`` keeps working instead of silently falling back to a colour
+#: the user chose against.
 ACCENTS = {
-    "violet": "#7c6cff",
-    "blue": "#3b82f6",
-    "emerald": "#10b981",
-    "amber": "#f59e0b",
-    "rose": "#f43f5e",
-    "cyan": "#06b6d4",
+    "mono": "#ededed",
+    "violet": "#ededed",
+    "blue": "#ededed",
+    "emerald": "#ededed",
+    "amber": "#ededed",
+    "rose": "#ededed",
+    "cyan": "#ededed",
 }
 
 FONT_STACK = ("Segoe UI Variable Display", "Segoe UI", "Inter", "Noto Sans", "Arial")

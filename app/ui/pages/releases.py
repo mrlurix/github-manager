@@ -135,7 +135,7 @@ class ReleasesPage(Page):
         self.notes.setMinimumHeight(150)
         self.notes.setHtml(
             f"<style>{markdown_css()}</style>"
-            '<div style="color:#6b7690">Press <b>Generate notes</b> to turn the '
+            '<div style="color:#737373">Press <b>Generate notes</b> to turn the '
             "commit list into release notes.</div>"
         )
         notes_card.add(self.notes)

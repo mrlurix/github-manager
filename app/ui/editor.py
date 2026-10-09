@@ -29,48 +29,56 @@ from .sanitize import safe_url
 
 
 class _Highlighter(QSyntaxHighlighter):
-    """Lightweight markdown highlighter (headings, emphasis, code, links)."""
+    """Lightweight markdown highlighter (headings, emphasis, code, links).
 
-    DARK = {
-        "heading": "#e7ecf5",
-        "emphasis": "#9487ff",
-        "strong": "#31c48d",
-        "link": "#3aa0ff",
-        "faint": "#6b7690",
-    }
-    LIGHT = {
-        "heading": "#141824",
-        "emphasis": "#5b4bdb",
-        "strong": "#12a374",
-        "link": "#1372c4",
-        "faint": "#8b93a5",
-    }
+    The four roles are taken from the palette rather than written out, so the
+    editor cannot end up one theme behind the rest of the app - which is what
+    happened: the highlighter kept its own copy of eight hex values and only
+    three of them were ever updated when a colour moved.
+
+    Emphasis and strong are weight rather than colour. A syntax highlighter that
+    tints its categories needs six hues to stay apart; a monochrome one can only
+    lean on weight and opacity, so it does that instead of reaching for a palette
+    the app does not have.
+    """
+
+    ROLES = ("heading", "emphasis", "strong", "link", "faint")
 
     def __init__(self, document: QTextDocument, theme: str = "dark") -> None:
         # Formats must exist before super().__init__(), which triggers the first
         # highlightBlock() pass.
-        self.colors = dict(self.DARK if theme == "dark" else self.LIGHT)
         self.formats: dict[str, QTextCharFormat] = {}
-        self._rebuild()
+        self._rebuild(theme)
         super().__init__(document)
         self.setTheme(theme)
 
-    def _rebuild(self) -> None:
-        bold_keys = {"heading"}
-        italic_keys = {"emphasis"}
-        self.formats = {}
-        for key, color in self.colors.items():
+    def _rebuild(self, theme: str = "dark") -> None:
+        from .theme import build_palette
+
+        pal = build_palette(theme)
+        text = pal["text"]
+        dim = pal["text_dim"]
+        faint = pal["text_faint"]
+
+        def make(colour: str, *, bold: bool = False, italic: bool = False):
             fmt = QTextCharFormat()
-            fmt.setForeground(QColor(color))
-            if key in bold_keys:
+            fmt.setForeground(QColor(colour))
+            if bold:
                 fmt.setFontWeight(QFont.Weight.Bold)
-            if key in italic_keys:
+            if italic:
                 fmt.setFontItalic(True)
-            self.formats[key] = fmt
+            return fmt
+
+        self.formats = {
+            "heading": make(text, bold=True),
+            "emphasis": make(dim, italic=True),
+            "strong": make(text, bold=True),
+            "link": make(text),
+            "faint": make(faint),
+        }
 
     def setTheme(self, theme: str) -> None:  # noqa: N802
-        self.colors = dict(self.DARK if theme == "dark" else self.LIGHT)
-        self._rebuild()
+        self._rebuild(theme)
         self.rehighlight()
 
     def highlightBlock(self, text: str) -> None:  # noqa: N802

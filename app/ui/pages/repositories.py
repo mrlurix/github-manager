@@ -79,7 +79,7 @@ class RepoCard(QFrame):
         top = QHBoxLayout()
         top.setSpacing(8)
         icon = QLabel()
-        icon.setPixmap(icon_svg("lock" if repo.private else "folder", "#7c6cff", 18).pixmap(18, 18))
+        icon.setPixmap(icon_svg("lock" if repo.private else "folder", "accent", 18).pixmap(18, 18))
         top.addWidget(icon)
 
         name = label(repo.full_name, "")
@@ -145,7 +145,7 @@ class RepoCard(QFrame):
             item = QHBoxLayout()
             item.setSpacing(4)
             pix = QLabel()
-            pix.setPixmap(icon_svg(icon_name, "#6b7690", 13).pixmap(13, 13))
+            pix.setPixmap(icon_svg(icon_name, "faint", 13).pixmap(13, 13))
             item.addWidget(pix)
             item.addWidget(label(str(value), "faint"))
             metrics.addLayout(item)
@@ -232,7 +232,7 @@ class ReposPage(Page):
         self.search.setProperty("role", "search")
         self.search.setClearButtonEnabled(True)
         self.search.addAction(
-            icon_svg("search", "#6b7690", 16),
+            icon_svg("search", "faint", 16),
             QLineEdit.ActionPosition.LeadingPosition,
         )
         self.search.textChanged.connect(self._render)
