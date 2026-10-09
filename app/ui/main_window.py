@@ -89,7 +89,11 @@ class Sidebar(QFrame):
         self.group.setExclusive(True)
         self.buttons: list[QPushButton] = []
         for index, (title, icon) in enumerate(NAV_ITEMS):
-            btn = QPushButton(f"  {title}")
+            # Doubled ampersand. Qt reads a single "&" in a button's text as the
+            # start of a keyboard mnemonic and drops it, so "Issues & PRs" was
+            # rendering as "Issues  PRs" - visible on every launch, in the
+            # sidebar, for as long as these labels have existed.
+            btn = QPushButton(f"  {title.replace('&', '&&')}")
             btn.setObjectName("NavButton")
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)

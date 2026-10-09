@@ -1,410 +1,355 @@
-![Docs](https://img.shields.io/badge/docs-English%20site-8b7cff) # GitHub Manager
+# GitHub Manager
 
-A portable, AI assisted desktop client for GitHub. Built with **Python + PySide6**,
-it writes READMEs, manages repositories, handles issues and pull requests, and
-ships as a single `.exe` that runs on any Windows machine without Python.
+A portable desktop client for GitHub, built with **Python + PySide6**. One `.exe`
+that does the work the website makes you do by hand — and an AI assistant that
+will only ever talk about GitHub.
 
-The assistant is **locked to GitHub**: it refuses anything outside the domain
-before the request ever reaches the model.
+![Dashboard](screenshots/01_dashboard_dark.png)
 
-![GitHub Manager dashboard](screenshots/01_dashboard_dark.png)
+<p align="center">
+  <img src="screenshots/00_welcome_dark.png" width="410">
+  <img src="screenshots/09_settings_dark.png" width="410">
+</p>
+
+<p align="center">
+  <a href="https://github.com/mrlurix/github-manager/releases/latest">
+    <img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078D4">
+  </a>
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.0-0078D4">
+  <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-0078D4">
+  <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-34A853">
+</p>
 
 ---
 
 ## Download
 
-Grab the portable build from the
-[latest release](https://github.com/mrlurix/github-manager/releases/latest):
+**[GitHubManager.exe](https://github.com/mrlurix/github-manager/releases/latest)** —
+one file, about 63 MB.
 
-**`GitHubManager.exe`** — one file, about 63 MB. It runs on any 64-bit Windows
-machine with no Python, no installer and no admin rights. Copy it anywhere, and
-a `data\` folder appears beside it for your token and settings.
+No installer, no Python, no admin rights. Copy it anywhere and run it; a `data\`
+folder appears beside it holding your token and settings. Put it on a USB stick
+and it carries your setup with it.
 
-The executable is deliberately *not* committed to the repository: a binary that
-size permanently bloats every clone and fork. Releases keep the history clean
-and give each version its own download.
-
----
-
-## Contents
-
-- [Download](#download)
-- [Highlights](#highlights)
-- [The GitHub-only scope lock](#the-github-only-scope-lock)
-- [Screens](#screens)
-- [Getting started](#getting-started)
-- [Configuring the AI](#configuring-the-ai)
-- [Building the portable exe](#building-the-portable-exe)
-- [Where data is stored](#where-data-is-stored)
-- [Project layout](#project-layout)
-- [Tests](#tests)
-- [Keyboard shortcuts](#keyboard-shortcuts)
-- [Security notes](#security-notes)
+The binary is deliberately not in the repository — a 63 MB file in every clone
+and every fork is a cost paid by everyone forever for the convenience of the one
+person who built it. Releases keep that clean.
 
 ---
 
-## Highlights
+## What it does
 
-| Feature | What it does |
-| --- | --- |
-| **README Studio** | Reads the live repository (tree, languages, dependency files, existing README) and writes a complete README. Live preview, one-click refine, and a commit straight to `README.md` on any branch. |
-| **Extra file drafting** | `CONTRIBUTING.md`, `LICENSE`, `.gitignore`, `CODEOWNERS`, `SECURITY.md`, `CHANGELOG.md`, GitHub Actions workflows, Dependabot, issue and PR templates, `.editorconfig`. |
-| **Repository admin** | Create, rename, edit, archive, fork, change visibility, manage topics, delete (with a typed confirmation). Grid/compact views, search, sort, visibility filters. |
-| **Issues & PRs** | Browse issues and pull requests, read comments, close/reopen, draft an issue from a one-line idea, triage the whole backlog into a typed table, and write maintainer replies. |
-| **Releases & commits** | Turn a commit list into release notes, publish a GitHub release, write a Conventional Commit from a plain-language description, and create branches. |
-| **Account** | Profile fields, avatar upload, profile README (the `user/user` repository) drafted and committed for you, organisation list, rate limit status. |
-| **AI Assistant** | A chat scoped to GitHub that can be grounded in the selected repository's real contents. |
-| **Dashboard** | Profile snapshot, live metrics, recent public activity, and an AI review of your whole GitHub presence. |
+### README Studio
 
-A monochrome UI with a dark and a light theme, adjustable font and UI scale,
-HiDPI support, and a matching native title bar. The app and the documentation
-site share one design system and one logo, so a screenshot of either is the same
-picture.
+Reads the live repository — file tree, languages, dependency files, the existing
+README — and writes a complete one from it. Pick a tone, a language, an audience
+and the sections you want; watch the preview update as you type; then commit the
+result straight to `README.md` on whichever branch you are on.
+
+<p align="center">
+  <img src="screenshots/02_readme_dark.png" width="820">
+</p>
+
+Also drafts `CONTRIBUTING.md`, `LICENSE`, `.gitignore`, `CODEOWNERS`,
+`SECURITY.md`, `CHANGELOG.md`, Actions workflows, Dependabot config, issue and PR
+templates, and `.editorconfig`.
+
+### Repository
+
+Files, branches, tags, collaborators and webhooks for one repository, in one
+place. Browse and filter the tree, preview any file, upload and delete, create a
+branch from the current one, add or remove collaborators with their permissions.
+
+<p align="center">
+  <img src="screenshots/04_repoadmin_dark.png" width="820">
+</p>
+
+### Repositories, Issues & PRs, Releases & commits
+
+Create, rename, archive, fork, change visibility and delete repositories. Read
+issues and pull requests with their comments, close and reopen, draft an issue
+from a one-line idea, triage a backlog into a table, and write the reply.
+Turn a commit list into release notes, publish a release, and get a Conventional
+Commit message out of a plain-language description.
+
+<p align="center">
+  <img src="screenshots/03_repos_dark.png" width="410">
+  <img src="screenshots/05_issues_dark.png" width="410">
+</p>
+
+<p align="center">
+  <img src="screenshots/06_releases_dark.png" width="410">
+  <img src="screenshots/08_account_dark.png" width="410">
+</p>
+
+### AI Assistant
+
+A chat scoped to GitHub, optionally grounded in the selected repository's actual
+contents. The Dashboard's profile review reads your public presence and suggests
+concrete improvements.
+
+<p align="center">
+  <img src="screenshots/07_assistant_dark.png" width="820">
+</p>
 
 ---
 
 ## The GitHub-only scope lock
 
-You asked that the AI do GitHub work and nothing else. That is enforced in three
-independent places, so a clever prompt cannot get past it:
+The assistant is not merely *prompted* to stay on topic. Three independent layers
+enforce it, so a clever instruction cannot get past:
 
-1. **Input classification** (`app/core/ai_guard.py`)
-   A request is checked against a GitHub vocabulary and a short list of strong
-   off-topic signals. Cooking, weather, medical, legal, horoscope and small-talk
-   requests are rejected *before* any network call is made.
+1. **Before the request leaves** — `app/core/ai_guard.py` classifies the input
+   against a GitHub vocabulary and a list of strong off-topic signals. Cooking,
+   weather, medical, legal, horoscope and small talk are refused *before any
+   network call is made*.
 
-2. **System prompt**
-   Every request carries a system prompt with an explicit allow list (READMEs,
+2. **In the prompt** — every request carries an explicit allow list (READMEs,
    repositories, issues, PRs, git, Actions, releases, profiles, tokens) and an
-   explicit deny list, plus a short refusal style so the answer stays useful.
+   explicit deny list.
 
-3. **Output validation**
-   Answers are checked again before display. If they drift off-topic, or are a
-   bare refusal, they are discarded and replaced with the scope notice.
+3. **On the way back** — the answer is checked again before it is displayed. If
+   it has drifted off topic, or it is a bare refusal, it is discarded and
+   replaced with the scope notice.
 
-The assistant also has no ability to run commands, write files on its own, or
-reach any service other than the GitHub API and the AI provider you configured.
-
----
-
-## Screens
-
-| | |
-| --- | --- |
-| ![README Studio](screenshots/02_readme_dark.png) | ![Repositories](screenshots/03_repos_dark.png) |
-| **README Studio** — generate, refine and commit | **Repositories** — create, tune and organise |
-| ![Repository](screenshots/04_repoadmin_dark.png) | ![Issues](screenshots/05_issues_dark.png) |
-| **Repository** — files, branches, tags, collaborators | **Issues & PRs** — triage and reply |
-| ![Releases](screenshots/06_releases_dark.png) | ![Assistant](screenshots/07_assistant_dark.png) |
-| **Releases & commits** — notes and messages | **AI Assistant** — scoped to GitHub |
-| ![Account](screenshots/08_account_dark.png) | ![Settings dark](screenshots/09_settings_dark.png) |
-| **Account** — profile and organisations | **Settings** — dark theme |
+The assistant also cannot run commands, write files on its own, or reach any
+service other than the GitHub API and whichever AI provider you configured.
 
 ---
 
-## Getting started
+## Running it from source
 
-### Run from source
+You need **Python 3.10+** on Windows.
 
 ```bat
 run.bat
 ```
 
-The script creates `.venv`, installs `requirements.txt` and starts the app. On
-Linux/macOS:
+The script makes a `.venv`, installs `requirements.txt`, and starts the app. By
+hand:
+
+```bat
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python main.py
+```
+
+Linux and macOS work for development, though the build targets Windows:
 
 ```bash
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python main.py
 ```
 
-### First launch
+### First run
 
-1. **Connect GitHub** — paste a personal access token from
-   [github.com/settings/tokens](https://github.com/settings/tokens).
-   Recommended scopes: `repo`, `read:org`, `workflow`, `user`, plus
-   `delete_repo` if you want the destructive repository-delete action. Fine
-   grained tokens work too; the app only needs repository, issue, PR and
-   profile permissions.
-2. **Choose an AI provider** — pick a preset or paste your own OpenAI compatible
-   endpoint and key.
-3. Open **README Studio**, pick a repository and press **Generate README**.
+1. **Settings → GitHub** — paste a
+   [personal access token](https://github.com/settings/tokens). Fine-grained
+   tokens work. Recommended scopes: `repo`, `read:org`, `workflow`, `user`, plus
+   `delete_repo` only if you want the destructive delete action.
+2. **Settings → AI** — pick a provider and paste a key, or point it at a local
+   model. Any OpenAI-compatible endpoint works.
+3. Open **README Studio**, choose a repository, press **Generate**.
 
 ---
 
-## Configuring the AI
+## The AI provider
 
-Any endpoint that speaks `POST {base_url}/chat/completions` works. Presets in
-**Settings → AI provider**:
+Anything that speaks `POST {base_url}/chat/completions` works — OpenAI,
+OpenRouter, Groq, Together, Ollama, LM Studio, or a gateway of your own.
 
-| Preset | Base URL | Needs a key |
-| --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1` | yes |
-| OpenRouter | `https://openrouter.ai/api/v1` | yes |
-| Groq | `https://api.groq.com/openai/v1` | yes |
-| Together | `https://api.together.xyz/v1` | yes |
-| Ollama | `http://localhost:11434/v1` | no |
-| LM Studio | `http://localhost:1234/v1` | no |
-| Custom | anything else | depends |
+**List models** pulls the provider's catalogue into the picker. **Test
+connection** sends a one-word probe and tells you which model answered.
 
-**List models** pulls the provider's model catalogue into the picker.
-**Test connection** sends a one-word probe and reports the model that answered.
-
-Ollama gives a fully offline setup:
+A fully offline setup needs no key at all:
 
 ```bash
 ollama pull llama3.1
 ```
 
-Then choose `Ollama` in Settings, pick `llama3.1`, and save. No API key required.
+Then choose Ollama, pick `llama3.1`, and save.
 
-Other options you can tune: temperature, max tokens, request timeout and whether
-responses stream in token by token.
+Tunable: temperature, max tokens, request timeout, and whether answers stream in
+token by token.
 
 ---
 
-## Building the portable exe
+## Keyboard
+
+| | |
+| --- | --- |
+| `Ctrl+1` … `Ctrl+9` | Jump to a page |
+| `Ctrl+K` | AI Assistant |
+| `Ctrl+,` | Settings |
+| `Ctrl+R` | Refresh the current page |
+| `Ctrl+N` | New repository |
+| `Ctrl+B` | Toggle the sidebar |
+| `Ctrl+Shift+R` | Toggle dark / light |
+| `Ctrl+Q` | Quit |
+
+---
+
+## Both themes
+
+<p align="center">
+  <img src="screenshots/00_welcome_light.png" width="410">
+  <img src="screenshots/04_repoadmin_light.png" width="410">
+</p>
+
+Monochrome on purpose. Colour in the interface is now only ever used to carry
+meaning — success, warning, danger — so a red error and a grey one are never the
+same sentence. Everything else is black, white, and the greys between.
+
+<p align="center">
+  <img src="screenshots/09_settings_light.png" width="820">
+</p>
+
+The desktop app and the [documentation site](https://mrlurix.github.io/github-manager/)
+share one design system and one logo, generated from a single script so they
+cannot drift apart.
+
+---
+
+## Where your data lives
+
+Everything sits in `data\` **next to the executable**:
+
+```
+data/
+  settings.json    theme, font, UI scale, AI model, ...
+  secrets.json     token and API key, encrypted
+```
+
+The token and the key are encrypted with **Windows DPAPI**
+(`CryptProtectData`), which ties them to your Windows account — another user on
+the same machine cannot decrypt them. They are never written in plain text, and
+never leave the machine except in HTTPS requests to `api.github.com` and to the
+AI provider you chose.
+
+Set `GHM_PORTABLE=0` to use `%APPDATA%\GitHubManager` instead. If the executable
+folder is read-only — a network share, say — the app falls back there on its own.
+
+---
+
+## Security
+
+- AI output and fetched markdown are treated as untrusted text. The preview goes
+  through an allow-list HTML sanitiser; image sources are restricted to
+  `http(s)`; links are limited to `http(s)` and `mailto` *and* re-checked on
+  click; `url(...)` and `@import` are stripped from inline CSS.
+- Token-shaped text is scrubbed from every error message and toast, so a provider
+  echoing your key back at you does not put it on screen.
+- `GitHubClient` refuses any absolute URL that is not `api.github.com` or
+  `uploads.github.com`, so the token cannot be sent to a third-party host by a
+  crafted response.
+- Repository, path and branch inputs are validated against GitHub's own rules
+  before a request is built, which closes `owner/../../user` style traversal.
+- Deleting a repository requires typing its full name.
+- Every destructive action confirms exactly what will happen. The AI never writes
+  to GitHub without one.
+
+---
+
+## Building the exe
 
 ```bat
 build.bat
 ```
 
-or
-
 ```bash
 python build.py --clean
 ```
 
-The build renders the app icon from the same mark the site uses, generates the
-PyInstaller spec, and produces a single self-contained `dist/GitHubManager.exe`.
-Copy that one file to any Windows machine — no Python, no installer, no admin
-rights.
-
-To rebuild just the icon — after changing the logo, or just to see it change
-without waiting out a full build:
+Renders the icon, generates the PyInstaller spec, and produces a single
+self-contained `dist\GitHubManager.exe`. To rebuild just the icon:
 
 ```bash
 python build.py --icon-only
 ```
 
-The script verifies its own output: a onefile build that accidentally produced
-a folder layout (or an implausibly small exe) is reported as a build failure,
-because the broken exe would otherwise fail at launch with
-`Failed to load Python DLL` and no build-time clue.
-
-`python build.py --onedir` produces a folder build instead, which starts faster.
-
-Optional: install [UPX](https://github.com/upx/upx) to shrink the executable
-further; it is detected automatically.
+The script checks its own output — a onefile build that produced a folder layout,
+or an implausibly small exe, is reported as a failure, because the broken binary
+would otherwise fail at launch with no build-time clue.
 
 ---
 
-## Where data is stored
+## Tests
 
-Everything lives in a `data/` folder **next to the executable**, so the app is
-truly portable — put it on a USB stick and carry your settings with you.
-
-```
-data/
-  settings.json    preferences: theme, font, UI scale, AI model, ...
-  secrets.json     token and API key, encrypted
+```bat
+python tests\run_all_tests.py
 ```
 
-The token and API key are encrypted with **Windows DPAPI** (`CryptProtectData`),
-which ties them to the current Windows user account. They are never written in
-plain text and never leave the machine except in HTTPS requests to
-`api.github.com` and to the AI provider you configured.
+Eleven suites, over a thousand checks, no network access required. Both the
+GitHub API and the AI provider are stubbed, so nothing touches your account.
 
-Set `GHM_PORTABLE=0` to store data under `%APPDATA%\GitHubManager` instead.
-If the executable folder is read-only (for example on a network share), the app
-falls back to that location automatically.
+`tests\mock_github_server.py` is a real HTTP server that speaks the GitHub REST
+API: it paginates with a genuine `Link: rel="next"`, returns base64 content,
+enforces authentication, and answers with real 401 / 403 / 404 / 422 / 500
+bodies. The integration suite points `GitHubClient` straight at it, which is how
+it catches the things a stub never can — a client that quietly stops at page one,
+or that shows a blank box instead of a rate-limit message.
+
+The documentation site is checked in a real browser:
+
+```bash
+npm install --no-save puppeteer
+node tools/verify_layout.js          # 222 checks
+node tools/verify_hover.js           #  35 checks
+node tools/verify_site_security.js   # 128 checks
+node tools/verify_search.js          #  43 checks
+node tools/verify_motion.js          #  84 checks
+```
 
 ---
 
 ## Project layout
 
 ```
-github_manager/
-  main.py                     entry point, high-DPI setup, app icon
-  build.py                    PyInstaller build script
-  requirements.txt
-  run.bat / build.bat
-  app/
-    config.py                 portable paths + settings dataclass
-    core/
-      github_api.py           GitHub REST client (accounts, repos, issues, …)
-      ai_api.py               OpenAI compatible chat client with streaming
-      ai_guard.py             the GitHub-only scope lock
-      ai_tasks.py             every AI feature, as a function
-      secure.py               DPAPI-backed secret storage
-      redact.py               token-shaped text scrubbing for errors and toasts
-    ui/
-      theme.py                palettes, typography, the global QSS
-      widgets.py              cards, badges, toasts, flow layout, icons
-      markdown.py             markdown rendering + code highlighting
-      sanitize.py             allow-list HTML sanitiser for the preview
-      editor.py               split markdown editor with live preview
-      workers.py              thread-pool tasks with streaming support
-      dialogs.py              reusable modal dialogs
-      context.py              shared services handed to every page
-      main_window.py          sidebar navigation and page stack
-      pages/                  welcome, dashboard, readme, repositories,
-                              repo_admin, issues, releases, assistant,
-                              account, settings
-  tests/                      eleven suites, no network access required
-  docs_src/                   the documentation site's source
-  tools/
-    build_docs.py             renders docs_src/ into the deployable docs/
-    make_logo.py              generates the logo for both the site and the app
-    screenshot.py crop.py     render every app page to PNG
-    deploy_site.py            push docs/ to the Pages branch
-    verify_*.js               browser checks for the site
+main.py                     entry point, high-DPI setup, app icon, taskbar identity
+build.py                    PyInstaller build
+run.bat / build.bat
+requirements.txt
+app/
+  config.py                 portable paths, settings, DPAPI secrets
+  core/
+    github_api.py           GitHub REST client
+    ai_api.py               OpenAI-compatible chat client, with streaming
+    ai_guard.py             the GitHub-only scope lock
+    ai_tasks.py             every AI feature, as a plain function
+    secure.py               DPAPI-backed secret storage
+    redact.py               token-shaped text scrubbing
+  ui/
+    theme.py                palettes, typography, the global stylesheet
+    widgets.py              cards, badges, toasts, icons, the logo
+    main_window.py          sidebar navigation and the page stack
+    pages/                  welcome, dashboard, readme, repositories,
+                            repo_admin, issues, releases, assistant,
+                            account, settings
+tests/                      eleven suites + a mock GitHub server
+docs_src/                   documentation site source
+tools/                      build_docs, make_logo, screenshot, verify_*
 ```
 
-`app/core/` has no Qt imports at all, which keeps the GitHub and AI logic
-testable on its own.
-
----
-
-## Tests
-
-```bash
-python tests/run_all_tests.py
-```
-
-| Suite | Covers |
-| --- | --- |
-| `ai_guard_test.py` | Scope classification, answer validation, prompt contents, markdown rendering |
-| `ai_tasks_test.py` | Every AI task function, JSON parsing, config and secret round-trips, API error messages |
-| `security_test.py` | Token redaction, host allow-listing, repo/path/branch validation, HTML sanitising, prompt-injection resistance |
-| `integration_test.py` | The real client over real HTTP against `mock_github_server.py`: pagination, status codes, base64 content, validation errors, rate limits, plus the whole UI driven against it |
-| `smoke_test.py` | Every page builds and renders against a stubbed GitHub API, including failure paths |
-| `feature_test.py` | End-to-end flows driven through the real widgets: create / edit / delete a repository, commit a README, reply to and draft issues, publish a release, edit the profile, upload an avatar, change every setting |
-| `ai_flow_test.py` | Streaming generation, refinement, commit path, and the scope lock blocking off-topic input |
-| `repo_admin_test.py` | The Repository page: file tree, filter, preview, branches, tags, collaborators, webhooks |
-| `layout_test.py` | Every page at 1080×680 through 1920×1080 — catches collapsed rows and clipped controls |
-| `responsive_test.py` | Narrow, medium and wide windows, including the sidebar collapse and the minimum usable width |
-| `upload_test.py` | File upload and delete, including multi-file, cancellation and failure paths |
-
-The suites stub both the GitHub API and the AI provider, so they run offline and
-never touch your account.
-
-### The site's own checks
-
-The documentation site is verified in a real browser rather than by inspection:
-
-```bash
-npm install --no-save puppeteer
-node tools/verify_layout.js          # 222 checks — layout, responsive, contrast
-node tools/verify_hover.js           #  35 checks — hover states, via the cascade
-node tools/verify_site_security.js   # 128 checks — CSP, headers, external links
-node tools/verify_search.js          #  43 checks — search across every page
-node tools/verify_motion.js          #  84 checks — reveals, and reduced motion
-```
-
-`verify_motion.js` exists because "the animations are gone" is not a report you
-can act on. A stylesheet can be full of transitions that match nothing, and a
-script can run cleanly while revealing nothing, so it measures what a reader
-would actually see — in pixels, in both motion settings — and fails if any
-section is ever left invisible.
-
-### The mock GitHub server
-
-`tests/mock_github_server.py` is a real HTTP server that speaks the GitHub REST
-API: it paginates with a genuine `Link: rel="next"` header, returns base64 file
-content, enforces authentication, and answers with real 401 / 403 / 404 / 422 /
-500 bodies. It is what the integration suite points `GitHubClient` at, which is
-why that suite catches things a stub never can — a client that quietly stops at
-page one, or that shows a blank error box for a rate limit.
-
-That is also why `GitHubClient` takes an `api_url`. The code path exercised
-against the mock is the same one used against github.com, and it makes GitHub
-Enterprise support a small change if you want it later.
-
-To capture the screenshots in this README:
-
-```bash
-set QT_QPA_PLATFORM=windows
-python tools/screenshot.py screenshots
-```
-
----
-
-## Keyboard shortcuts
-
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl+1` … `Ctrl+7` | Jump to a page |
-| `Ctrl+K` | AI Assistant |
-| `Ctrl+,` | Settings |
-| `Ctrl+R` | Refresh the current page |
-| `Ctrl+N` | New repository |
-| `Ctrl+B` | Toggle the sidebar |
-| `Ctrl+Shift+R` | Toggle dark / light theme |
-| `Ctrl+Q` | Quit |
-
----
-
-## Security notes
-
-- The token is stored encrypted with Windows DPAPI and bound to your Windows
-  account; another user on the same machine cannot decrypt it.
-- Repository deletion requires typing the full repository name, and the token
-  only needs the `delete_repo` scope if you actually use it — omit that scope and
-  the app works for everything else.
-- Every destructive action (delete repository, close issue, publish release,
-  commit a file) shows a confirmation dialog with exactly what will happen. The
-  AI never writes to GitHub without one.
-- AI output is treated as untrusted text: it is rendered as markdown, never
-  executed, and never used as a shell command.
-
-### Hardening applied to untrusted input
-
-AI output, a fetched README and an issue body are all attacker-influenced text
-that ends up in a `QTextBrowser` — a real HTML engine that fetches images and
-follows links. These are handled explicitly:
-
-| Risk | Mitigation |
-| --- | --- |
-| Raw HTML smuggling scripts, iframes or event handlers into the preview | `app/ui/sanitize.py` re-parses the rendered HTML against an allow-list of tags and attributes; anything unknown is dropped |
-| `file://` and `data:` image sources reading local content | Image `src` is limited to `http(s)`; everything else is discarded |
-| `javascript:` / `file:` links firing when clicked | Links are limited to `http(s)` and `mailto`, *and* every click is re-checked in `SafeLinksMixin` before the browser is launched |
-| CSS fetching a remote URL (`url(...)`, `@import`) | Those declarations are stripped from `style` attributes |
-| Provider error bodies echoing the API key back into the UI | `app/core/redact.py` scrubs token-shaped text from every error, toast and message box |
-| Path traversal in a typed repository name (`owner/../../user`) | `validate_repo`, `validate_repo_path` and `validate_branch_name` reject anything not matching GitHub's own rules, before any request is built |
-| The token being sent to a third-party host | `GitHubClient._build_url` refuses any absolute URL outside `api.github.com` / `uploads.github.com` |
-| Command injection through a file path | The "open folder" helper uses an argument list, never a shell string |
-| Secrets readable by other accounts | The secrets file is written `0600` on POSIX; on Windows it is DPAPI-encrypted |
-| Avatar uploads | Type and 1 MB size are checked locally first, avoiding GitHub's confusing 422 |
-
-Remote `http(s)` images *are* rendered, so badges work. That is a deliberate
-trade — GitHub renders them too (through its camo proxy) — and the residual
-exposure is limited to "a third party sees which repository page was opened".
-
+`app/core/` imports no Qt at all. That is what lets the GitHub and AI logic be
+tested on its own, without a display.
 
 ---
 
 ## Documentation
 
-An English documentation site with full-text search lives at
-**<https://mrlurix.github.io/github-manager/>**.
+**<https://mrlurix.github.io/github-manager/>**
 
-It is a static site generated from `docs_src/` by `python tools/build_docs.py`
-and served straight from the `docs/` folder by GitHub Pages — no Node, no build
-service. Search folds case, accents and typographic punctuation, and handles
-Arabic text where the docs mention a Persian README, so a loosely typed query
-still finds the right page. Its fonts are self-hosted, so the
-Content-Security-Policy can keep `font-src 'self'` and there is no third party
-in the critical path.
+An English site with full-text search that folds case, accents and typographic
+punctuation, and handles the Arabic text where the docs mention a Persian README.
+Generated from `docs_src/` by a Python script and served as plain files — no Node,
+no build service. Its fonts are self-hosted, so the Content-Security-Policy keeps
+`font-src 'self'` and there is no third party in the critical path.
 
-The app and the site share one design system and one logo. `python
-tools/make_logo.py` writes the site's SVG and the app's copy in the same pass,
-so the two cannot drift apart.
-
-> This is an independent client and is not affiliated with, endorsed by, or
-> supported by GitHub, Inc. The Octocat mark is GitHub's.
 ---
 
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
+
+Not affiliated with, endorsed by, or supported by GitHub, Inc. The Octocat mark is
+GitHub's; this is an independent client that uses the public API.
