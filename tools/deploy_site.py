@@ -1,154 +1,177 @@
-"""Publish ``docs/`` to the public site repository and enable Pages.
+"""Build the site and check that what is live matches what is here.
 
-The application repository is private, and GitHub Pages only serves private
-repositories on a paid plan. So the built site is pushed to a separate *public*
-repository, ``github-manager-site``, which does serve Pages on the free plan.
+The site is served by GitHub Pages from ``main``/``docs`` in *this* repository.
+There is no second repository and no copy step: a push that includes ``docs/``
+is the deployment, and GitHub builds it within a minute or so.
 
-The documentation source stays in this repository (``docs_src/`` plus
-``tools/build_docs.py``); only the generated output is copied across, so there
-is exactly one place to edit a page.
+This script used to publish to a separate public repository,
+``github-manager-site``, on the stated grounds that the application repository
+was private and Pages only serves private repositories on a paid plan. Neither
+half of that turned out to be true - the repository is public, and the site
+repository does not exist - so the script's first action was a clone that
+failed with "repository not found", on a premise that had been quietly false for
+however long. It is kept as a build-and-verify step instead, which is the part
+that was actually useful.
 
 Usage:
-    python tools/deploy_site.py              # build and push
-    python tools/deploy_site.py --dry-run    # build and show what would change
+    python tools/deploy_site.py              # build, then check the live site
+    python tools/deploy_site.py --push       # build, commit docs/, push, check
+    python tools/deploy_site.py --dry-run    # build and report only
 """
 
 from __future__ import annotations
 
 import argparse
-import shutil
 import subprocess
 import sys
-import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 BUILD = ROOT / "tools" / "build_docs.py"
 
-DEFAULT_SITE_REPO = "https://github.com/mrlurix/github-manager-site.git"
+LIVE_URL = "https://mrlurix.github.io/github-manager/"
 
-#: Files copied into the site repository root.
-INCLUDE = ["*.html", "assets", "search-index.json", ".nojekyll"]
-
-#: Explains, in the site repo itself, where the content comes from.
-SITE_README = """# GitHub Manager — documentation site
-
-This repository is **generated**. Do not edit it by hand.
-
-The source lives in the private application repository, in `docs_src/`:
-
-    docs_src/pages/*.md          the pages
-    docs_src/assets/*            stylesheet, search engine, behaviour
-    tools/build_docs.py          renders markdown to HTML + a search index
-    tools/deploy_site.py         pushes the result here
-
-To change a page, edit it there and re-run the deploy:
-
-    python tools/build_docs.py
-    python tools/deploy_site.py
-
-The search index is a plain JSON file and the search runs entirely in the
-browser, so the site has no runtime dependencies and no build service behind it.
-
-Licence: MIT, same as the application.
-"""
+#: Stylesheets and fonts are served with a short max-age, so a check run moments
+#: after a push can legitimately see the previous version. Retried rather than
+#: reported as a failure.
+CACHE_TOLERANCE = "The CDN serves assets for up to 10 minutes, so a freshly pushed build may not be visible yet."
 
 
-def run(args: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     printable = " ".join(args)
-    if check:
-        result = subprocess.run(args, cwd=str(cwd) if cwd else None, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"  failed: {printable}")
-            print(result.stdout)
-            print(result.stderr, file=sys.stderr)
-            raise SystemExit(result.returncode)
-        return result
-    return subprocess.run(args, cwd=str(cwd) if cwd else None, capture_output=True, text=True)
+    result = subprocess.run(args, cwd=str(cwd) if cwd else None,
+                            capture_output=True, text=True, encoding="utf-8",
+                            errors="replace")
+    if result.returncode != 0:
+        print(f"  failed: {printable}")
+        print(result.stdout)
+        print(result.stderr, file=sys.stderr)
+        raise SystemExit(result.returncode)
+    return result
 
 
 def build() -> None:
     print("building the site...")
-    result = run([sys.executable, str(BUILD)])
-    for line in result.stdout.strip().splitlines():
+    for line in run([sys.executable, str(BUILD)]).stdout.strip().splitlines():
         print("  " + line)
 
 
-def collect(docs: Path) -> list[Path]:
-    """Top-level entries that make up the site, in a stable order."""
-    entries: list[Path] = []
-    for pattern in INCLUDE:
-        for path in sorted(docs.glob(pattern)):
-            if path.name == ".nojekyll" and not path.exists():
-                continue
-            entries.append(path)
-    return entries
+def pending_changes() -> list[str]:
+    """Uncommitted paths under docs/, plus the tool that would have produced them."""
+    out = run(["git", "status", "--porcelain", "--", "docs", "docs_src", "tools/build_docs.py"])
+    return [line for line in out.stdout.splitlines() if line.strip()]
 
 
-def publish(site_repo: str, dry_run: bool) -> None:
-    if not DOCS.is_dir():
-        print("docs/ does not exist - run build_docs.py first", file=sys.stderr)
-        raise SystemExit(1)
+def push(message: str) -> None:
+    run(["git", "add", "docs"])
+    run(["git", "commit", "-q", "-m", message])
+    run(["git", "push", "-q", "origin", "HEAD"])
+    print(f"pushed: {run(['git', 'rev-parse', '--short', 'HEAD']).stdout.strip()}")
 
-    entries = collect(DOCS)
-    names = ", ".join(p.name for p in entries)
-    print(f"site contents: {names}")
 
-    with tempfile.TemporaryDirectory(prefix="ghm-site-") as tmp:
-        work = Path(tmp) / "site"
-        print(f"cloning {site_repo}...")
-        run(["git", "clone", "--depth", "1", site_repo, str(work)])
-        run(["git", "config", "user.name", "mrlurix"], cwd=work)
-        run(["git", "config", "user.email", "mohamadhasan1388@yahoo.com"], cwd=work)
+def fetch(url: str) -> str | None:
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:  # noqa: S310
+            return response.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        print(f"  could not reach {url}: {exc}")
+        return None
 
-        # Replace the whole tree so removed pages do not linger.
-        for existing in work.iterdir():
-            if existing.name == ".git":
-                continue
-            if existing.is_dir():
-                shutil.rmtree(existing)
-            else:
-                existing.unlink()
 
-        for entry in entries:
-            target = work / entry.name
-            if entry.is_dir():
-                shutil.copytree(entry, target)
-            else:
-                shutil.copy2(entry, target)
-        (work / "README.md").write_text(SITE_README, encoding="utf-8")
+def verify() -> int:
+    """Compare the live site against the local build.
 
-        run(["git", "add", "-A"], cwd=work)
-        changed = run(["git", "status", "--porcelain"], cwd=work).stdout.strip()
-        if not changed:
-            print("site is already up to date - nothing to push")
-            return
+    Not a byte comparison. Pages injects its own toolbar markup and the built
+    files are served with a short cache lifetime, so the comparison is on the
+    things this repository controls and a stale build would actually change.
+    """
+    print(f"\nchecking the live site: {LIVE_URL}")
+    live = fetch(LIVE_URL)
+    local = (DOCS / "index.html").read_text(encoding="utf-8")
+    if live is None:
+        return 1
 
-        print("changed files:")
-        for line in changed.splitlines()[:12]:
-            print("  " + line)
-        if len(changed.splitlines()) > 12:
-            print(f"  ... and {len(changed.splitlines()) - 12} more")
+    failures = 0
 
-        if dry_run:
-            print("\n--dry-run: stopping before commit")
-            return
+    def compare(label: str, needle: str, haystack: str) -> None:
+        nonlocal failures
+        ok = needle in haystack
+        if not ok:
+            failures += 1
+        print(f"  [{'PASS' if ok else 'FAIL'}] live {label}")
 
-        run(["git", "commit", "-q", "-m", "Update documentation site"], cwd=work)
-        run(["git", "push", "origin", "HEAD"], cwd=work)
-        print("pushed")
+    compare("carries the same Content-Security-Policy",
+            _extract(local, 'Content-Security-Policy" content="'), live)
+    compare("carries the same version", _version(local), _version(live))
+    compare("has the version's backslash fix", 'replace(/\\\\/g, "/")',
+            fetch(LIVE_URL + "assets/app.js") or "")
+    compare("has the version's decodeURIComponent guard", "id = raw;",
+            fetch(LIVE_URL + "assets/motion.js") or "")
+
+    if failures:
+        print(f"\n  {failures} check(s) did not match the local build.")
+        print(f"  {CACHE_TOLERANCE}")
+        return 1
+    print("\n  the live site matches the local build")
+    return 0
+
+
+def _extract(text: str, marker: str) -> str:
+    at = text.find(marker)
+    if at < 0:
+        return ""
+    start = text.find('"', at + len(marker))
+    end = text.find('"', start + 1)
+    return text[start + 1:end]
+
+
+def _version(text: str) -> str:
+    import re
+
+    m = re.search(r"v1\.\d+\.\d+", text)
+    return m.group(0) if m else ""
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", default=DEFAULT_SITE_REPO, help="site repository URL")
-    parser.add_argument("--dry-run", action="store_true", help="build and report, but do not push")
+    parser.add_argument("--push", action="store_true",
+                        help="commit docs/ and push, which is what deploys the site")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="build and report, changing and fetching nothing")
+    parser.add_argument("--message", default="Update the documentation site",
+                        help="commit message for --push")
     args = parser.parse_args()
 
     build()
-    publish(args.repo, args.dry_run)
-    return 0
+
+    if args.dry_run:
+        changes = pending_changes()
+        print("\nuncommitted site changes:")
+        for line in changes[:12]:
+            print("  " + line)
+        if not changes:
+            print("  none")
+        print("\n--dry-run: nothing committed, nothing pushed, nothing fetched")
+        return 0
+
+    if args.push:
+        if pending_changes():
+            print("\ncommitting the site and pushing (this is the deployment)")
+            push(args.message)
+        else:
+            print("\nnothing under docs/ to commit; checking the live site")
+    else:
+        changes = pending_changes()
+        if changes:
+            print("\ndocs/ has uncommitted changes, so the live site cannot match yet:")
+            for line in changes[:12]:
+                print("  " + line)
+            print("\n  run with --push to commit and deploy them")
+
+    return verify()
 
 
 if __name__ == "__main__":
