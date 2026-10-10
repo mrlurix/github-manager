@@ -19,6 +19,7 @@
    Run: node tools/verify_motion.js   (needs: npm i --no-save puppeteer)
 */
 const puppeteer = require("puppeteer");
+const { bypassCsp } = require("./browser_util");
 const path = require("path"), fs = require("fs"), http = require("http"), crypto = require("crypto");
 const docs = path.join(__dirname, "..", "docs");
 const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript",
@@ -38,6 +39,7 @@ const PAGES = ["index.html", "features.html", "install.html", "ai.html",
 server.listen(0, "127.0.0.1", async () => {
   const base = `http://127.0.0.1:${server.address().port}`;
   const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+  bypassCsp(browser);
   let pass = 0, fail = 0;
   const check = (name, ok, detail) => {
     (ok ? pass++ : fail++);
@@ -120,6 +122,58 @@ server.listen(0, "127.0.0.1", async () => {
   const done = await page.screenshot({ encoding: "binary" });
   check("reveals fade in rather than snap", sha(mid) !== sha(done), "identical frames");
   await page.close();
+
+  // ---- a bad hash must not cost the rest of the page its behaviour.
+  //
+  // collectToc() ran decodeURIComponent on each table-of-contents href, which
+  // throws URIError on a malformed escape such as "#%". start() calls it before
+  // armCopy(), so the throw aborted the rest of the sequence and no code block
+  // on the page got a copy button - a failure that looks like a missing
+  // feature, several steps away from its cause.
+  //
+  // The page is served with one href broken rather than built from a fixture,
+  // because what is being tested is that the real script, on the real page,
+  // survives it.
+  console.log("\na malformed anchor does not take the page down:");
+  const bad = await browser.newPage();
+  await bad.setViewport({ width: 1280, height: 800 });
+  const errors = [];
+  bad.on("pageerror", (e) => errors.push(String(e)));
+  await bad.setRequestInterception(true);
+  bad.on("request", async (request) => {
+    const url = request.url();
+    if (!url.includes(".html")) return request.continue();
+    const response = await fetch(url);
+    let html = await response.text();
+    // Break one anchor *inside the table of contents*, not the first anchor on
+    // the page - the first is the skip link, and breaking that would test
+    // something else entirely.
+    const tocAt = html.indexOf('class="toc"');
+    const anchorAt = tocAt < 0 ? -1 : html.indexOf('href="#', tocAt);
+    if (anchorAt >= 0) {
+      const end = html.indexOf('"', anchorAt + 7);
+      html = html.slice(0, anchorAt + 7) + "%" + html.slice(end);
+    }
+    return request.respond({
+      status: 200, contentType: "text/html; charset=utf-8", body: html
+    });
+  });
+  await bad.goto(`${base}/build.html`, { waitUntil: "load" });
+  await wait(900);
+  const state = await bad.evaluate(() => ({
+    copyButtons: document.querySelectorAll("pre button").length,
+    blocks: document.querySelectorAll("pre").length,
+    tocLinks: document.querySelectorAll(".toc a").length,
+    broken: !!document.querySelector('.toc a[href="#%"]')
+  }));
+  check("the malformed hash really was served", state.broken, "no #% href in the toc");
+  check("a malformed hash throws nothing", errors.length === 0, errors.join(" | "));
+  check("the page still has code blocks", state.blocks > 0, `${state.blocks} blocks`);
+  check("copy buttons still appear", state.copyButtons > 0,
+        `${state.copyButtons} of ${state.blocks} blocks`);
+  check("the table of contents still renders", state.tocLinks > 0,
+        `${state.tocLinks} links`);
+  await bad.close();
 
   console.log(`\n${pass} passed, ${fail} failed`);
   await browser.close();

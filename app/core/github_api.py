@@ -12,7 +12,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable
-from urllib.parse import urlparse
+from urllib.parse import quote, unquote, urlparse
 
 from .redact import redact_secrets, remember_secret
 
@@ -78,15 +78,64 @@ def validate_repo(full_name: str) -> str:
     return f"{parts[0]}/{parts[1]}"
 
 
+def _canonical_ref(value: str) -> str:
+    """Percent-decode a reference to a fixed point, for validation only.
+
+    ``%2e%2e%2fsecrets`` contains no separator and is not "..", so every
+    character-level check passes on it. The server decodes it before resolving,
+    which makes it ``../secrets`` - a different file, or a different endpoint
+    entirely, reached by a request the UI never showed was being made.
+    Validating the decoded form is what makes the check and the server agree on
+    what the string is.
+
+    Peeled repeatedly rather than once, because a single pass leaves
+    ``%252e%252e%252f`` as ``%2e%2e%2f``, which is still not a path yet.
+    """
+    text = str(value or "")
+    for _ in range(3):
+        decoded = unquote(text)
+        if decoded == text:
+            break
+        text = decoded
+    return text
+
+
+def _reject_dot_segments(text: str, what: str, shown: str) -> str:
+    """Refuse a reference whose decoded form walks out of its directory.
+
+    Backslashes count as separators: the checks are about the decoded value,
+    and a backslash is a separator to whatever consumes the path next.
+
+    ``what`` names the offending thing and is the phrase the dialogs show the
+    user, so it stays stable; ``shown`` echoes what was actually typed, because
+    a queue of twenty uploads that reports only "one of these is wrong" makes
+    the reader check all twenty.
+    """
+    if any(part in {".", ".."} for part in text.replace("\\", "/").split("/")):
+        raise GitHubError(
+            f"{what} '{shown}': '.' and '..' are not allowed.", status=400
+        )
+    return text
+
+
 def validate_repo_path(path: str) -> str:
-    """Validate a repository-relative file path used in a contents request."""
-    text = str(path or "").strip().replace("\\", "/").strip("/")
+    """Validate a repository-relative file path used in a contents request.
+
+    The value is validated *decoded* and then re-encoded, so the bytes that go
+    on the wire are the bytes that were checked. Validating the raw form and
+    sending it unchanged is what let ``%2e%2e%2f`` through.
+    """
+    text = _reject_dot_segments(_canonical_ref(path).strip(), "Invalid file path", path)
+    text = text.replace("\\", "/").strip("/")
     if not text:
         raise GitHubError("A file path is required.", status=400)
     for segment in text.split("/"):
-        if not PATH_SEGMENT_RE.match(segment) or segment in {".", ".."}:
+        if not PATH_SEGMENT_RE.match(segment):
             raise GitHubError(f"Invalid file path '{path}'.", status=400)
-    return text
+    # Re-encoded from the validated form: "/" stays a separator and anything
+    # else not plainly safe is percent-encoded, so a literal "%" in a filename
+    # survives as "%25" rather than becoming an escape.
+    return quote(text, safe="/")
 
 
 def validate_branch_name(name: str) -> str:
@@ -98,7 +147,12 @@ def validate_branch_name(name: str) -> str:
     token. A leading ``refs/heads/`` is refused for the same reason - it would be
     prefixed a second time.
     """
-    text = str(name or "").strip()
+    # Decoded first, for the same reason as a file path: a branch name goes
+    # into "/git/refs/heads/{name}", so "%2e%2e%2f" would otherwise walk out of
+    # that namespace into another endpoint.
+    text = _reject_dot_segments(
+        _canonical_ref(name).strip(), "Invalid branch name", name
+    )
     if not text or not BRANCH_RE.match(text) or text.endswith("/"):
         raise GitHubError(f"'{text}' is not a valid branch name.", status=400)
     if text.startswith("/") or "//" in text:

@@ -13,6 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const { spawnSync } = require("child_process");
+const { bypassCsp } = require("./browser_util");
 
 const docs = path.join(__dirname, "..", "docs");
 
@@ -163,6 +164,7 @@ function serve() {
       // rather than as anything to do with the page.
       protocolTimeout: 120000,
     });
+    bypassCsp(browser);
 
     console.log("\nno horizontal overflow:");
     for (const name of PAGES) {
@@ -824,6 +826,7 @@ function serve() {
         "primaryHoverType=1,availableHoverTypes=1",
       ],
     });
+    bypassCsp(coarse);
 
     for (const [label, engine, floor] of [
       ["a touch device", coarse, 44],
@@ -867,6 +870,7 @@ function serve() {
         "primaryHoverType=1,availableHoverTypes=1",
       ],
     });
+    bypassCsp(coarse);
     const page = await coarse.newPage();
     await open(page, `${base}/install.html`);
     const hover = await page.evaluate(() => ({

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from html import escape
 from typing import Any
 
 from PySide6.QtCore import Qt
@@ -13,7 +14,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QSplitter,
-    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
@@ -22,6 +22,7 @@ from ...core import ai_tasks
 from ...core.github_api import IssueItem
 from .. import workers
 from ..dialogs import DiffDialog, RepoPickerDialog, TextInputDialog
+from ..editor import MarkdownView
 from ..markdown import render_markdown
 from ..theme import markdown_css
 from ..widgets import (
@@ -116,6 +117,30 @@ class IssueRow(QWidget):
         self.style().polish(self)
 
 
+def comment_thread_html(body: str, comments: list[dict[str, Any]]) -> str:
+    """Build the document for an issue body followed by its comment thread.
+
+    Module-level and pure so the escaping can be tested without standing up the
+    whole page - the property that matters here is exactly the one that is
+    awkward to reach through the UI.
+    """
+    html = [
+        f"<style>{markdown_css()}</style>",
+        render_markdown(body or "_No description._"),
+    ]
+    for comment in comments:
+        # Escaped. Every other piece of untrusted text on this page goes
+        # through render_markdown, which sanitises; this one string did not, so
+        # it went into the document verbatim. A GitHub login cannot contain a
+        # "<" today, which is exactly why this is a defence-in-depth fix and
+        # not a live vulnerability - the day that stops being true, the flaw is
+        # already gone.
+        author = escape((comment.get("user") or {}).get("login", "unknown"))
+        text = comment.get("body") or ""
+        html.append(f"<hr><p><b>{author}</b></p>" + render_markdown(text))
+    return "".join(html)
+
+
 class IssuesPage(Page):
     title = "Issues & PRs"
     subtitle = "Triage the backlog, draft issues and reply as a maintainer."
@@ -193,7 +218,7 @@ class IssuesPage(Page):
         self.detail_meta = label("", "faint")
         right_layout.addWidget(self.detail_meta)
         right_layout.addWidget(hline())
-        self.detail_view = QTextBrowser()
+        self.detail_view = MarkdownView()
         self.detail_view.setObjectName("MarkdownView")
         right_layout.addWidget(self.detail_view, 1)
         actions = QHBoxLayout()
@@ -208,7 +233,7 @@ class IssuesPage(Page):
         self.split.setSizes([420, 620])
         layout.addWidget(self.split, 1)
 
-        self.triage_view = QTextBrowser()
+        self.triage_view = MarkdownView()
         self.triage_view.setObjectName("MarkdownView")
         self.triage_view.setVisible(False)
         self.triage_view.setMaximumHeight(260)
@@ -392,14 +417,7 @@ class IssuesPage(Page):
             return
         if not comments:
             return
-        html = [f"<style>{markdown_css()}</style>", render_markdown(item.body or "_No description._")]
-        for comment in comments:
-            author = (comment.get("user") or {}).get("login", "unknown")
-            body = comment.get("body") or ""
-            html.append(
-                f"<hr><p><b>{author}</b></p>" + render_markdown(body)
-            )
-        self.detail_view.setHtml("".join(html))
+        self.detail_view.setHtml(comment_thread_html(item.body, comments))
 
     # ------------------------------------------------------------ operations
     def toggle_state(self) -> None:

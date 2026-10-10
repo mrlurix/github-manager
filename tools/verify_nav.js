@@ -15,6 +15,7 @@ looks fine on a desktop and is broken on a phone:
 Run: node tools/verify_nav.js   (needs: npm i --no-save puppeteer)
 */
 const puppeteer = require("puppeteer");
+const { bypassCsp } = require("./browser_util");
 const path = require("path"), fs = require("fs"), http = require("http");
 
 const docs = path.join(__dirname, "..", "docs");
@@ -47,6 +48,7 @@ function check(name, ok, detail) {
 server.listen(0, "127.0.0.1", async () => {
   const base = `http://127.0.0.1:${server.address().port}`;
   const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+  bypassCsp(browser);
 
   // ------------------------------------------------------------ navigation
   for (const width of [390, 768]) {

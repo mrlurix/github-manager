@@ -16,6 +16,7 @@ SUITES = [
     "ai_guard_test.py",
     "ai_tasks_test.py",
     "security_test.py",
+    "docs_build_test.py",
     "integration_test.py",
     "upload_test.py",
     "smoke_test.py",
@@ -31,6 +32,13 @@ def main() -> int:
     env = dict(os.environ)
     # Headless: the UI tests must not try to open a real window.
     env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    # The suites print filenames with accents in them. On Windows a pipe gets
+    # the console's code page, so a suite that printed "café.md" as cp1252 left
+    # a 0xe9 that the parent's reader thread could not decode as UTF-8 - which
+    # raised inside the reader and silently truncated that suite's captured
+    # output. A runner that can lose a suite's output can lose a failure, so
+    # both ends are pinned to UTF-8 rather than left to the locale.
+    env["PYTHONIOENCODING"] = "utf-8"
 
     results: list[tuple[str, int]] = []
     for suite in SUITES:
@@ -41,9 +49,17 @@ def main() -> int:
             env=env,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
-        output = proc.stdout + proc.stderr
+        output = (proc.stdout or "") + (proc.stderr or "")
         lines = [line for line in output.splitlines() if line.strip()]
+        if not lines:
+            # A suite with no output did not report a failed assertion, it
+            # died. Saying so is the difference between a runner that names
+            # what happened and one that crashes on the None it got back,
+            # naming neither the suite nor the cause.
+            print(f"  no output; exited with code {proc.returncode}")
         for line in lines[-4:]:
             print(line)
         results.append((suite, proc.returncode))

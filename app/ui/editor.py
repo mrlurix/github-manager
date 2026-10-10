@@ -181,6 +181,28 @@ class MarkdownStreamView(SafeLinksMixin, QTextBrowser):
         append_markdown(self, text)
 
 
+class MarkdownView(SafeLinksMixin, QTextBrowser):
+    """A scrolling markdown view that does not resize to fit its content.
+
+    Same link protection as :class:`AutoHeightTextBrowser`; the difference is
+    only the height policy, and this one fills the space it is given.
+
+    It exists because six places were building a bare ``QTextBrowser`` and
+    filling it with untrusted markdown - issue bodies, comment threads, an AI
+    profile review. Every one of those had to remember to call
+    ``_init_safe_links`` and none of them did. The surfaces that render the most
+    attacker-controlled text were the ones without the protection, which is the
+    wrong way round.
+    """
+
+    def __init__(self, parent: QWidget | None = None, css: str = "") -> None:
+        super().__init__(parent)
+        self.setObjectName("MarkdownView")
+        self._init_safe_links()
+        if css:
+            self.document().setDefaultStyleSheet(css)
+
+
 class AutoHeightTextBrowser(SafeLinksMixin, QTextBrowser):
     """A ``QTextBrowser`` that reports a height-for-width.
 

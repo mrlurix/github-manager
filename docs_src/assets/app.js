@@ -173,14 +173,20 @@
     var text = String(url == null ? "" : url).trim();
     /* Strip control characters, which can hide a scheme from a naive check. */
     text = text.replace(/[\x00-\x1f\x7f]/g, "");
+    /* Backslashes become forward slashes, because that is what the browser
+       does when it resolves the value. "\/evil.example" has no scheme and no
+       leading "//", so the test below called it a relative path - and the URL
+       parser in the browser reads it as https://evil.example. Checking the
+       normalised form is what makes the check agree with the resolver. */
+    text = text.replace(/\\/g, "/");
     if (!text || text.charAt(0) === "#") {
       return escapeHtml(text || "#");
     }
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(text) || text.indexOf("//") === 0) {
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(text) || text.indexOf("/") === 0) {
       return "#";
     }
     /* Refuse to climb out of the pages directory. */
-    if (text.indexOf("..") !== -1 || text.charAt(0) === "/") {
+    if (text.indexOf("..") !== -1) {
       return "#";
     }
     return escapeHtml(text);

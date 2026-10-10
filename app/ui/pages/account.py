@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLineEdit,
-    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
@@ -20,6 +19,7 @@ from PySide6.QtWidgets import (
 from ...core import ai_tasks
 from .. import workers
 from ..dialogs import DiffDialog, PromptDialog, confirm
+from ..editor import MarkdownView
 from ..markdown import render_markdown
 from ..theme import markdown_css
 from ..widgets import (
@@ -146,7 +146,7 @@ class AccountPage(Page):
             "The special <login>/<login> repository renders at the top of your GitHub profile.",
         )
         self.readme_subtitle = self.readme_card.header.layout().itemAt(0).layout().itemAt(1).widget()
-        self.readme_view = QTextBrowser()
+        self.readme_view = MarkdownView()
         self.readme_view.setObjectName("MarkdownView")
         self.readme_view.setMinimumHeight(140)
         self.readme_view.setHtml(

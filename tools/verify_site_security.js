@@ -45,7 +45,15 @@ for (const [name, bad] of Object.entries({
   "vbscript": "vbscript:msgbox(1)",
   "file": "file:///C:/Windows/win.ini",
   "protocol relative": "//evil.example.com/x",
-  "http absolute": "http://evil.example.com/x"
+  "http absolute": "http://evil.example.com/x",
+  // A backslash is a separator to the browser, so it is one to the check.
+  // The WHATWG URL parser turns "\/evil.example" into https://evil.example -
+  // it has no scheme and no leading "//", so a test looking only for "//"
+  // called it a relative path and let it through.
+  "backslash escaped scheme": "\\/evil.example.com/x",
+  "double backslash": "\\\\evil.example.com/x",
+  "backslash protocol relative": "\\/\\/evil.example.com/x",
+  "backslash after slash": "/\\evil.example.com/x"
 })) {
   const out = safeHref(bad);
   check(name + " is refused", out === "#", out);
@@ -134,8 +142,22 @@ if (fs.existsSync(outDir)) {
       !/https?:\/\//.test(csp), csp);
     check(name + " the policy still forbids inline script",
       /script-src 'self'/.test(csp) && !/script-src[^;]*unsafe-inline/.test(csp));
-    check(name + " the policy still forbids framing and plugins",
-      /frame-ancestors 'none'/.test(csp) && /object-src 'none'/.test(csp), csp);
+    // Style was tightened from "self" 'unsafe-inline'. The concession was there
+    // on the claim that markdown carries style attributes; the sanitiser has no
+    // "style" in its allow-list and no page has one, so it was pure exposure.
+    check(name + " the policy forbids inline style too",
+      /style-src 'self'/.test(csp) && !/style-src[^;]*unsafe-inline/.test(csp), csp);
+    check(name + " plugins are refused", /object-src 'none'/.test(csp), csp);
+    // CSP3 section 3.3: frame-ancestors, sandbox, report-uri and
+    // report-only "are not supported inside a meta element". The policy here
+    // travels in a meta tag because GitHub Pages will not set a header for us,
+    // so listing them would advertise protection that the browser throws away
+    // - which is worse than not listing them, because the string reads like a
+    // control that is in place. Their absence is asserted so nobody re-adds
+    // one believing it works.
+    check(name + " no inert meta-only directives are claimed",
+      !/frame-ancestors|sandbox|report-uri|Content-Security-Policy-Report-Only/.test(csp),
+      csp);
     // Outbound links must not hand the opener window to the destination.
     const anchors = html.match(/<a\b[^>]*href\s*=\s*["']https?:[^>]*>/gi) || [];
     const unsafe = anchors.filter(a => !/rel\s*=\s*["'][^"']*noopener/i.test(a));

@@ -843,6 +843,129 @@ def test_token_never_goes_out_in_plaintext() -> None:
         check("loopback http is allowed for a local server", False, str(exc))
 
 
+def test_percent_encoded_traversal_is_rejected() -> None:
+    """A reference is validated decoded, because the server decodes it too.
+
+    ``%2e%2e%2fsecrets`` has no separator and is not "..", so every
+    character-level check passes on the raw form - while GitHub reads it as
+    ``../secrets``. The check and the server have to agree on what the string
+    is, so the decoding happens before the check and again on the way out.
+    """
+    from urllib.parse import unquote
+
+    from app.core.github_api import (
+        GitHubError, validate_branch_name, validate_repo_path,
+    )
+
+    encoded_paths = {
+        "fully encoded parent": "%2e%2e%2fsecrets",
+        "uppercase": "%2E%2E/secrets",
+        "partly encoded": "..%2fsecrets",
+        "encoded slash only": "a/%2e%2e/b",
+        "double encoded": "%252e%252e%252fsecrets",
+        "triple encoded": "%25252e%25252e%25252fsecrets",
+        "encoded backslash": "%2e%2e%5cwindows",
+        "encoded dot segment": "a/%2E/b",
+    }
+    for name, bad in encoded_paths.items():
+        try:
+            out = validate_repo_path(bad)
+            check(f"path rejects {name}", False, f"accepted {bad!r} -> {out!r}")
+        except GitHubError as exc:
+            check(f"path rejects {name}", exc.status == 400, str(exc))
+
+    encoded_branches = {
+        "encoded parent": "%2e%2e%2fcommits",
+        "uppercase": "%2E%2E%2Fcommits",
+        "partly encoded": "..%2fmain",
+        "double encoded": "%252e%252e%252fcommits",
+    }
+    for name, bad in encoded_branches.items():
+        try:
+            out = validate_branch_name(bad)
+            check(f"branch rejects {name}", False, f"accepted {bad!r} -> {out!r}")
+        except GitHubError as exc:
+            check(f"branch rejects {name}", exc.status == 400, str(exc))
+
+    # The validator re-encodes, so what it returns must decode back to exactly
+    # what was checked. Without this the change could reject valid input
+    # instead, which is the failure mode that matters more.
+    for good in ["README.md", "src/app.py", "docs/my file.md", "100%.md",
+                 "caf\u00e9.md", "dir/sub dir/file.txt"]:
+        try:
+            out = validate_repo_path(good)
+            check(f"path accepts {good!r}", unquote(out) == good,
+                  f"{out!r} does not decode back to {good!r}")
+        except GitHubError as exc:
+            check(f"path accepts {good!r}", False, str(exc))
+
+    # A literal "%" in a filename has to survive as %25 rather than becoming an
+    # escape the server reads as something else.
+    check("a literal percent is re-encoded",
+          validate_repo_path("100%.md") == "100%25.md",
+          validate_repo_path("100%.md"))
+
+    for good in ["main", "feature/x", "release/1.5", "v1.5.0"]:
+        try:
+            check(f"branch accepts {good!r}", validate_branch_name(good) == good)
+        except GitHubError as exc:
+            check(f"branch accepts {good!r}", False, str(exc))
+
+
+def test_untrusted_text_cannot_break_out_of_the_comment_thread() -> None:
+    """A comment author's login is API data, so it is escaped like any other.
+
+    Every other piece of untrusted text on the issue page goes through
+    render_markdown, which sanitises. This one string did not, and went into the
+    document verbatim.
+    """
+    from app.ui.pages.issues import comment_thread_html
+
+    html = comment_thread_html("hello", [
+        {"user": {"login": "<img src=x onerror=alert(1)>"}, "body": "hi"},
+    ])
+    check("the comment author is escaped",
+          "<img" not in html and "&lt;img" in html, html[:400])
+    check("no raw onerror handler survives", "onerror=alert(1)>" not in html,
+          html[:400])
+
+    html2 = comment_thread_html("hello", [
+        {"user": {"login": "a & b"}, "body": "hi"},
+    ])
+    check("an ampersand in a login is escaped", "a &amp; b" in html2, html2[:400])
+
+    # The body itself has always gone through the sanitiser; make sure that
+    # still holds now that the two are built in the same place.
+    html3 = comment_thread_html("<script>alert(1)</script>", [])
+    check("the issue body is still sanitised", "<script>" not in html3, html3[:400])
+
+
+def test_every_markdown_surface_refuses_stranger_links() -> None:
+    """No surface that renders untrusted text may be missing the link guard.
+
+    Six places were building a bare QTextBrowser and filling it with markdown
+    from the API. The surfaces carrying the most attacker-controlled text -
+    issue bodies, comment threads, a repository README - were among them.
+    """
+    from app.ui.editor import AutoHeightTextBrowser, MarkdownView, SafeLinksMixin
+
+    for cls in (MarkdownView, AutoHeightTextBrowser):
+        check(f"{cls.__name__} carries the link allow-list",
+              issubclass(cls, SafeLinksMixin), str(cls.__mro__))
+
+    import app.ui.dialogs as dialogs
+    import app.ui.pages.account as account
+    import app.ui.pages.dashboard as dashboard
+    import app.ui.pages.issues as issues
+
+    for module in (dialogs, account, dashboard, issues):
+        source = Path(module.__file__).read_text(encoding="utf-8")
+        bare = source.count("QTextBrowser()")
+        check(f"{module.__name__.split('.')[-1]} builds no bare QTextBrowser",
+              bare == 0, f"{bare} left")
+
+
+
 def main() -> int:
     test_redaction()
     test_error_redaction()
@@ -866,6 +989,9 @@ def main() -> int:
     test_ai_prompt_has_no_local_secrets()
     test_markdown_is_sanitised()
     test_link_scheme_allowlist()
+    test_percent_encoded_traversal_is_rejected()
+    test_untrusted_text_cannot_break_out_of_the_comment_thread()
+    test_every_markdown_surface_refuses_stranger_links()
     print(f"\n{len(PASSED)} passed, {len(FAILED)} failed")
     for name in FAILED:
         print("  failed:", name)

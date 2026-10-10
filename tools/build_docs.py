@@ -194,30 +194,80 @@ _ALLOWED_ATTRS = frozenset(
 _ALLOWED_DATA = frozenset(
     {"data-reveal", "data-stagger", "data-count", "data-count-suffix"}
 )
-#: Tags whose content goes with them.
-_DROP_CONTENT = frozenset(
-    "script style iframe object embed applet form svg math frame frameset template noscript".split()
+#: Tags dropped together with their contents. HTMLParser already holds the body
+#: of these two in CDATA mode, so it is never parsed as markup and there is
+#: nothing further to drop - their text is not content.
+_DROP_TREE = frozenset({"script", "style"})
+
+#: Tags dropped on their own, keeping their children, which are sanitised like
+#: anything else.
+#:
+#: These used to be in the same set as the pair above, which meant their whole
+#: subtree went too. That is where the silent truncation came from: the
+#: sanitiser counted nesting and only resumed when it saw a matching close
+#: tag, so a single unclosed <svg> anywhere in a markdown file left skip set and
+#: everything after it - the rest of the page - was discarded. No error, no
+#: warning, a page that simply stopped. Dropping the tag alone is also more
+#: correct: the children of a <template> or a <form> are ordinary content.
+_DROP_TAG = frozenset(
+    "iframe object embed applet form svg math frame frameset template noscript".split()
 )
+
+
+class UnclosedMarkup(Exception):
+    """A tag whose content is dropped was never closed.
+
+    Not caught by the parse-failure handler in :func:`sanitize_body` on purpose.
+    A malformed document should fail the build and name the tag, not degrade
+    into an escaped <pre> that nobody notices.
+    """
 _SCHEME_RE = re.compile(r"^([a-zA-Z][a-zA-Z0-9+.-]*):")
 _LINK_SCHEMES = frozenset({"http", "https", "mailto"})
 _CONTROL_CHARS = re.compile(r"[\x00-\x20\x7f]")
 
 
+def _normalise_url(value: str) -> str:
+    r"""A URL reduced to the form a browser will actually resolve.
+
+    Control characters go, because a parser that ignores whitespace reads
+    ``java&#9;script:`` as a scheme. Backslashes become forward slashes, because
+    the WHATWG URL parser does the same: ``\\evil.example`` and ``\/evil.example``
+    both resolve to ``https://evil.example``, so a check that only looks for a
+    literal ``//`` calls them relative paths and lets them through.
+
+    That gap was covered twice over here - by the internal-link checker for
+    ``href``, and by ``img-src 'self' data:`` for ``src`` - and neither of those
+    is a sanitiser.
+    """
+    text = _CONTROL_CHARS.sub("", str(value or ""))
+    return text.replace("\\", "/")
+
+
 def _safe_href(value: str) -> bool:
     """True for a link this site is willing to emit."""
-    text = _CONTROL_CHARS.sub("", str(value or ""))
+    text = _normalise_url(value)
     match = _SCHEME_RE.match(text)
     if not match:
-        return not text.startswith("//")
+        return not text.startswith("/")
     return match.group(1).lower() in _LINK_SCHEMES
 
 
 def _safe_src(value: str) -> bool:
-    """True for an image source. Local paths only: nothing is loaded remotely."""
-    text = _CONTROL_CHARS.sub("", str(value or ""))
+    """True for an image source.
+
+    Remote http(s) images pass, which is deliberate and used: a documentation
+    page without the ability to show a screenshot of something is worse. The
+    page's Content-Security-Policy (``img-src 'self'``) is what stops the
+    request anyway, so this function is the allow-list and the CSP is the
+    control.
+
+    ``data:`` is refused, and the policy agrees: two layers that disagree about
+    the same source is one more thing to get wrong later.
+    """
+    text = _normalise_url(value)
     match = _SCHEME_RE.match(text)
     if not match:
-        return not text.startswith("//") and ".." not in text
+        return not text.startswith("/") and ".." not in text
     return match.group(1).lower() in {"http", "https"}
 
 
@@ -229,6 +279,7 @@ class _BodySanitiser(HTMLParser):
         self.out: list[str] = []
         self.open: list[str] = []
         self.skip = 0
+        self.dropped: list[str] = []
 
     def _attrs(self, tag: str, attrs: list[tuple[str, str | None]]) -> str:
         parts: list[str] = []
@@ -265,10 +316,11 @@ class _BodySanitiser(HTMLParser):
         return "".join(parts)
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag in _DROP_CONTENT:
+        if tag in _DROP_TREE:
             self.skip += 1
+            self.dropped.append(tag)
             return
-        if self.skip or tag not in _ALLOWED_TAGS:
+        if tag in _DROP_TAG or self.skip or tag not in _ALLOWED_TAGS:
             return
         self.out.append(f"<{tag}{self._attrs(tag, attrs)}>")
         if tag not in {"br", "hr", "img"}:
@@ -279,8 +331,14 @@ class _BodySanitiser(HTMLParser):
             self.out.append(f"<{tag}{self._attrs(tag, attrs)}>")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in _DROP_CONTENT:
-            self.skip = max(0, self.skip - 1)
+        if tag in _DROP_TREE:
+            # Only the innermost open one closes. A stray </script> with no
+            # matching open tag used to decrement a counter that was already
+            # zero, and then the real </script> left the rest of the page
+            # dropped.
+            if self.dropped and self.dropped[-1] == tag:
+                self.dropped.pop()
+                self.skip -= 1
             return
         if self.skip or tag not in _ALLOWED_TAGS or tag not in self.open:
             return
@@ -310,9 +368,17 @@ def sanitize_body(html: str) -> str:
     try:
         parser.feed(html)
         parser.close()
+    except UnclosedMarkup:
+        raise
     except Exception:
         # A parse failure must never fall back to emitting the raw document.
         return f"<pre>{escape(html)}</pre>"
+    if parser.dropped:
+        raise UnclosedMarkup(
+            f"<{'><'.join(parser.dropped)}> was never closed; everything after "
+            "it would have been dropped, so the build stops here instead of "
+            "shipping a truncated page."
+        )
     return parser.result()
 
 
@@ -370,14 +436,17 @@ def render(markdown_text: str, reveal: bool = False) -> tuple[str, list[str]]:
                 token.attrSet("data-stagger", "1")
 
     html = _md.renderer.render(tokens, _md.options, {})
-    html = _wrap_tables(html)
     # markdown-it escapes code blocks; external links get the usual treatment.
     html = re.sub(
         r'<a href="(https?://[^"]+)"',
         r'<a href="\1" target="_blank" rel="noopener noreferrer">',
         html,
     )
-    return sanitize_body(html), headings
+    # Sanitise first, wrap second. The wrapper is two regexes over markup, so it
+    # cannot be trusted with markup that has not been through the parser: a
+    # literal "<table" inside an attribute value would otherwise be rewritten
+    # into one, and the quote it inserts would end that attribute early.
+    return sanitize_body(_wrap_tables(sanitize_body(html))), headings
 
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -403,15 +472,35 @@ def _wrap_tables(html: str) -> str:
     skips every one of those and leaves the page with no scroll container at
     all.
     """
+    # Applied after the sanitiser, never before. These are plain regexes over
+    # generated markup, so they match "<table" inside an attribute value too;
+    # running first, `<img alt="<table>">` came out as
+    # `<img alt="<div class="scroll-x"><table>">`, where the injected quote ended
+    # the attribute early and the rest of the tag landed somewhere else. The
+    # sanitiser re-escaped it afterwards so nothing executed, but the markup was
+    # still wrong.
     return _TABLE_OPEN.sub('<div class="scroll-x"><table', html).replace(
         "</table>", "</table></div>"
     )
 
 
 def to_text(html: str) -> str:
+    """Flatten sanitised HTML to the plain text the search index stores.
+
+    Entity references are decoded here, and that is the point of the function:
+    its output is text, not markup, and text has no entities in it. An audit
+    flagged this as an unescape transform that undoes the sanitiser. It does not
+    - the result is written to ``search-index.json`` and read back by
+    ``DocSearch.highlight()``, which escapes before it reaches ``innerHTML``.
+
+    The alternative, leaving ``&lt;script&gt;`` encoded, was tried and reverted:
+    it is the same amount of safe and it makes a search for "script" on the
+    security page show the reader ``&lt;script&gt;`` instead of ``<script>``.
+    """
     text = _TAG_RE.sub(" ", html)
     text = (
-        text.replace("&amp;", "&")
+        text.replace("&nbsp;", " ")
+        .replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", '"')
@@ -466,10 +555,28 @@ def _head(title: str, description: str, canonical: str) -> str:
      policy travels with the document. It refuses inline script and event handler
      attributes even if something slipped past the body sanitiser, which is what
      turns a mistake in a markdown file into broken markup instead of a compromise.
-     The fonts are self-hosted, so nothing on this page reaches a third party:
-     'unsafe-inline' is there for style only, because markdown carries style
-     attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+
+     Two things this policy deliberately does NOT claim:
+
+     'unsafe-inline' for style. It was here on the reasoning that markdown
+     carries style attributes. The sanitiser has no "style" in _ALLOWED_ATTRS
+     and no page in docs_src contains one, so it was pure concession. The
+     check in check_no_inline_styles() fails the build if that ever stops
+     being true.
+
+     frame-ancestors 'none'. This is the one that matters, and it cannot be
+     fixed here: CSP3 section 3.3 lists frame-ancestors among the directives
+     that are not supported inside a <meta> element, so the browser discards
+     it. Leaving it in the string read as protection that existed. Clickjacking
+     against this site needs a real Content-Security-Policy response header,
+     which GitHub Pages does not let a repository set. Until that changes the
+     page is framable, and that is a property of the host, not a bug to
+     patch around.
+
+     img-src has no data:. Nothing on the site uses one, and _safe_src already
+     refuses a data: source, so permitting it here only created a second,
+     looser rule that disagreed with the first. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>{escape(title)}</title>
 <meta name="description" content="{escape(description)}">
@@ -489,6 +596,18 @@ def _head(title: str, description: str, canonical: str) -> str:
 #: The app mark, inline so it inherits colour and needs no second request. The
 #: same geometry the desktop app uses - see tools/make_logo.py, which is the one
 #: place either copy is written.
+#: Shape elements the inline logo is allowed to contain, and the attributes
+#: each of them may carry. The logo file is generated by tools/make_logo.py from
+#: the simple-icons mark and inlined into all seven pages, so it is trusted by
+#: provenance - which is exactly the reasoning that goes stale. This is the
+#: check that survives someone regenerating it from a different source.
+_SVG_SHAPES = frozenset({"path", "circle", "rect", "line", "polyline", "polygon"})
+_SVG_ATTRS = frozenset({
+    "d", "cx", "cy", "r", "x", "y", "x1", "y1", "x2", "y2", "width", "height",
+    "rx", "ry", "points", "fill", "fill-rule", "clip-rule", "transform",
+})
+
+
 def _logo_mark() -> str:
     svg = SRC / "assets" / "logo.svg"
     if not svg.exists():
@@ -503,6 +622,22 @@ def _logo_mark() -> str:
     inner = re.sub(r"<title>.*?</title>", "", inner, flags=re.DOTALL)
     # currentColor for exactly this reason: the header, the footer and both
     # themes are covered by one copy of the file.
+
+    # Every tag and attribute, checked. This markup is not run through
+    # sanitize_body, because "path" is not a body tag and the filter would
+    # empty it - so it is checked against its own, much smaller, allow-list
+    # instead. Anything unexpected fails the build here rather than shipping.
+    for tag, attrs in re.findall(r"<([a-zA-Z][\w:-]*)((?:\s[^<>]*)?)/?>", inner):
+        if tag not in _SVG_SHAPES:
+            raise SystemExit(
+                f"logo.svg: <{tag}> is not a shape the inline logo may contain"
+            )
+        for name in re.findall(r"([\w:-]+)\s*=", attrs):
+            if name not in _SVG_ATTRS:
+                raise SystemExit(f"logo.svg: <{tag}> may not carry {name}=")
+    leftover = re.sub(r"<[a-zA-Z][^<>]*>", "", inner)
+    if "<" in leftover:
+        raise SystemExit("logo.svg: markup the shape check did not recognise")
     return inner.strip()
 
 
@@ -806,12 +941,47 @@ def check_internal_links() -> int:
                 continue
             broken.append(f"{path.name} -> {href}")
 
+        # src was not checked at all, only href. A missing image is exactly as
+        # broken as a missing page and shows up the same way: a box where a
+        # screenshot should be. Resolved against the output directory rather
+        # than against a hand-kept list, so a renamed asset cannot slip past.
+        for src in re.findall(r'src="([^"]+)"', text):
+            if src.startswith(("http://", "https://", "data:", "//")):
+                continue
+            if not (OUT / src).exists():
+                broken.append(f"{path.name} -> src {src}")
+
     if broken:
         print("  BROKEN internal links:")
         for item in broken:
             print("    " + item)
         return 1
     print("  internal links OK")
+    return 0
+
+
+def check_no_inline_styles() -> int:
+    """Fail if any page carries a style attribute or a <style> block.
+
+    This is the check that lets the Content-Security-Policy say
+    ``style-src 'self'`` with no ``'unsafe-inline'``. That concession was in the
+    policy on the claim that markdown carries style attributes; it does not,
+    because the sanitiser has no "style" in _ALLOWED_ATTRS. Rather than trust
+    that, this verifies it on the built pages - so if a future change lets a
+    style attribute through, the build says so instead of the page silently
+    losing its styling to a policy that no longer permits it.
+    """
+    offenders: list[str] = []
+    for path in sorted(OUT.glob("*.html")):
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"<style[\s>]", text) or re.search(r'\sstyle\s*=\s*"', text):
+            offenders.append(path.name)
+    if offenders:
+        print("  INLINE STYLES present, but the policy forbids them:")
+        for name in offenders:
+            print(f"    {name}")
+        return 1
+    print("  no inline styles (style-src 'self' holds)")
     return 0
 
 
@@ -887,7 +1057,8 @@ def build() -> int:
         encoding="utf-8",
     )
     print(f"  built search-index.json  ({len(index)} entries)")
-    return check_internal_links()
+    failures = check_internal_links() + check_no_inline_styles()
+    return 1 if failures else 0
 
 
 def _section_html(body_html: str, anchor: str) -> str:

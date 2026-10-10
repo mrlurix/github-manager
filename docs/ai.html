@@ -7,10 +7,28 @@
      policy travels with the document. It refuses inline script and event handler
      attributes even if something slipped past the body sanitiser, which is what
      turns a mistake in a markdown file into broken markup instead of a compromise.
-     The fonts are self-hosted, so nothing on this page reaches a third party:
-     'unsafe-inline' is there for style only, because markdown carries style
-     attributes. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+
+     Two things this policy deliberately does NOT claim:
+
+     'unsafe-inline' for style. It was here on the reasoning that markdown
+     carries style attributes. The sanitiser has no "style" in _ALLOWED_ATTRS
+     and no page in docs_src contains one, so it was pure concession. The
+     check in check_no_inline_styles() fails the build if that ever stops
+     being true.
+
+     frame-ancestors 'none'. This is the one that matters, and it cannot be
+     fixed here: CSP3 section 3.3 lists frame-ancestors among the directives
+     that are not supported inside a <meta> element, so the browser discards
+     it. Leaving it in the string read as protection that existed. Clickjacking
+     against this site needs a real Content-Security-Policy response header,
+     which GitHub Pages does not let a repository set. Until that changes the
+     page is framable, and that is a property of the host, not a bug to
+     patch around.
+
+     img-src has no data:. Nothing on the site uses one, and _safe_src already
+     refuses a data: source, so permitting it here only created a second,
+     looser rule that disagreed with the first. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>AI · GitHub Manager</title>
 <meta name="description" content="Choosing a provider, configuring a model, running a local model, and how the GitHub-only scope limit works.">

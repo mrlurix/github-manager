@@ -21,12 +21,12 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QPlainTextEdit,
     QScrollArea,
-    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
 
 from ..core.github_api import GitHubError, validate_repo_path
+from .editor import MarkdownView
 from .widgets import button, hline, icon_svg, label
 
 
@@ -986,7 +986,7 @@ class DiffDialog(QDialog):
             sub.setWordWrap(True)
             layout.addWidget(sub)
 
-        view = QTextBrowser()
+        view = MarkdownView()
         view.setObjectName("MarkdownView")
         view.setPlainText(content)
         layout.addWidget(view, 1)

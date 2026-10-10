@@ -9,13 +9,13 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
 
 from ...core import ai_tasks
 from .. import workers
+from ..editor import MarkdownView
 from ..theme import markdown_css
 from ..widgets import (
     Avatar,
@@ -179,7 +179,7 @@ class DashboardPage(Page):
         ai_actions.addWidget(self.ai_hint)
         self.ai_card.add_layout(ai_actions)
 
-        self.ai_view = QTextBrowser()
+        self.ai_view = MarkdownView()
         self.ai_view.setObjectName("MarkdownView")
         self.ai_view.setMinimumHeight(150)
         self.ai_view.setHtml(

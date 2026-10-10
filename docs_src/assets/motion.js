@@ -259,7 +259,20 @@
     tocLinks = [].slice.call(document.querySelectorAll(".toc a[href^='#']"));
     headings = tocLinks
       .map(function (link) {
-        return document.getElementById(decodeURIComponent(link.hash.slice(1)));
+        /* decodeURIComponent throws URIError on a malformed escape, and an
+           uncaught throw here would abort start() - which runs armCopy()
+           after this - so a bad hash in a table of contents would silently cost
+           every code block on the page its copy button. Falling back to the raw
+           hash is the right answer anyway: the ids in the document are literal,
+           so a hash that needs decoding will not match one regardless. */
+        var raw = link.hash.slice(1);
+        var id = raw;
+        try {
+          id = decodeURIComponent(raw);
+        } catch (err) {
+          id = raw;
+        }
+        return document.getElementById(id);
       })
       .filter(Boolean);
     if (headings.length) tocLinks = tocLinks.slice(0, headings.length);
