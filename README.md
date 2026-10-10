@@ -298,6 +298,7 @@ node tools/verify_hover.js           #  35 checks
 node tools/verify_site_security.js   # 128 checks
 node tools/verify_search.js          #  43 checks
 node tools/verify_motion.js          #  84 checks
+node tools/verify_nav.js             #  64 checks
 ```
 
 ---

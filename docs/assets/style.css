@@ -229,9 +229,14 @@ html[data-theme="light"] .site-header { box-shadow: 0 1px 3px rgba(0, 0, 0, .07)
   padding-inline: 12px;
 }
 
-/* Reading progress. A two pixel accent line along the bottom that grows with the
-   page. Scaled rather than resized: transform stays on the compositor, so it
-   does not cost a layout pass per frame.
+/* Reading progress. A two pixel line along the bottom that grows with the page.
+   Scaled rather than resized: transform stays on the compositor, so it does not
+   cost a layout pass per frame.
+
+   The text colour, not the accent. It sits directly under a translucent blurred
+   header over moving content, and a saturated blue against black shimmered while
+   the page moved under it; a neutral line reads as one thing moving rather than
+   two, which is all a progress indicator is supposed to do.
 
    Inset from each end so it runs along the flat part of the curve. Without it
    the line would sit under the rounded corners, where it is mostly invisible
@@ -239,9 +244,9 @@ html[data-theme="light"] .site-header { box-shadow: 0 1px 3px rgba(0, 0, 0, .07)
 .progress {
   position: absolute; inset-block-end: 0; inset-inline: var(--r-head);
   height: 2px;
-  background: var(--accent);
+  background: var(--text);
   transform: scaleX(0); transform-origin: 0 50%;
-  opacity: .9;
+  opacity: .75;
 }
 @media (prefers-reduced-motion: reduce) {
   .progress { display: none; }
@@ -1083,6 +1088,36 @@ details > *:not(summary) { margin-top: 12px; }
   .top-nav { display: none; }
   .nav-toggle { display: grid; }
   .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+
+  /* The landing page has no rail, so these links are its whole navigation. The
+     hamburger turns them into a panel rather than leaving a button that opens
+     nothing - which is what the bar did on that page until the button was
+     wired to whichever navigation the page actually has.
+
+     Positioned against the header, which is sticky and therefore already a
+     containing block; the inset matches the header's own padding so the panel
+     lines up with its edges rather than floating inside them. */
+  .top-nav.is-open {
+    display: flex;
+    position: absolute;
+    inset-inline: var(--header-h);
+    top: calc(100% + 8px);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    margin-inline-start: 0;
+    padding: 8px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, .5);
+  }
+  .top-nav.is-open a {
+    /* A full-width target, and tall enough to hit with a thumb. */
+    padding-block: 12px;
+    padding-inline: 14px;
+    font-size: 0.9375rem;
+  }
 
   /* A tablet is often touched with a stylus or a finger even with a mouse
      attached, so the bar grows here too. This sits above the narrow-screen

@@ -87,7 +87,15 @@ matching is not something any app test can see:
 node tools/verify_site_security.js   # the generated pages and the client script
 node tools/verify_search.js          # the search normaliser, ranking and snippets
 node tools/verify_layout.js          # the design, in a real browser
+node tools/verify_motion.js          # reveals, and the reduced-motion path
+node tools/verify_nav.js             # the mobile menu, and the progress bar
 ```
+
+The last two exist because those are the failures a desktop never shows. The
+hamburger on the landing page rendered, was clickable, and did nothing — it
+opened the documentation rail, and the landing page has no rail. Both now click
+the button at a phone width and assert that something a reader can reach opened,
+on every page.
 
 `verify_site_security.js` covers the generated pages: each must carry a
 Content-Security-Policy with no remote host anywhere in it, load no remote
