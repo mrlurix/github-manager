@@ -55,7 +55,14 @@ class AppContext:
         self.config.save(ai_key_present=bool(key.strip()))
 
     def ai(self, *, model: str = "", base_url: str = "") -> AIClient:
-        """Build (or reuse) an AI client from the current settings."""
+        """Build (or reuse) an AI client from the current settings.
+
+        Raises EndpointBlocked when the configured address is one this app
+        refuses to contact. It is a ValueError, so every existing caller that
+        already handles a bad configuration keeps working and shows its own
+        message - the specific reason just travels in the exception text
+        instead of escaping as an unhandled type.
+        """
         s: Settings = self.config.settings
         key = (model, base_url)
         if self._ai is not None and getattr(self, "_ai_key", None) == key:

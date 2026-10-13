@@ -1,10 +1,24 @@
 # Runtime dependencies for GitHub Manager.
 # Install with:  pip install -r requirements.txt
+#
+# The floors below are not arbitrary. requests, urllib3, certifi and
+# cryptography sit directly between a personal access token and the network,
+# so a vulnerability in any of them is a vulnerability in the token. Their
+# minimums are set by tools/verify_dependencies.py and should be raised when a
+# fix lands, not lowered to make an install easier.
+#
+# Run the check with:  python tools/verify_dependencies.py
 
 PySide6>=6.6
-requests>=2.31
+requests>=2.32
 markdown-it-py>=3.0
 Pygments>=2.17
+
+# Transitive, but load-bearing for credential transport. Pinned here so a fresh
+# install cannot resolve to something older without it being a deliberate act.
+urllib3>=2.2
+certifi>=2024.7.4
+cryptography>=42.0
 
 # Optional but recommended. The app talks to the GitHub REST API directly and
 # only uses PyGithub for a couple of convenience helpers, so it works without
@@ -13,3 +27,9 @@ PyGithub>=2.1
 
 # Optional: enables automatic linkification in rendered markdown.
 linkify-it-py>=2.0
+
+# Optional, and the reason a token survives a reboot on macOS and Linux.
+# Without it those platforms keep the token in memory for the session rather
+# than writing it to disk at all - see app/core/secure.py.
+# Windows does not need it; DPAPI covers that platform.
+keyring>=25.0; sys_platform != "win32"

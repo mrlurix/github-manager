@@ -41,6 +41,18 @@ HIDDEN_IMPORTS = [
     "nacl",
 ]
 
+# keyring is what makes a token persist on macOS and Linux. It is only listed
+# when it is actually installed: naming a module that is not there makes
+# PyInstaller warn on every build, and it is never used on Windows where DPAPI
+# covers this.
+try:  # pragma: no cover - depends on what is installed
+    import keyring  # noqa: F401,PLC0415
+
+    HIDDEN_IMPORTS += ["keyring", "keyring.backends", "keyring.backends.SecretService"]
+    print("keyring found: the OS keystore will be bundled")
+except ImportError:
+    print("keyring not installed: the Windows build needs it not, macOS/Linux users should add it")
+
 EXCLUDES = [
     "tkinter",
     "matplotlib",

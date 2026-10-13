@@ -11,10 +11,11 @@ import json
 from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 
+from .endpoint_guard import check_endpoint, redirect_is_allowed
 from .redact import redact_secrets, remember_secret
 
 DEFAULT_TIMEOUT = 120
@@ -91,7 +92,10 @@ class AIClient:
         max_tokens: int = 3000,
         timeout: int = DEFAULT_TIMEOUT,
     ) -> None:
-        self.base_url = base_url.rstrip("/")
+        # Checked here rather than at the point of use, so a blocked address
+        # is refused before any key or payload is prepared for it. Raises
+        # EndpointBlocked, which the settings page turns into a message.
+        self.base_url = check_endpoint(base_url).rstrip("/")
         self.api_key = api_key
         if api_key:
             # Same reason as the GitHub token: scrub the value we actually hold
@@ -167,10 +171,39 @@ class AIClient:
         return f"AI provider error {resp.status_code}: {redact_secrets(str(message))}"
 
     # ------------------------------------------------------------ requests
+    def _post(self, url: str, **kwargs: Any) -> requests.Response:
+        """POST without following redirects off the approved host.
+
+        ``allow_redirects=False`` plus a single manual hop: a redirect that
+        stays on an allowed address is followed, and one that points at a
+        blocked address raises instead of quietly returning somebody else's
+        page as the model's answer.
+        """
+        resp = requests.post(
+            url, headers=self._headers(), allow_redirects=False, **kwargs
+        )
+        if resp.is_redirect or resp.is_permanent_redirect:
+            location = resp.headers.get("Location", "")
+            if not location:
+                raise AIError(
+                    f"The provider redirected ({resp.status_code}) without saying "
+                    "where to, so the request was not followed."
+                )
+            target = urljoin(url, location)
+            if not redirect_is_allowed(resp.status_code, target, base_url=url):
+                raise AIError(
+                    f"The provider redirected to {target}, which this app will "
+                    "not contact. The request was not followed."
+                )
+            resp = requests.post(
+                target, headers=self._headers(), allow_redirects=False, **kwargs
+            )
+        return resp
+
     def list_models(self) -> list[str]:
         try:
-            resp = requests.get(
-                self._endpoint("models"), headers=self._headers(), timeout=min(self.timeout, 30)
+            resp = self._post(
+                self._endpoint("models"), timeout=min(self.timeout, 30)
             )
         except requests.RequestException as exc:
             raise AIError(f"Could not reach the provider: {exc}") from exc
@@ -219,9 +252,8 @@ class AIClient:
 
     def _send(self, payload: dict[str, Any], *, stream: bool) -> str | Iterator[str]:
         try:
-            resp = requests.post(
+            resp = self._post(
                 self._endpoint("chat/completions"),
-                headers=self._headers(),
                 json=payload,
                 timeout=self.timeout,
                 stream=stream,
